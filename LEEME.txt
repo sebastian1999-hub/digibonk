@@ -184,3 +184,19 @@ Extrae el ZIP completo; conserva Digibonk.exe y Digibonk.Game.exe junto a
 los demás archivos. Abre siempre Digibonk.exe para recibir actualizaciones.
 Los usuarios de versiones anteriores deben instalar 1.9.0 una vez.
 Detalles para publicar: ACTUALIZACIONES.md en el repositorio.
+
+ACTUALIZACION 1.10.0
+El minimapa usa símbolos distintos, no colores por categoría. Pulsa ⛶ para
+ampliarlo: la leyenda identifica cada lugar, portales cerrados y regreso.
+La tienda ofrece tres mejoras de atributos útiles incluso con todas las
+técnicas al máximo. Una opción ofensiva, una defensiva y otra variada.
+Sus precios empiezan en 40 bits y crecen con cada compra en cualquier puesto.
+Las mejoras duran esta partida; no hay un límite de compras.
+El inicio tiene menos enemigos, menos daño y menor velocidad; no aparecen
+élites durante los primeros 45 segundos. La presión normal vuelve a los 90 s.
+Los portales usan el nivel, tiempo y compras acumulados al entrar. Sus tres
+oleadas tienen mayor densidad, resistencia y daño que el exterior al entrar.
+Entrar tarde eleva la dificultad. Mejorar dentro sí aporta ventaja durante
+la incursión. Si sales para fortalecerte y vuelves, se actualizan la torre
+y enemigos pendientes, conservando el porcentaje de vida que habían perdido.
+Los enemigos de portal dan más experiencia y bits.

@@ -8,6 +8,7 @@ class UpdaterTests {
  static void Reject(Action action,string text){bool rejected=false;try{action();}catch{rejected=true;}Check(rejected,text);}
  static void Main(string[] args){
   var root=Path.GetFullPath(args[0]);Directory.CreateDirectory(root);var runtime=Path.GetFullPath(args[1]);var version=UpdateCore.ParseVersion(File.ReadAllText(Path.Combine(runtime,"version.txt")).Trim());
+  Check(UpdateCore.ParseVersion("1.10.0")>UpdateCore.ParseVersion("1.9.9"),"Compara 1.10 después de 1.9 por números");
   Check(UpdateCore.ParseVersion("v1.9.0")==new Version(1,9,0),"Versiones semánticas y comparación numérica");Reject(()=>UpdateCore.ParseVersion("v1.9.0/../../"),"Rechaza etiquetas con rutas");
   Reject(()=>UpdateCore.AssetUri("https://evil.example/payload.zip","sebastian1999-hub/digibonk","v1.9.0"),"Rechaza otros servidores");
   Reject(()=>UpdateCore.AssetUri("https://github.com/otro/repo/releases/download/v1.9.0/game.zip","sebastian1999-hub/digibonk","v1.9.0"),"Rechaza otro repositorio");

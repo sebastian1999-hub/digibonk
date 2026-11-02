@@ -21,7 +21,7 @@ Las partidas, las preferencias y la sesión se mantienen en `%LOCALAPPDATA%\Digi
 | Pausa | Esc o P |
 | Pantalla completa | F11 |
 
-En **Ajustes** puedes cambiar dos teclas por acción y regular la opacidad de ataques, experiencia y proyectiles enemigos. La barra bajo el personaje muestra cuándo vuelve a estar disponible la habilidad. Cofres: una recompensa o cerrar sin elegir. Hasta tres compañeros distintos activos.
+En **Ajustes** puedes cambiar dos teclas por acción y regular la opacidad de ataques, experiencia y proyectiles enemigos. La barra bajo el personaje muestra cuándo vuelve a estar disponible la habilidad. Cofres: una recompensa o cerrar sin elegir. Hasta tres compañeros distintos activos. El minimapa utiliza iconos: amplíalo con ⛶ para consultar toda la leyenda. La tienda siempre ofrece tres mejoras de atributos y encarece todos sus puestos con cada compra. Los portales ajustan su presión al nivel y tiempo acumulado al entrar; entrar tarde no congela enemigos débiles.
 
 ## Desarrollo y publicación
 

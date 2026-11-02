@@ -58,3 +58,9 @@ migración de buddy a buddies y posiciones por compañero en cada escena.
 actualizaciones verificadas y activación atómica en LocalAppData/Updates.
 GitHub Actions publica paquetes estables desde etiquetas vX.Y.Z.
 El perfil WebView2 de partidas conserva su ruta y origen anteriores.
+
+1.10.0: balance.js centraliza introducción y presión de portales.
+map-icons.js separa marcadores semánticos del pintado del minimapa.
+shopPurchases es global a la run y migra precios de partidas anteriores.
+La presión de cada portal persiste; las mejoras ganadas dentro no se
+neutralizan ajustando enemigos directamente al daño actual del jugador.
