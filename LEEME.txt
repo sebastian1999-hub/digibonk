@@ -200,3 +200,16 @@ Entrar tarde eleva la dificultad. Mejorar dentro sí aporta ventaja durante
 la incursión. Si sales para fortalecerte y vuelves, se actualizan la torre
 y enemigos pendientes, conservando el porcentaje de vida que habían perdido.
 Los enemigos de portal dan más experiencia y bits.
+
+ACTUALIZACION 1.11.0 - ATAQUES
+Los ataques tienen formas propias: olas con cresta y espuma, fuego con
+lenguas y brasas, rayos ramificados, hielo, misiles con escape, flechas,
+puños, murciélagos y pétalos. Los impactos también cambian según la técnica.
+Catorce técnicas nuevas elevan el catálogo a 40, con firmas de Digimon como
+Fuerza Terra de WarGreymon y Destructor Giga de MetalGreymon.
+Las partidas anteriores actualizan una técnica de la familia al recibir
+la nueva firma de su forma, manteniendo el rango y las técnicas de apoyo.
+Al subir de nivel puedes encontrar reemplazos de la misma familia aunque
+ya tengas cuatro técnicas; la tarjeta avisa antes de elegir.
+Los proyectiles enemigos conservan su señal de peligro. Sus efectos y los
+tuyos respetan las barras de opacidad de Ajustes.

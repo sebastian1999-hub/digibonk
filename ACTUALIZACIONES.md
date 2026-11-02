@@ -11,17 +11,17 @@ La caché está fuera de la carpeta de partidas. Puedes jugar sin conexión. Si 
 ## Publicar desde este repositorio
 
 1. Modifica el juego y comprueba los cambios.
-2. Cambia `version.txt`, por ejemplo a `1.10.1`. Debe subir respecto a la versión publicada.
+2. Cambia `version.txt`, por ejemplo a `1.11.1`. Debe subir respecto a la versión publicada.
 3. Escribe las novedades en `RELEASE-NOTES.md`.
 4. Guarda los cambios con un commit y súbelos a `main`.
 5. Crea y sube la etiqueta correspondiente:
 
 ```powershell
 git add game desktop tests .github README.md ACTUALIZACIONES.md RELEASE-NOTES.md LEEME.txt PROYECTO.txt version.txt
-git commit -m "Preparar Digibonk 1.10.1"
+git commit -m "Preparar Digibonk 1.11.1"
 git push origin main
-git tag v1.10.1
-git push origin v1.10.1
+git tag v1.11.1
+git push origin v1.11.1
 ```
 
 GitHub Actions ejecutará las pruebas, descargará el SDK oficial de WebView2, compilará ambos ejecutables y publicará una Release con:

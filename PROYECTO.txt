@@ -64,3 +64,13 @@ map-icons.js separa marcadores semánticos del pintado del minimapa.
 shopPurchases es global a la run y migra precios de partidas anteriores.
 La presión de cada portal persiste; las mejoras ganadas dentro no se
 neutralizan ajustando enemigos directamente al daño actual del jugador.
+
+1.11.0: attack-visuals.js sustituye los proyectiles genéricos por geometría
+y texturas procedurales. Usa lotes de instancias con alfa por instancia y
+un presupuesto máximo; su aleatoriedad no consume el RNG de la simulación.
+Las texturas se generan una vez y los efectos se reutilizan entre fotogramas.
+shaderTime anima el agua; los efectos mueren con sus entidades/eventos.
+La revisión de técnicas migra firmas conservando rangos. Los datos viejos
+siguen siendo compatibles con las nuevas definiciones de ataques.
+Referencias de técnicas: enciclopedia oficial de Digimon (digimon.net).
+Las animaciones, geometrías y texturas de los ataques son originales.

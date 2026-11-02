@@ -1,11 +1,11 @@
-# Digibonk 1.10.0
+# Digibonk 1.11.0
 
-- Minimapa con iconos distintos para cofres, tiendas, descansos, santuarios, portales y torres. El tipo de lugar ya no depende del color.
-- Botón para ampliar el mapa y consultar la leyenda completa.
-- La tienda siempre ofrece tres mejoras útiles de atributos para esta partida, aunque ya tengas todas las técnicas. Precios crecientes compartidos entre puestos.
-- Inicio más suave: menor densidad, daño y velocidad iniciales, sin élites durante los primeros 45 segundos.
-- Portales con oleadas más exigentes según nivel, tiempo acumulado y compras al entrar. Esperar fuera aumenta su dificultad.
-- Reentrar tras mejorar fuera actualiza la presión de los enemigos pendientes sin restaurarles el porcentaje de vida perdido.
-- Mayor experiencia y monedas por enemigos de portal para recompensar el riesgo.
+- Rehechos los efectos de ataque: olas con cresta, espuma y salpicaduras; fuego con lenguas, brasas y estela; hielo y niebla; relámpagos; misiles con escape; flechas y luz sagrada; murciélagos, pétalos y garras.
+- Catorce técnicas nuevas, incluyendo Fuerza Terra, Destructor Giga, Aliento Cocytus, Torpedo arpón, Puño del cielo, Flecha celestial, Electrochoque, Cañón floral y Sable real.
+- Cuarenta técnicas en total. Varias formas tienen una técnica característica propia en lugar de heredar siempre el último ataque genérico de su familia.
+- Las formas avanzadas de partidas anteriores reciben la técnica característica actualizada cuando existe un hueco o una técnica de la familia que actualizar, conservando el rango y las técnicas de apoyo.
+- Con cuatro técnicas también pueden aparecer reemplazos de la misma familia al subir de nivel; la tarjeta lo indica.
+- Los proyectiles enemigos usan efectos acordes al Digimon, manteniendo sus señales de peligro y la opacidad independiente.
+- Los efectos se agrupan para limitar el coste de dibujo y respetan los controles de opacidad.
 
-Abre **Digibonk.exe** de la versión 1.9.0 o posterior para actualizar automáticamente. También puedes descargar el ZIP completo, extraer todos sus archivos y abrir el lanzador. Las partidas y los ajustes se conservan.
+Abre **Digibonk.exe** para actualizar. Las partidas, el inventario, las monedas y los ajustes se conservan.

@@ -92,3 +92,10 @@ Los efectos de skill-effects.js son dibujos originales de Canvas, sin recursos e
 ## Digibonk
 Esta edición reutiliza 216 atlas de Digimon y 8 atlas de huevos del proyecto Digibruto. El motor de supervivencia, interfaz y escenario 3D son propios de Digibonk. Three.js 0.187.0 se distribuye bajo licencia MIT (game/vendor/three-LICENSE.txt). No incluye cuentas ni datos de Digibruto.
 
+
+## Efectos de ataques (1.11.0)
+Las llamas, espuma, olas, niebla, energía y geometrías de proyectiles se han
+creado para este proyecto mediante Canvas y Three.js. No son capturas de
+animaciones de juegos comerciales. Los nombres se adaptan al español para
+este fan game. Referencias: [WarGreymon](https://digimon.net/reference_en/detail.php?directory_name=wargreymon)
+y [enciclopedia oficial](https://digimon.net/reference_en/).
