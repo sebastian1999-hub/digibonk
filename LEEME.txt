@@ -1,0 +1,186 @@
+DIGIBONK 1.6 — PC / WINDOWS
+
+Abre Digibonk.exe desde su carpeta. Mantén junto al ejecutable las DLL y la carpeta game.
+Si lo recibes en ZIP, extrae TODO antes de abrirlo.
+Windows 10/11 de 64 bits, .NET Framework 4.8, WebView2 Runtime y gráficos compatibles con WebGL 2.
+WebView2 oficial, si falta: https://developer.microsoft.com/microsoft-edge/webview2/
+
+EL JUEGO
+Elige uno de doce huevos. Nace un Digimon Bebé I y empieza una run de supervivencia.
+Los ataques son automáticos. Derrota rivales, recoge cristales EXP y elige mejoras al subir de nivel.
+En los niveles 3, 6, 12, 20 y 30 aparecen ramas de digievolución: Bebé II, Rookie, Champion, Ultimate y Mega.
+Las rutas se basan en las de World Championship y se filtran para permitir llegar hasta Mega.
+La partida continúa después de la última forma: resiste lo máximo posible y suma puntos.
+Puedes llevar cuatro técnicas automáticas. La forma nueva aporta una técnica característica.
+Cofres, santuarios, hogueras y Wizardmon recompensan la exploración.
+Cada 90 segundos aparece un invasor. Evita sus proyectiles y los círculos rojos del suelo.
+
+CONTROLES
+WASD / flechas: moverte. También puedes hacer clic en el terreno.
+Espacio: esquiva con salto corto, con recarga.
+E: interactuar. Q: habilidad de evolución. La cámara permanece fija.
+1 / 2 / 3: elegir una mejora o rama de evolución.
+Esc / P: pausar. F11: pantalla completa.
+El juego se pausa al cambiar de ventana. Pulsa Continuar al regresar.
+
+GUARDADO
+La run se guarda automáticamente cada cinco segundos y al pausar/cerrar normalmente.
+Puedes guardar y volver al menú para continuar después.
+Partidas y récords LOCALES en %LOCALAPPDATA%\Digibonk\UserData.
+Puedes jugar sin cuenta ni Internet, pero la clasificación online requiere conexión.
+Usa el mismo Supabase y las cuentas privadas de Digibruto. Sus partidas no se modifican.
+Las mejoras de una run se reinician al escoger otro huevo. Los récords se conservan.
+
+RECURSOS
+Personajes y sprites: Digimon World Championship, titulares originales Bandai Namco / Epics.
+Consulta CREDITOS-SPRITES.md. Escenario, interfaz, efectos y código de Digibonk son originales.
+Three.js se incluye localmente con licencia MIT en game/vendor/three-LICENSE.txt.
+WebView2 conserva su licencia en WebView2-LICENSE.txt.
+Proyecto fan privado y no comercial. Ejecutable sin certificado de firma comercial.
+
+ACTUALIZACION 1.1.0
+Fragmentos de EXP más grandes, con halo cian (dorado: gran cantidad; coral: curación).
+Ataques con núcleo, estela elemental, anillos e impactos de partículas.
+Enemigos más resistentes, rápidos y numerosos con el tiempo; élites más frecuentes.
+Bonificaciones de evolución y técnicas reducidas para mantener la presión.
+Las partidas anteriores son compatibles; sus mejoras ya obtenidas se conservan.
+Para evaluar la nueva curva de dificultad, empieza una partida nueva.
+
+MUSICA
+La banda sonora incluida es una composición original de aventura digital.
+Puedes activar/desactivar música y efectos por separado desde la barra superior.
+En Controles puedes regular el volumen o elegir un archivo de audio de tu PC,
+por ejemplo una canción de Digimon que tengas. Esa selección dura esta sesión;
+no se copia al juego ni se incluye al compartir el ZIP. La música se pausa
+al pausar el juego o cambiar de ventana. No incluye grabaciones de Digimon.
+ACTUALIZACION 1.2.0
+Navegación de enemigos mediante rutas compartidas alrededor de árboles, rocas y lagos.
+Los enemigos mantienen un destino intermedio hasta rodear el obstáculo, evitando
+quedarse oscilando contra él. Las colisiones siguen activas.
+Mapa con vegetación más variada, textura de terreno, tonos por zonas, orillas,
+juncos, plazas de piedra y montañas en el horizonte.
+Retratos y animaciones de selección/derrota ajustados a la anchura y altura del
+recuadro, con margen para los sprites especialmente anchos.
+
+CUENTA Y CLASIFICACION ONLINE (1.3.0)
+En la pantalla de inicio, entra con tu usuario de Digibruto (sin correo) y su contraseña.
+No hay registro público. Las ocho cuentas existentes del grupo ya están autorizadas.
+La clasificación muestra el mejor récord de cada jugador, su Digimon y duración.
+Se actualiza al terminar, al pulsar Actualizar y periódicamente en el menú.
+Inicia sesión ANTES de escoger huevo: las partidas de invitado y de versiones
+anteriores no se importan a la clasificación. El envío se hace al terminar la run.
+Si falla Internet, el resultado queda pendiente en este PC hasta volver a conectar
+con esa misma cuenta. No cierres sesión para cambiar a otro jugador antes de
+guardar y volver al menú. Cada cuenta tiene partidas y récords locales separados.
+El progreso de una run se guarda en este ordenador; Supabase almacena el mejor
+resultado compartido, no la partida completa.
+Copas redondeadas con sombreado suave en los árboles de copa ancha.
+
+ACTUALIZACION 1.3.1
+Eliminadas las esferas superpuestas de los arboles. Las copas conservan sus dos niveles conicos y proporciones originales.
+
+
+RELIQUIAS Y COMPANEROS (1.4.0)
+Los cofres de 15 bits ahora dan tesoros propios, distintos de subir de nivel.
+Elige una recompensa del cofre o cierra sin elegir (el cofre queda consumido).
+Se ofrecen hasta dos reliquias y un compañero, según tu equipo disponible.
+Hasta cuatro reliquias a la vez, de rango máximo 3. Los duplicados mejoran.
+Puedes reunir hasta tres compañeros distintos; los nuevos se suman al grupo.
+Si no hay recompensas disponibles, puedes cerrar el cofre igualmente.
+Los compañeros no ocupan huecos de técnica, no reciben daño ni evolucionan.
+Terriermon ataca; Salamon cura; Hagurumon atrae experiencia.
+Las reliquias y el compañero duran esta run y se guardan al pausar o cerrar.
+Las partidas anteriores siguen siendo compatibles y empiezan sin equipo.
+Botón Equipo: consulta efectos y rangos. También aparecen abajo a la izquierda.
+Ejemplos de combinaciones:
+- Imán de bolsillo + Botas de choque: esquivar, recoger y golpear en movimiento.
+- Cristal de escarcha + probabilidad crítica: controlar las hordas.
+- Marca del cazador + Colmillo depredador + Terriermon: rematar élites e invasores.
+- Coraza de espinas + Batería de emergencia + Salamon: supervivencia.
+El acceso a Supabase y el envío de récords siguen usando las mismas cuentas.
+ACTUALIZACION 1.4.1
+Al elegir una recompensa se conservan las teclas de movimiento mantenidas, se
+liberan las acciones puntuales y se devuelve el foco al escenario. Soltar una
+tecla se reconoce por su código físico, incluso si ha cambiado Shift.
+Las tarjetas y Equipo muestran el efecto, duración y recarga de las técnicas.
+Impulso veloz ahora aumenta la cadencia un 20 %, en lugar de dar crítico.
+Concentración aumenta el crítico; Grito de guerra aumenta el daño.
+Luz reparadora cura más que Pulso vital y mantiene su recarga más larga.
+Los rangos de apoyo aumentan su efecto/duración y reducen la recarga un 2 %
+por rango adicional. La curación sólo se activa con el 80 % de vida o menos.
+
+ESTILOS DE EVOLUCION Y OBJETIVO (1.7.0)
+Desde Rookie, cada familia tiene una pasiva y una acción de estilo en Q.
+Las tarjetas de evolución y Equipo explican la nueva forma de combatir.
+- Vanguardia (Greymon): resiste al quedarse quieto y embiste a las hordas.
+- Cazador (Garurumon): marca presas al moverse y lanza ataques en cadena.
+- Guardián (Angemon): crea un sello que protege, cura y devuelve 3 proyectiles.
+- Controlador (Kabuterimon): planta un jardín que ralentiza y daña a grupos.
+- Artillería (MetalGreymon): gana alcance al pararse y señala un bombardeo.
+- Marea (Gomamon): ignora la ralentización del agua y empuja con una ola.
+La acción propia no ocupa hueco de técnica. El botón Q muestra la recarga;
+no se puede usar durante una elección, pausa o animación de evolución.
+No todos los Digimon poseen un estilo exclusivo: se agrupan por familia,
+con variantes mecánicas como MetalGreymon. Las técnicas siguen siendo distintas.
+
+PORTALES Y TORRES NEGRAS (1.7.0)
+El mapa principal mide 440 x 440, sin caminos. Mantiene edificios y 48 cofres.
+Empieza estable y contiene seis portales: dos por tema (incendio, inundación
+ y fallo digital). Acércate y pulsa E para entrar en un mapa independiente.
+Cada mapa tiene tres oleadas finitas que rompen el escudo de una Torre Negra.
+El minimapa marca la torre con T; su columna de luz ayuda a localizarla.
+Destrúyela con tus ataques automáticos. E cerca permite fijarla como objetivo.
+La torre da 1000 puntos, 100 bits y 60 EXP. Tras su caída vuelves al mapa
+principal y el portal queda cerrado permanentemente.
+Puedes regresar antes con E en el portal verde de entrada: se conservan las
+oleadas, la torre y sus enemigos pendientes. Las estadísticas y equipo se
+comparten entre mapas. La partida guardada conserva también estos estados.
+Al cerrar los seis portales aparece Devimon en el sello central del mapa
+principal. Sus ráfagas se intensifican al perder la mitad de vida. Derrotarlo
+da 5000 puntos, 250 bits y un fragmento de 180 EXP. La partida continúa:
+sigue sobreviviendo para hacer puntos en el modo de récord.
+Las partidas antiguas conservan personaje, estadísticas y equipo, pero
+reinician la misión con los nuevos portales. Para explorar desde el huevo,
+empieza una partida nueva.
+
+ACTUALIZACION 1.5.1
+El acceso acepta un usuario interno o el correo completo de una cuenta autorizada.
+Si la cuenta se creó con Gmail, escribe el correo completo y la contraseña que
+elegiste al crearla. El nombre de la clasificación sigue siendo el del grupo.
+
+ACTUALIZACION 1.8.0
+Abre Ajustes en la barra superior o desde la pausa. Pulsa una asignación y
+presiona la nueva tecla. Cada acción admite una tecla principal y otra
+secundaria; no se permiten duplicados entre acciones. Esc cancela la captura
+y siempre sirve para pausar o cerrar. Supr/Retroceso borra una secundaria.
+Restaurar predeterminados recupera WASD/flechas, Espacio, E, Q y P.
+Los controles se guardan en este ordenador y los avisos muestran tus teclas.
+La experiencia atraída vuela más rápido y sigue persiguiendo al jugador.
+Los proyectiles enemigos tienen núcleo claro, contorno y estela. Las rocas
+volcánicas son claras, con una base marcada. El movimiento se desliza junto
+a obstáculos y las esquivas usan pasos de colisión para no atravesarlos.
+
+Cofres: puedes cerrar sin elegir una recompensa; el cofre y sus 15 bits
+quedan consumidos. Puedes reunir hasta tres compañeros distintos activos
+a la vez: Terriermon ataca, Salamon cura y Hagurumon atrae experiencia.
+Reclutar uno nuevo conserva los anteriores, también al cambiar de mapa.
+
+En Ajustes también puedes regular por separado la opacidad de tus ataques,
+los fragmentos de experiencia y los proyectiles enemigos (0 a 100 %).
+Las estelas, brillos y núcleos respetan cada control. Los valores se guardan
+en este ordenador y se aplican inmediatamente.
+
+HUD: minimapa arriba a la derecha; vida y experiencia abajo a la izquierda.
+Los iconos de corazón, cristal, monedas, espadas y copa identifican cada dato.
+
+ACTUALIZACION 1.9.0
+La recarga de habilidad se muestra con una barra junto al personaje y en
+su panel. El cuadro informativo izquierdo se ha retirado.
+Digibonk.exe es ahora el lanzador: comprueba versiones estables publicadas
+en github.com/sebastian1999-hub/digibonk al abrirse. Una versión validada se
+instala antes de arrancar el juego. Sin conexión o ante un fallo se conserva
+la versión instalada. No se modifican los datos de Supabase ni las partidas.
+Extrae el ZIP completo; conserva Digibonk.exe y Digibonk.Game.exe junto a
+los demás archivos. Abre siempre Digibonk.exe para recibir actualizaciones.
+Los usuarios de versiones anteriores deben instalar 1.9.0 una vez.
+Detalles para publicar: ACTUALIZACIONES.md en el repositorio.

@@ -1,0 +1,24 @@
+# Publish only the game, its build tooling and documentation.
+/*
+!/.gitignore
+!/.github/
+!/game/
+!/desktop/
+!/tests/
+!/supabase/
+!/README.md
+!/ACTUALIZACIONES.md
+!/RELEASE-NOTES.md
+!/LEEME.txt
+!/PROYECTO.txt
+!/CREDITOS-SPRITES.md
+!/version.txt
+**/.env
+**/.env.*
+**/*credentials*
+**/*credenciales*
+**/*.pfx
+**/*.pem
+**/node_modules/
+**/bin/
+**/obj/

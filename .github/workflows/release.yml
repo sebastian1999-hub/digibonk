@@ -1,0 +1,41 @@
+name: Publicar Digibonk para Windows
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar versión
+        shell: pwsh
+        run: |
+          $version=(Get-Content version.txt -Raw).Trim()
+          if($env:GITHUB_REF_TYPE -ne 'tag' -or $env:GITHUB_REF_NAME -ne "v$version"){throw 'Publica desde una etiqueta vX.Y.Z que coincida con version.txt.'}
+      - name: Pruebas de juego
+        run: node --test tests/*.test.cjs
+      - name: Descargar WebView2 SDK
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .build/sdk | Out-Null
+          Invoke-WebRequest 'https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/1.0.4314.35/microsoft.web.webview2.1.0.4314.35.nupkg' -OutFile .build/sdk.zip
+          Expand-Archive .build/sdk.zip .build/sdk -Force
+      - name: Crear ejecutables y paquetes
+        shell: pwsh
+        run: ./desktop/package.ps1 -Repository $env:GITHUB_REPOSITORY -SdkPath "$pwd/.build/sdk"
+      - name: Pruebas del actualizador
+        shell: pwsh
+        run: ./desktop/test-updater.ps1
+      - name: Publicar versión
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version=(Get-Content version.txt -Raw).Trim()
+          gh release create "v$version" "release/Digibonk-PC-$version.zip" release/Digibonk-update.zip release/Digibonk-update.sha256 --verify-tag --title "Digibonk $version" --notes-file RELEASE-NOTES.md

@@ -1,0 +1,60 @@
+DIGIBONK - PROYECTO EDITABLE
+
+El juego está en game/. run-core.js contiene la simulación independiente,
+render3d.js la escena Three.js y game.js los controles, interfaz y guardado.
+
+Para desarrollo: sirve game/ mediante un servidor HTTP local, por ejemplo:
+python -m http.server 4190 --directory game
+
+Pruebas: node --test tests/*.test.cjs
+
+Windows: .NET Framework 4.8 + SDK Microsoft.Web.WebView2 1.0.4314.35.
+Genera el icono con Python y Pillow: python desktop/create-icon.py
+Compila indicando la carpeta del SDK extraído:
+powershell -ExecutionPolicy Bypass -File desktop/build.ps1 -SdkPath C:\ruta\al\sdk
+Resultado: release/Digibonk-PC-1.6.0/
+
+No hace falta npm. La clasificación y el acceso de cuentas requieren Supabase.
+
+cloud-core.js: normalización, resultados y cola por usuario.
+cloud.js: Auth de Supabase, pertenencia al grupo y clasificación.
+supabase/migrations/: esquema aplicado en el proyecto existente.
+La única clave distribuida es publishable. Nunca incluyas service_role o secret.
+Los resultados son comunicados por el cliente; el servidor valida pertenencia,
+identidad, tipos, límites y especies, y conserva el mejor resultado por cuenta.
+No es una simulación autoritativa de combate ni una protección contra manipular
+un cliente local. Las RPC no otorgan acceso a tablas ni guardados de Digibruto.
+
+loot.js: catálogo y límites de las 8 reliquias y 3 compañeros.
+run-core.js: recompensas de cofres y efectos condicionales sin modificar los
+atributos permanentes al equipar. Se conservan los campos de equipo en snapshots.
+El protocolo de récords permanece en 1.3.0 para mantener compatibilidad con las RPC.
+
+world-rules.js: datos de estilos, tipos ambientales y sectorización 3 x 3.
+world-system.js: reglas de corrupción, purificación y acciones de estilo.
+world-visuals.js: presentación Three.js del terreno, señales, nodos y campos.
+La corrupción sólo altera velocidad/peligros, sin cambiar la malla de navegación.
+Los nodos se eligen en posiciones transitables. Texturas y partículas son
+procedurales y deterministas; no requieren descargar recursos externos.
+
+1.6: WORLD=220, sectores de 144 m, misión versión 3. La semilla reparte seis
+sectores corruptos fuera del centro. La purificación es permanente. El estado
+del jefe y sus recompensas se guardan con la partida y no se duplican al cargar.
+El mapa conserva sus hitos y usa navegación de 2 m con llegada sin sobrepasar
+el siguiente punto. La valla se dibuja con instancias para contener el coste
+gráfico del terreno ampliado. Devimon está reservado para el jefe de misión.
+
+1.7.0: portal-system.js separa seis mapas corruptos del mapa principal.
+Snapshots de escena sin referencias recursivas, oleadas finitas, escudo de
+Torre Negra y regreso diferido tras destruirla. El personaje es compartido.
+
+1.8.0: controles configurables (dos teclas por acción, persistencia local),
+E interactúa y Q activa estilo. Cámara fija. Experiencia atraída rápida,
+proyectiles con contraste, rocas volcánicas señaladas y deslizamiento en
+colisiones. Cofres descartables y hasta tres compañeros simultáneos;
+migración de buddy a buddies y posiciones por compañero en cada escena.
+
+1.9.0: version.txt centraliza versiones. Lanzador nativo separado del juego,
+actualizaciones verificadas y activación atómica en LocalAppData/Updates.
+GitHub Actions publica paquetes estables desde etiquetas vX.Y.Z.
+El perfil WebView2 de partidas conserva su ruta y origen anteriores.
