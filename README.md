@@ -10,6 +10,12 @@ Desde la versión 1.9.0, ese ejecutable es el lanzador: comprueba las versiones 
 
 Las partidas, las preferencias y la sesión se mantienen en `%LOCALAPPDATA%\Digibonk\UserData`. El actualizador usa otra carpeta, `%LOCALAPPDATA%\Digibonk\Updates`. Conserva la misma cuenta autorizada de Supabase y sus récords.
 
+## Técnicas y objetos
+
+El catálogo **Técnicas y objetos** muestra las 64 técnicas por familia y etapa y las 28 reliquias, incluidos cinco legendarios únicos. Las técnicas se eligen al subir de nivel, según la forma actual. Puedes llevar cuatro y elegir qué sustituir al aprender una nueva; también puedes conservar las actuales. Las técnicas heredadas siguen funcionando al digievolucionar.
+
+Los cofres cuestan 15 bits y revelan una recompensa mediante un carrusel. Su calidad puede ser común, rara, épica o legendaria. Puedes recogerla o arriesgarla una vez: 60 % de cambiarla por otra de mayor calidad y 40 % de perderla. Las probabilidades disponibles se muestran en pantalla. Los legendarios ocupan un hueco de reliquia y no se duplican; se mantienen cuatro huecos y tres compañeros. Las mejoras pagadas en la tienda usan el mismo carrusel, mantienen el atributo elegido y tienen tres calidades; no se devuelven los bits al perderlas.
+
 ## Controles
 
 | Acción | Predeterminado |

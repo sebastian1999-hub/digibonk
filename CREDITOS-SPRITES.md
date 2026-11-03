@@ -130,4 +130,8 @@ Las texturas de turbulencia, espuma, estelas y ondas de presión, los shaders y 
 
 ## Iconos de objetos · Digimon Heroes!
 
-11 iconos de Items, extraídos por zeak6464: https://www.spriters-resource.com/mobile/digimonheroes/asset/87929/ (consulta: 3 de noviembre de 2026). Arte original: Bandai Namco. Se conservan como PNG transparentes en game/assets/loot. Su asignación a las reliquias de Digibonk es propia del juego; no representa el efecto original de los objetos de Digimon Heroes.
+31 iconos de Items, extraídos por zeak6464: https://www.spriters-resource.com/mobile/digimonheroes/asset/87929/ (consulta: 3 de noviembre de 2026). Arte original: Bandai Namco. Se conservan como PNG transparentes en game/assets/loot. Su asignación a las reliquias de Digibonk es propia del juego; no representa el efecto original de los objetos de Digimon Heroes.
+
+## Referencia de técnicas
+
+La ampliación de técnicas toma como referencia las familias y nombres de Digimon World: Next Order, consultados en https://nhoko.xxxxxxxx.jp/nx-od-skill.html y https://enjoi7.sakura.ne.jp/digimonworld-neo/waza_list.html el 3 de noviembre de 2026. Las reglas para el modo supervivencia y todos sus efectos visuales mediante geometría, partículas y materiales son implementaciones propias; no se han extraído animaciones de Next Order.

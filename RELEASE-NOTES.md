@@ -1,3 +1,14 @@
+# Digibonk 1.15.0
+
+- 28 objetos en cofres (20 nuevos): crítico, cadencia, daño, vida, área, armadura, regeneración, movimiento, recogida, experiencia y efectos al esquivar, hacer críticos o derrotar enemigos.
+- Cinco legendarios únicos: Digitama del renacer, Fragmento de Apocalymon, Reloj de Clockmon, Singularidad digital y Corazón de tormenta. Tienen efectos propios, recargas y protección frente a activaciones recursivas.
+- Nueva calidad legendaria en cofres. La mejora arriesgada sigue teniendo 60 % de éxito y 40 % de quedarse sin premio; puede alcanzar legendario si hay un hueco disponible. Las compras de atributos conservan tres calidades.
+- 24 técnicas nuevas inspiradas en las familias de Next Order; 64 técnicas en total. Conos, columnas, meteoritos, lluvia, hielo, aurora, tornados, raíces, veneno, sombras, rayos sagrados y efectos mecánicos con animaciones propias.
+- Veneno y ralentización reales; áreas retardadas que se conservan con la escena y no atacan a través de portales.
+- Al subir de nivel se ofrece al menos una técnica nueva si hay alguna compatible. Se pueden combinar ataques de la misma familia en huecos separados. Si ya llevas cuatro técnicas, eliges cuál sustituir o conservas las actuales.
+- Catálogo Técnicas y objetos con familias, etapas, efectos, recargas y equipo actual.
+- Se conserva la dificultad progresiva de portales de 1.14.2: primer portal más accesible, presión creciente con cada portal cerrado.
+
 # Digibonk 1.14.2
 
 - Primer portal más accesible: oleadas base de 18, 28 y 40 enemigos, menos élites y enemigos a distancia, proyectiles más lentos y menor resistencia y daño.
