@@ -11,6 +11,13 @@ $out=Join-Path $project "release\Digibonk-PC-$version"
 $build=Join-Path $project '.build'
 New-Item -ItemType Directory -Force "$out\game",$build | Out-Null
 Copy-Item "$project\game\*" "$out\game" -Recurse -Force
+$homePath=Join-Path $out 'game\index.html'
+$homeHtml=Get-Content -LiteralPath $homePath -Raw -Encoding UTF8
+$versionPattern='(<span id="build-version" class="build-version">)[^<]*'
+if(![regex]::IsMatch($homeHtml,$versionPattern)){throw 'Falta el indicador de versión en el inicio.'}
+$homeHtml=[regex]::Replace($homeHtml,$versionPattern,{param($match) $match.Groups[1].Value+"Versión $version"})
+[System.IO.File]::WriteAllText($homePath,$homeHtml,(New-Object System.Text.UTF8Encoding($false)))
+
 Copy-Item "$sdk\lib\net462\Microsoft.Web.WebView2.Core.dll","$sdk\lib\net462\Microsoft.Web.WebView2.WinForms.dll","$sdk\runtimes\win-x64\native\WebView2Loader.dll" $out
 Copy-Item "$sdk\LICENSE.txt" "$out\WebView2-LICENSE.txt"
 Copy-Item "$sdk\NOTICE.txt" "$out\WebView2-NOTICE.txt"

@@ -1,3 +1,7 @@
+# Digibonk 1.15.1
+
+- Versión visible debajo del nombre del juego en la pantalla de inicio. El empaquetado la genera a partir de version.txt, igual que los ejecutables, para identificar la versión que estás jugando.
+
 # Digibonk 1.15.0
 
 - 28 objetos en cofres (20 nuevos): crítico, cadencia, daño, vida, área, armadura, regeneración, movimiento, recogida, experiencia y efectos al esquivar, hacer críticos o derrotar enemigos.
