@@ -1,3 +1,13 @@
+# Digibonk 1.17.0
+
+- Cuenta atrás visible de 3 minutos para entrar en un portal. Se suspende dentro y se renueva solo al purificar una Torre Negra. Salir sin cerrar no reinicia el plazo.
+- Llegar tarde potencia a los enemigos desde ×2 de vida y ×1,5 de daño; cuanto más se demora la entrada, más aumenta la penalización.
+- La dificultad global acelera con el tiempo, incluso dentro de portales y en supervivencia después de Devimon. Se ajustan los enemigos presentes conservando su porcentaje de vida restante.
+- Dentro de un portal la presión temporal sigue creciendo, pero el nivel de entrada y las etapas enemigas se mantienen hasta reentrar. Se conservan los límites de población y velocidad.
+- Arriesgar una recompensa tiene ahora 20 % de éxito y 80 % de cofre vacío. Se aplica también a las mejoras compradas; la probabilidad y el resultado se guardan antes de la animación. Las tiradas antiguas ya resueltas se conservan.
+- El carrusel muestra muchos más cofres vacíos al arriesgar, acorde con la nueva probabilidad.
+- El reloj se conserva al guardar y se detiene en pausa, menús y cargas. Las partidas anteriores reciben un primer plazo de 3 minutos.
+
 # Digibonk 1.16.0
 
 - Once estados para enemigos: quemadura, veneno, sangrado, escarcha, congelación, parálisis, empapado, maldición, fisura de datos, raíces y debilidad.

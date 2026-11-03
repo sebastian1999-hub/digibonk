@@ -14,11 +14,17 @@ Las partidas, las preferencias y la sesión se mantienen en `%LOCALAPPDATA%\Digi
 
 El catálogo **Técnicas y objetos** muestra las 64 técnicas por familia y etapa y las 28 reliquias, incluidos cinco legendarios únicos. Las técnicas se eligen al subir de nivel, según la forma actual. Puedes llevar cuatro y elegir qué sustituir al aprender una nueva; también puedes conservar las actuales. Las técnicas heredadas siguen funcionando al digievolucionar.
 
-Los cofres cuestan 15 bits y revelan una recompensa mediante un carrusel. Su calidad puede ser común, rara, épica o legendaria. Puedes recogerla o arriesgarla una vez: 60 % de cambiarla por otra de mayor calidad y 40 % de perderla. Las probabilidades disponibles se muestran en pantalla. Los legendarios ocupan un hueco de reliquia y no se duplican; se mantienen cuatro huecos y tres compañeros. Las mejoras pagadas en la tienda usan el mismo carrusel, mantienen el atributo elegido y tienen tres calidades; no se devuelven los bits al perderlas.
+Los cofres cuestan 15 bits y revelan una recompensa mediante un carrusel. Su calidad puede ser común, rara, épica o legendaria. Puedes recogerla o arriesgarla una vez: 20 % de cambiarla por otra de mayor calidad y 80 % de perderla. Las probabilidades disponibles se muestran en pantalla. Los legendarios ocupan un hueco de reliquia y no se duplican; se mantienen cuatro huecos y tres compañeros. Las mejoras pagadas en la tienda usan el mismo carrusel, mantienen el atributo elegido y tienen tres calidades; no se devuelven los bits al perderlas.
 
 ## Estados elementales
 
 Las técnicas pueden aplicar estados sobre enemigos. El catálogo **Técnicas y objetos → Estados** explica los once tipos; cada técnica muestra probabilidad y duración. El daño periódico no hace críticos ni acumula cargas del mismo estado. Empapado potencia una descarga eléctrica y después desaparece. Los controles tienen una recuperación compartida para evitar bloqueos continuos; los jefes resisten esos controles y las torres son inmunes. Los iconos sobre los Digimon enemigos muestran los estados activos y el tiempo restante.
+
+## Presión y portales
+
+Dispones de 3 minutos de partida para entrar en un portal. Entrar suspende el plazo; salir sin cerrarlo reanuda el tiempo que quedaba. Al destruir la Torre Negra comienza un nuevo plazo de 3 minutos. Si llegas tarde, los enemigos reciben al menos el doble de vida y un 50 % más de daño, y la penalización aumenta mientras sigas esperando. Un portal abierto tarde conserva esa corrupción al volver.
+
+La dificultad general acelera con los minutos transcurridos, también dentro de los portales y después de vencer a Devimon. Cerrar portales no reinicia el tiempo global. Los enemigos presentes también se ajustan manteniendo su porcentaje de vida restante. Los menús, la pausa y las cargas detienen el reloj. Las partidas anteriores a esta actualización reciben un primer plazo de 3 minutos al continuar.
 
 ## Controles
 
