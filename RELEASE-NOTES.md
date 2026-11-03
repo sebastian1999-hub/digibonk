@@ -1,3 +1,13 @@
+# Digibonk 1.14.0
+
+- Cofres con carrusel animado y recompensa de calidad común, rara o épica. La calidad determina el rango de la reliquia.
+- Una oportunidad de cambiar la recompensa: 60 % de obtener otra de mayor calidad y 40 % de quedarse sin premio. Se muestran las probabilidades antes de arriesgar.
+- El resultado queda guardado antes de la animación y se conserva al continuar.
+- Iconos originales de Digimon Heroes para objetos y recursos, con atribución en CREDITOS-SPRITES.md.
+- Se mantienen cuatro reliquias, tres compañeros y la opción de cerrar sin recoger.
+
+Abre Digibonk.exe para actualizar.
+
 # Digibonk 1.13.0
 
 - Fuego con núcleo incandescente y turbulencia animada; Fuerza Terra con filamentos de plasma alrededor del núcleo.

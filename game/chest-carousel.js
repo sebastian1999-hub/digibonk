@@ -1,0 +1,19 @@
+export class ChestCarousel {
+ constructor(host){this.host=host;this.key='';this.animation=null;}
+ clear(){this.animation?.cancel();this.animation=null;this.key='';this.host.replaceChildren();}
+ show(choice,callbacks,portraits){const roll=choice.roll,key=roll.id+':'+roll.revision+':'+roll.phase;if(key===this.key)return;this.clear();this.key=key;
+ const winner=choice.cards[0]||roll.pool.find(c=>c.type==='empty'),spinning=roll.phase==='spinning';
+ const viewport=document.createElement('div'),track=document.createElement('div');viewport.className='chest-window';track.className='chest-track';track.setAttribute('aria-hidden','true');viewport.append(track);this.host.append(viewport);
+ let seed=0;for(const ch of roll.id+roll.revision)seed=(seed*31+ch.charCodeAt(0))>>>0;const pick=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return roll.pool[seed%roll.pool.length];};
+ let target;for(let i=0;i<38;i++){const card=i===32?winner:pick(),tile=document.createElement('article');tile.className='chest-tile quality-'+(card.quality||0);if(card.species){const canvas=document.createElement('canvas');canvas.width=180;canvas.height=140;tile.append(canvas);portraits.push({canvas,species:card.species});}else{const img=document.createElement('img');img.src=card.iconPath||'assets/loot/empty.png';img.alt='';tile.append(img);}const name=document.createElement('strong'),quality=document.createElement('small');name.textContent=card.title;quality.textContent=card.rarity;tile.append(name,quality);track.append(tile);if(i===32)target=tile;}
+ const status=document.createElement('div');status.className='chest-result';status.setAttribute('aria-live','polite');const heading=document.createElement('h3'),description=document.createElement('p');heading.textContent=spinning?'Descifrando cofre…':winner.title;description.textContent=spinning?'El tiempo está detenido.':winner.text||'Has perdido la recompensa al intentar mejorarla.';status.append(heading,description);this.host.append(status);
+ const odds=document.createElement('p');odds.className='chest-odds';odds.textContent=roll.riskUsed?'Intento de mejora: 60 % recompensa superior · 40 % cofre vacío':roll.odds.map(o=>DigibonkChest.qualities[o.quality].name+' '+Math.round(o.chance*100)+' %').join(' · ');this.host.append(odds);
+ const buttons=document.createElement('div');buttons.className='chest-actions';this.host.append(buttons);const button=(text,fn,primary=false)=>{const b=document.createElement('button');b.textContent=text;b.disabled=spinning;b.onclick=fn;if(primary)b.className='primary';buttons.append(b);};
+ if(choice.cards.length)button('1 · Quedármelo',()=>callbacks.claim(winner.id),true);
+ if(callbacks.canRisk())button('2 · Arriesgar por calidad superior',callbacks.risk);
+ button(choice.cards.length?'Cerrar sin recoger':'Continuar',callbacks.discard);
+ if(!roll.riskUsed&&callbacks.canRisk()){const warning=document.createElement('p');warning.className='chest-warning';warning.textContent='Cambias esta recompensa por otra de mayor calidad: 60 % de éxito y 40 % de perderla. Solo un intento por cofre.';this.host.append(warning);}else if(!spinning&&winner.quality===3){const note=document.createElement('p');note.className='chest-warning';note.textContent='Épico · calidad máxima';this.host.append(note);}
+ const center=()=>viewport.clientWidth/2-target.offsetLeft-target.offsetWidth/2;
+ requestAnimationFrame(()=>{if(this.key!==key)return;const end=center();if(!spinning){track.style.transform='translateX('+end+'px)';return;}this.animation=track.animate([{transform:'translateX(0px)'},{transform:'translateX('+end+'px)'}],{duration:matchMedia('(prefers-reduced-motion: reduce)').matches?180:3600,easing:'cubic-bezier(.12,.72,.12,1)',fill:'forwards'});this.animation.finished.then(()=>{if(this.key===key)callbacks.reveal(roll.id+':'+roll.revision);}).catch(()=>{});});
+ }
+}

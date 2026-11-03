@@ -127,3 +127,7 @@ Las hojas originales se conservan fuera del repositorio. `desktop/prepare-additi
 
 ## Segunda pasada de efectos (1.13.0)
 Las texturas de turbulencia, espuma, estelas y ondas de presión, los shaders y los filamentos son código procedural original de Digibonk (Canvas / Three.js). No se han añadido gráficos externos ni modificado los sprites de personajes en esta versión. Las estelas son datos de renderizado limitados y no forman parte del estado guardado ni del generador aleatorio del combate.
+
+## Iconos de objetos · Digimon Heroes!
+
+11 iconos de Items, extraídos por zeak6464: https://www.spriters-resource.com/mobile/digimonheroes/asset/87929/ (consulta: 3 de noviembre de 2026). Arte original: Bandai Namco. Se conservan como PNG transparentes en game/assets/loot. Su asignación a las reliquias de Digibonk es propia del juego; no representa el efecto original de los objetos de Digimon Heroes.

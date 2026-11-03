@@ -14,5 +14,6 @@
   {id:'Salamon',name:'Salamon',role:'Sanador',description:'Recupera el 6 % de tu vida máxima cada 14 s si estás herido.',skill:'heal',cooldown:14},
   {id:'Hagurumon',name:'Hagurumon',role:'Recolector',description:'Cada 9 s atrae los fragmentos situados a 14 metros de él.',skill:'focus',cooldown:9}
  ];
- const api={relics,companions,maxRelics:4,maxRank:3};if(typeof module!=='undefined')module.exports=api;else root.DigibonkLoot=api;
+ const icon=id=>'assets/loot/'+id+'.png';
+ const api={relics,companions,icon,maxRelics:4,maxRank:3};if(typeof module!=='undefined')module.exports=api;else root.DigibonkLoot=api;
 })(typeof window!=='undefined'?window:globalThis);
