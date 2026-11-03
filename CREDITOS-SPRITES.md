@@ -124,3 +124,6 @@ Fuentes originales: **Digimon World DS**, Bandai Namco / BEC, hojas públicas de
 | WarGreymon (retratos) | [48613](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48613/) | A.J. Nitro y Dazz |
 
 Las hojas originales se conservan fuera del repositorio. `desktop/prepare-additional-sprites.py` extrae las celdas revisadas, elimina únicamente el color plano de fondo y crea atlas transparentes sin redibujar los píxeles. Cada especie nueva dispone de cinco poses grandes de combate; los ciclos y acciones del juego reutilizan esas poses. Los tres retratos detallados se usan solo en Canvas y conservan las animaciones de Championship para el escenario. Se precalculan las cajas de transparencia de todos los atlas y se omite un fotograma vacío de Garudamon. La escala usa la altura de reposo como referencia para evitar encogimientos al atacar.
+
+## Segunda pasada de efectos (1.13.0)
+Las texturas de turbulencia, espuma, estelas y ondas de presión, los shaders y los filamentos son código procedural original de Digibonk (Canvas / Three.js). No se han añadido gráficos externos ni modificado los sprites de personajes en esta versión. Las estelas son datos de renderizado limitados y no forman parte del estado guardado ni del generador aleatorio del combate.
