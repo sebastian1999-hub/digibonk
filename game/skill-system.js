@@ -1,5 +1,6 @@
 (function(root){
  'use strict';
+ const STATUS_RULES=typeof module!=='undefined'&&module.exports?require('./status-rules.js'):root.DigibonkStatusRules;
  const list=[
  ['bubble','Burbujas','neutral','damage',-1,6,180,4,.65,'#c9e5d6'],['fireball','Llama pimienta','fire','damage',1,12,260,5,1.05,'#f1a15e'],['mega-flame','Mega llama','fire','damage',2,23,300,7,1.65,'#ef844c'],['inferno','Infierno','fire','damage',3,32,340,10,2.05,'#df6b49'],
  ['blue-fire','Fuego azul','ice','damage',1,12,260,5,1.05,'#8bcfdf'],['ice-breath','Aliento helado','ice','damage',2,22,310,7,1.6,'#b1dfe7'],['air-shot','Disparo de aire','wind','damage',1,10,280,4.5,1,'#e3e8b2'],['cyclone','Ciclón','wind','damage',2,22,320,7,1.55,'#dce3be'],
@@ -43,5 +44,5 @@
  function equipped(p){sync(p);return p.equippedSkills.map(id=>skills[id]).filter(Boolean);}
  function afterBattle(p,observed=[]){sync(p);p.battlesCompleted++;const news=[];for(const id of new Set(observed)){if(p.learnedSkills.includes(id)||!compatible(p,skills[id]))continue;p.skillResearch[id]=(p.skillResearch[id]||0)+1;if(p.skillResearch[id]>=2){const move=learn(p,id);if(move)news.push(move);}}if(p.battlesCompleted%3===0){const move=available(p).find(s=>!p.learnedSkills.includes(s.id));if(move){const learned=learn(p,move.id);if(learned)news.push(learned);}}return news;}
  function learnTechnique(p,id){sync(p);return learn(p,id);}
- const api={skills,nextOrder,familyNames,patternNames,pose,signature,signatureIds,family,compatible,available,sync,equip,equipped,afterBattle,learnTechnique};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.SkillSystem=api;
+ const api={skills,statusText:STATUS_RULES.describe,nextOrder,familyNames,patternNames,pose,signature,signatureIds,family,compatible,available,sync,equip,equipped,afterBattle,learnTechnique};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.SkillSystem=api;
 })(typeof window!=='undefined'?window:globalThis);

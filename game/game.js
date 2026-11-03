@@ -86,9 +86,9 @@ function openGear(){specialQueued=false;if(active&&!run.s.done){paused=true;save
 $('#gear-toggle').onclick=openGear;
 let bookMode='techniques',bookWasPaused=false;
 for(const [id,name] of Object.entries(SkillSystem.familyNames)){const option=document.createElement('option');option.value=id;option.textContent=name;$('#book-family').append(option);}
-function refreshBook(){$('#book-family-label').hidden=bookMode!=='techniques';$('#book-techniques').classList.toggle('primary',bookMode==='techniques');$('#book-relics').classList.toggle('primary',bookMode==='relics');renderBook($('#book-grid'),run,bookMode,$('#book-family').value);}
+function refreshBook(){$('#book-family-label').hidden=bookMode!=='techniques';$('#book-techniques').classList.toggle('primary',bookMode==='techniques');$('#book-relics').classList.toggle('primary',bookMode==='relics');$('#book-states').classList.toggle('primary',bookMode==='states');renderBook($('#book-grid'),run,bookMode,$('#book-family').value);}
 $('#book-toggle').onclick=()=>{bookWasPaused=paused;if(active&&!run.s.done){paused=true;save();}keys.clear();specialQueued=false;bookMode='techniques';$('#book-family').value=run?SkillSystem.family(run.s.player.species):'all';refreshBook();$('#book-dialog').showModal();};
-$('#book-techniques').onclick=()=>{bookMode='techniques';refreshBook();};$('#book-relics').onclick=()=>{bookMode='relics';refreshBook();};$('#book-family').onchange=refreshBook;
+$('#book-techniques').onclick=()=>{bookMode='techniques';refreshBook();};$('#book-relics').onclick=()=>{bookMode='relics';refreshBook();};$('#book-states').onclick=()=>{bookMode='states';refreshBook();};$('#book-family').onchange=refreshBook;
 $('#book-dialog').addEventListener('close',()=>{paused=bookWasPaused;keys.clear();moveTarget=null;specialQueued=false;if(active)$('#world').focus({preventScroll:true});});
 
 

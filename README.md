@@ -16,6 +16,10 @@ El catálogo **Técnicas y objetos** muestra las 64 técnicas por familia y etap
 
 Los cofres cuestan 15 bits y revelan una recompensa mediante un carrusel. Su calidad puede ser común, rara, épica o legendaria. Puedes recogerla o arriesgarla una vez: 60 % de cambiarla por otra de mayor calidad y 40 % de perderla. Las probabilidades disponibles se muestran en pantalla. Los legendarios ocupan un hueco de reliquia y no se duplican; se mantienen cuatro huecos y tres compañeros. Las mejoras pagadas en la tienda usan el mismo carrusel, mantienen el atributo elegido y tienen tres calidades; no se devuelven los bits al perderlas.
 
+## Estados elementales
+
+Las técnicas pueden aplicar estados sobre enemigos. El catálogo **Técnicas y objetos → Estados** explica los once tipos; cada técnica muestra probabilidad y duración. El daño periódico no hace críticos ni acumula cargas del mismo estado. Empapado potencia una descarga eléctrica y después desaparece. Los controles tienen una recuperación compartida para evitar bloqueos continuos; los jefes resisten esos controles y las torres son inmunes. Los iconos sobre los Digimon enemigos muestran los estados activos y el tiempo restante.
+
 ## Controles
 
 | Acción | Predeterminado |

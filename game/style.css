@@ -46,3 +46,5 @@
 .choice-shell{max-height:94vh;overflow-y:auto;padding:18px 12px;scrollbar-width:thin}#choice-cards:has(> :nth-child(4)){grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}#choice-cards:has(> :nth-child(4)) .choice-card{min-height:240px}#top-brand>div{flex-wrap:wrap;justify-content:flex-end}@media(max-width:800px){#book-grid{grid-template-columns:1fr 1fr}.book-card{padding:14px}.book-card h3{font-size:16px}}
 
 .build-version{display:inline-block;padding:5px 11px;margin:0 0 8px;border:1px solid #a7c8a35c;border-radius:20px;background:#173d3470;color:#d7e6c7;font-size:12px;font-weight:650;letter-spacing:.6px}
+
+.status-book-note{grid-column:1/-1;font-size:12px;line-height:1.8;padding:14px 18px;border:1px solid #89b5a055;border-radius:12px;background:#132f3455}.status-book-icon{float:right;margin:0 0 10px 10px}

@@ -1,3 +1,14 @@
+# Digibonk 1.16.0
+
+- Once estados para enemigos: quemadura, veneno, sangrado, escarcha, congelación, parálisis, empapado, maldición, fisura de datos, raíces y debilidad.
+- Los ataques muestran su probabilidad, duración y efecto. Los proyectiles, golpes cuerpo a cuerpo y técnicas de área aplican estados al impactar.
+- Agua + electricidad: Empapado potencia una descarga un 25 % y se consume. Maldición y Fisura no suman sus vulnerabilidades: se usa la mayor.
+- Daño periódico sin críticos ni reaplicación recursiva; se refresca el mismo estado sin acumular cargas. Las bajas conservan monedas y experiencia.
+- Congelación y parálisis detienen movimiento y ataques; las raíces permiten atacar. Comparten una protección de 3 s tras el control para impedir bloqueos permanentes.
+- Los jefes convierten controles en escarcha, reciben la mitad del daño periódico y reducen la vulnerabilidad y conducción. Las torres son inmunes.
+- Iconos con temporizador sobre cada enemigo, efectos visuales y pestaña Estados en el catálogo. Los materiales nuevos se preparan durante la carga.
+- Los estados se guardan con cada escena, se detienen durante la pausa y conservan el veneno de partidas anteriores.
+
 # Digibonk 1.15.1
 
 - Versión visible debajo del nombre del juego en la pantalla de inicio. El empaquetado la genera a partir de version.txt, igual que los ejecutables, para identificar la versión que estás jugando.
