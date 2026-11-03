@@ -99,3 +99,28 @@ creado para este proyecto mediante Canvas y Three.js. No son capturas de
 animaciones de juegos comerciales. Los nombres se adaptan al español para
 este fan game. Referencias: [WarGreymon](https://digimon.net/reference_en/detail.php?directory_name=wargreymon)
 y [enciclopedia oficial](https://digimon.net/reference_en/).
+
+
+## Ampliación de World DS (1.12.0)
+
+Fuentes originales: **Digimon World DS**, Bandai Namco / BEC, hojas públicas de [The Spriters Resource](https://www.spriters-resource.com/ds_dsi/dgmnworldds/). Descargadas el 3 de noviembre de 2026. El acceso público no cambia la titularidad de los gráficos.
+
+| Especie | Hoja | Crédito indicado por la hoja |
+|---|---|---|
+| Dorumon | [48420](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48420/) | Mighty Jetters y redblueyellow |
+| Impmon | [48443](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48443/) | A.J. Nitro y redblueyellow |
+| Dorugamon | [48574](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48574/) | redblueyellow |
+| DoruGreymon | [48605](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48605/) | redblueyellow |
+| Myotismon | [48609](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48609/) | redblueyellow |
+| Taomon | [48728](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48728/) | redblueyellow |
+| Beelzemon | [48550](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48550/) | redblueyellow |
+| Dorugoramon | [48710](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48710/) | redblueyellow |
+| Omnimon | [48624](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48624/) | Dazz; ordenado por Mighty Jetters |
+| VenomMyotismon | [48729](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48729/) | redblueyellow |
+| Sakuyamon | [48726](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48726/) | RadSpyro |
+| Seraphimon | [48694](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48694/) | redblueyellow |
+| Agumon (retratos) | [48418](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48418/) | Mighty Jetters y redblueyellow |
+| Renamon (retratos) | [13321](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/13321/) | Yoruichi |
+| WarGreymon (retratos) | [48613](https://www.spriters-resource.com/ds_dsi/dgmnworldds/asset/48613/) | A.J. Nitro y Dazz |
+
+Las hojas originales se conservan fuera del repositorio. `desktop/prepare-additional-sprites.py` extrae las celdas revisadas, elimina únicamente el color plano de fondo y crea atlas transparentes sin redibujar los píxeles. Cada especie nueva dispone de cinco poses grandes de combate; los ciclos y acciones del juego reutilizan esas poses. Los tres retratos detallados se usan solo en Canvas y conservan las animaciones de Championship para el escenario. Se precalculan las cajas de transparencia de todos los atlas y se omite un fotograma vacío de Garudamon. La escala usa la altura de reposo como referencia para evitar encogimientos al atacar.
