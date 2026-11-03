@@ -1,3 +1,10 @@
+# Digibonk 1.14.1
+
+- Las mejoras compradas en la tienda se revelan en el carrusel con calidad común, rara o épica (65/28/7 % cuando están disponibles las tres).
+- Cada calidad multiplica el incremento base por 1, 2 o 3. Se muestra el efecto real respetando los límites de atributos.
+- Se puede arriesgar una vez por otra calidad del mismo atributo: 60 % de éxito y 40 % de perder la compra, sin devolución.
+- Se paga una sola vez; las estadísticas se aplican al recoger y el resultado se conserva al continuar.
+
 # Digibonk 1.14.0
 
 - Cofres con carrusel animado y recompensa de calidad común, rara o épica. La calidad determina el rango de la reliquia.
