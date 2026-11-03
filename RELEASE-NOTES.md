@@ -1,3 +1,10 @@
+# Digibonk 1.14.2
+
+- Primer portal más accesible: oleadas base de 18, 28 y 40 enemigos, menos élites y enemigos a distancia, proyectiles más lentos y menor resistencia y daño.
+- Cada portal cerrado aumenta progresivamente las multitudes, los atributos enemigos, los élites y los refuerzos. El orden de exploración es libre.
+- La primera Torre Negra tiene menos vida y recibe refuerzos más pequeños y espaciados. Se mantiene el ajuste al nivel, tiempo y compras al entrar.
+- Las partidas con un portal activo reciben el nuevo balance al continuar conservando su progreso y el porcentaje de vida restante de enemigos y torre.
+
 # Digibonk 1.14.1
 
 - Las mejoras compradas en la tienda se revelan en el carrusel con calidad común, rara o épica (65/28/7 % cuando están disponibles las tres).
