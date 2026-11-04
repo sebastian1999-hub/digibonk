@@ -1642,6 +1642,7 @@ function loop(now) {
     active && !paused && !document.hidden && !window.DigibonkDesktopHidden && !run?.s.done,
     !active && !document.hidden && !window.DigibonkDesktopHidden && !loading,
     active && !run?.s.realm && !run?.s.done,
+    active && !run?.s.done ? run?.s.realm : null,
   );
   if (!loading) renderer.render(active ? run : null, dt, { menu: !active });
   drawPortraits(now / 1000);

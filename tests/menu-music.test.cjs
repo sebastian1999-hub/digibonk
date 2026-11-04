@@ -74,3 +74,23 @@ test('recordings restart on scene entry but keep their position through pause', 
   m.tick(false, true, false);
   assert.equal(m.menuTrack.currentTime, 0);
 });
+
+test('each portal biome uses its own recording and restarts on entry', async () => {
+  const { Music } = await import(pathToFileURL(require.resolve('../game/music.js')).href);
+  const m = new Music();
+  for (const kind of ['fire', 'flood', 'glitch']) {
+    m.tick(true, false, false, { kind, portalId: kind });
+    assert.equal(m.biomeTracks[kind].paused, false);
+    assert.equal(m.biomeTracks[kind].currentTime, 0);
+    for (const other of ['fire', 'flood', 'glitch'])
+      if (other !== kind) assert.equal(m.biomeTracks[other].paused, true);
+    m.biomeTracks[kind].currentTime = 12;
+    m.tick(false, false, false, { kind, portalId: kind });
+    m.tick(true, false, false, { kind, portalId: kind });
+    assert.equal(m.biomeTracks[kind].currentTime, 12);
+  }
+  m.setVolume(0.15);
+  for (const track of Object.values(m.biomeTracks)) assert.equal(track.volume, 0.15);
+  m.tick(true, false, true, null);
+  for (const track of Object.values(m.biomeTracks)) assert.equal(track.paused, true);
+});

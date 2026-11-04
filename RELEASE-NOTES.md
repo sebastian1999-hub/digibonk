@@ -1,3 +1,7 @@
+## 1.23.3 · Música por bioma
+
+Canciones propias para los biomas volcánico, inundado y corrupto, en bucle, con reinicio al entrar y volumen guardado. Incluye todos los cambios anteriores.
+
 ## 1.23.2 · Música desde el principio
 
 La música del menú y de la isla vuelve a comenzar al entrar en cada escenario. Pausar dentro del mismo mapa conserva la posición. Incluye los banners y el volumen guardado de 1.23.1.

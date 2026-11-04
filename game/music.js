@@ -16,6 +16,16 @@ export class Music {
     this.mapTrack.loop = true;
     this.mapTrack.volume = this.volume;
     this.mapTrack.preload = 'metadata';
+    this.biomeTracks = Object.fromEntries(
+      ['fire', 'flood', 'glitch'].map((id) => {
+        const audio = new window.Audio('assets/music/biome-' + id + '.mp3');
+        audio.loop = true;
+        audio.volume = this.volume;
+        audio.preload = 'metadata';
+        return [id, audio];
+      }),
+    );
+    this.biomeBlocked = false;
     this.mapBlocked = false;
     this.menuBlocked = false;
     document.addEventListener(
@@ -23,10 +33,12 @@ export class Music {
       () => {
         this.menuBlocked = false;
         this.mapBlocked = false;
+        this.biomeBlocked = false;
       },
       { passive: true },
     );
     document.addEventListener('keydown', () => {
+      this.biomeBlocked = false;
       this.mapBlocked = false;
       this.menuBlocked = false;
     });
@@ -52,6 +64,7 @@ export class Music {
     if (this.track) this.track.volume = value;
     this.menuTrack.volume = value;
     this.mapTrack.volume = value;
+    for (const audio of Object.values(this.biomeTracks)) audio.volume = value;
   }
   load(file) {
     this.start();
@@ -95,7 +108,7 @@ export class Music {
     o.start(at);
     o.stop(at + 0.15);
   }
-  tick(playing, menu = false, mainMap = false) {
+  tick(playing, menu = false, mainMap = false, biome = null) {
     if (menu && !this.wasMenu) this.menuTrack.currentTime = 0;
     if (mainMap && !this.wasMainMap) this.mapTrack.currentTime = 0;
     this.wasMenu = menu;
@@ -119,8 +132,25 @@ export class Music {
       if (!this.mapTrack.paused) this.mapTrack.pause();
       this.mapBlocked = false;
     }
+    const biomeAudio = this.biomeTracks[biome?.kind];
+    const biomeKey = biomeAudio ? biome.kind + ':' + (biome.portalId ?? '') : null;
+    if (biomeKey !== this.biomeKey) {
+      if (biomeAudio) biomeAudio.currentTime = 0;
+      this.biomeBlocked = false;
+      this.biomeKey = biomeKey;
+    }
+    const biomeAudible = playing && this.enabled && !this.track && !!biomeAudio;
+    for (const audio of Object.values(this.biomeTracks)) {
+      if (biomeAudible && audio === biomeAudio) {
+        if (audio.paused && !this.biomeBlocked) {
+          this.biomeBlocked = true;
+          void audio.play().catch(() => {});
+        }
+      } else if (!audio.paused) audio.pause();
+    }
+    if (!biomeAudible) this.biomeBlocked = false;
     if (!this.ctx) return;
-    const audible = playing && this.enabled && !mapAudible;
+    const audible = playing && this.enabled && !mapAudible && !biomeAudible;
     this.bus.gain.setTargetAtTime(
       audible && !this.track ? this.volume * 0.6 : 0,
       this.ctx.currentTime,
