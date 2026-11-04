@@ -1,3 +1,7 @@
+## 1.23.4 · Tamaño por fase evolutiva
+
+Los Digimon crecen en cada fase, desde Bebé I hasta Mega. Se aplica al jugador, compañeros y enemigos, con sombras proporcionales y escala corregida según la altura real de los sprites.
+
 ## 1.23.3 · Música por bioma
 
 Canciones propias para los biomas volcánico, inundado y corrupto, en bucle, con reinicio al entrar y volumen guardado. Incluye todos los cambios anteriores.

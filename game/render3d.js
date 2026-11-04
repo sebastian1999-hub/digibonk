@@ -1,3 +1,4 @@
+import { evolutionHeight } from './evolution-scale.js';
 import { drawEnemyStatuses } from './status-visuals.js';
 import { AttackVisuals } from './attack-visuals.js';
 import { WorldVisuals } from './world-visuals.js';
@@ -698,7 +699,7 @@ export class Renderer3D {
     unit.mesh.material.color.set(options.hit ? '#ffd1a0' : options.flash ? '#ffffff' : '#ffffff');
     unit.mesh.material.opacity = options.opacity ?? 1;
     const reference = frame.referenceHeight || frame.h,
-      scale = (size * Math.max(reference, 0.65)) / reference,
+      scale = size / reference,
       w = frame.w * scale,
       h = frame.h * scale;
     unit.mesh.scale.set(w, h, 1);
@@ -711,7 +712,7 @@ export class Renderer3D {
     uv.setXY(2, u0, frame.v0);
     uv.setXY(3, u1, frame.v0);
     uv.needsUpdate = true;
-    unit.shadow.scale.setScalar(options.boss ? 1.5 : 1);
+    unit.shadow.scale.setScalar(Math.max(0.55, size / 3) * (options.boss ? 1.15 : 1));
   }
   pooled(key, type, color) {
     let item = this.visuals.get(key);
@@ -792,7 +793,16 @@ export class Renderer3D {
       if (ring) ring.rotation.z = time * 0.2;
       const poi = this.map.pois.find((p) => p.id === id);
       if (group.visible && poi.species)
-        this.unit('npc-' + id, poi.species, 'idle', poi.x, poi.z + 1.3, 3.8, time, true);
+        this.unit(
+          'npc-' + id,
+          poi.species,
+          'idle',
+          poi.x,
+          poi.z + 1.3,
+          evolutionHeight(C.species.get(poi.species)?.stage),
+          time,
+          true,
+        );
     }
     const fx = s?.evolution,
       fromPhase = fx && fx.left > fx.duration * 0.48,
@@ -823,7 +833,7 @@ export class Renderer3D {
       action,
       p.x,
       p.z,
-      playerEgg ? 2.5 : Math.max(2.5, 2.5 + Math.max(0, p.stage) * 0.55),
+      playerEgg ? 1.6 : evolutionHeight(p.stage),
       fx ? (fx.duration - fx.left) * 2 : s?.time - p.attackAt < 0.55 ? s.time - p.attackAt : time,
       left,
       { egg: playerEgg, jump, opacity: p.invulnerable > 0 && Math.floor(time * 18) % 2 ? 0.55 : 1 },
@@ -836,7 +846,7 @@ export class Renderer3D {
         s.done ? 'happy' : cast ? 'attack2' : buddy.action || 'idle',
         buddy.x,
         buddy.z,
-        2.5,
+        evolutionHeight(C.species.get(buddy.species)?.stage),
         time,
         buddy.face,
       );
@@ -901,7 +911,7 @@ export class Renderer3D {
                 : 'run',
         e.x,
         e.z,
-        (2.4 + Math.max(0, e.stage) * 0.4) * (e.finalBoss ? 2.7 : e.boss ? 2 : 1),
+        evolutionHeight(e.stage) * 0.9 * (e.finalBoss ? 2.7 : e.boss ? 2 : 1),
         s.time - (e.attackAt ?? -100) < 0.55 ? s.time - e.attackAt : time + e.id * 0.13,
         left,
         { hit: e.hit > 0, boss: e.boss },
