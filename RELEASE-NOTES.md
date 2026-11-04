@@ -1,3 +1,7 @@
+## 1.20.2 · Nuevo logotipo
+
+Logotipo personalizado de Digibonk en el inicio y la cabecera, adaptado al tamaño de pantalla.
+
 ## 1.20.1 · Publicación de la incubadora
 
 Incluye el inicio simplificado, pestaña Incubadora y saldo de bits visible. Reintentos ante fallos transitorios del servicio de publicación.
