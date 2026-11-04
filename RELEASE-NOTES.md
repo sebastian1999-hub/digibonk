@@ -1,3 +1,11 @@
+## 1.21.0 · Oleadas progresivas y tandas de enemigos
+
+- Los enemigos de las oleadas y refuerzos de portal aparecen progresivamente. La siguiente oleada espera a que se agote la cola y se derroten los enemigos. El progreso pendiente se conserva al guardar y salir.
+- Tandas de una misma especie durante 35 segundos, dentro y fuera de portales. La dificultad sigue aumentando población y atributos; jefes independientes.
+- Preparación de efectos repartida entre fotogramas y precálculo de recortes de sprites durante la carga para reducir tirones.
+
+Validación: 119 pruebas del juego. Pendiente medir los tirones en una partida real.
+
 ## 1.20.2 · Nuevo logotipo
 
 Logotipo personalizado de Digibonk en el inicio y la cabecera, adaptado al tamaño de pantalla.
