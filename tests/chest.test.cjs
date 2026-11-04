@@ -1,11 +1,156 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');const box={window:{}};for(const name of ['species-catalog','evolution-routes'])vm.runInNewContext(fs.readFileSync(require.resolve('../game/'+name+'.js'),'utf8'),box);const C=require('../game/run-core').create(box.window.SPECIES_CATALOG,box.window.EVOLUTION_ROUTES,require('../game/skill-system'));
-function fresh(){const r=new C.Run('Botamon',{seed:123,id:'chest-test'});r.s.hatch=0;r.random=()=>0;r.s.choice=r.chestChoices();return r;}
-function reveal(r){return r.revealChest(r.s.choice.roll.id+':'+r.s.choice.roll.revision);}
-test('carousel outcome survives reload, cannot be collected during spin, and stale reveal tokens fail',()=>{const r=fresh(),id=r.s.choice.cards[0].id;assert.equal(r.choose(id),false);const copy=new C.Run(null,{saved:r.snapshot()});assert.deepEqual(copy.s.choice,r.s.choice);assert.equal(copy.revealChest('wrong'),false);assert.ok(reveal(copy));assert.ok(copy.choose(id));assert.equal(copy.choose(id),false);assert.equal(copy.s.relics[0].rank,1);});
-test('risk succeeds once with a strictly higher actual relic rank and preserves the saved outcome',()=>{const r=fresh();assert.equal(r.riskChest(),false);reveal(r);assert.ok(r.canRiskChest());assert.ok(r.riskChest());assert.equal(r.s.choice.cards[0].quality,2);assert.equal(r.s.relics.length,0);assert.equal(r.riskChest(),false);assert.equal(r.revealChest(r.s.choice.roll.id+':0'),false);const copy=new C.Run(null,{saved:r.snapshot()});reveal(copy);assert.equal(copy.canRiskChest(),false);assert.ok(copy.choose(copy.s.choice.cards[0].id));assert.equal(copy.s.relics[0].rank,2);});
-test('failed gamble removes the reserved item without granting anything or charging again',()=>{const r=fresh();r.s.coins=42;reveal(r);r.random=()=>.99;assert.ok(r.riskChest());assert.equal(r.s.choice.cards.length,0);const copy=new C.Run(null,{saved:r.snapshot()});reveal(copy);assert.equal(copy.canRiskChest(),false);assert.equal(copy.choose('forged'),false);assert.ok(copy.skipChest());assert.equal(copy.s.coins,42);assert.equal(copy.s.relics.length,0);});
-test('epic outcome has maximum actual rank and no gamble; a fully maxed build recycles bits',()=>{const r=fresh();r.random=()=>.97;r.s.choice=r.chestChoices();assert.equal(r.s.choice.cards[0].quality,3);reveal(r);assert.equal(r.canRiskChest(),true);assert.ok(r.choose(r.s.choice.cards[0].id));assert.equal(r.s.relics[0].rank,3);r.s.relics=require('../game/loot').relics.slice(0,4).map(x=>({id:x.id,rank:3}));r.s.buddies=require('../game/loot').companions.map(x=>({species:x.id,clock:0}));r.s.choice=r.chestChoices();reveal(r);const before=r.s.coins;assert.ok(r.choose(r.s.choice.cards[0].id));assert.equal(r.s.coins,before+10);});
+const { test } = require('node:test'),
+  assert = require('node:assert/strict'),
+  fs = require('node:fs'),
+  vm = require('node:vm');
+const box = { window: {} };
+for (const name of ['species-catalog', 'evolution-routes'])
+  vm.runInNewContext(fs.readFileSync(require.resolve('../game/' + name + '.js'), 'utf8'), box);
+const C = require('../game/run-core').create(
+  box.window.SPECIES_CATALOG,
+  box.window.EVOLUTION_ROUTES,
+  require('../game/skill-system'),
+);
+function fresh() {
+  const r = new C.Run('Botamon', { seed: 123, id: 'chest-test' });
+  r.s.hatch = 0;
+  r.random = () => 0;
+  r.s.choice = r.chestChoices();
+  return r;
+}
+function reveal(r) {
+  return r.revealChest(r.s.choice.roll.id + ':' + r.s.choice.roll.revision);
+}
+test('carousel outcome survives reload, cannot be collected during spin, and stale reveal tokens fail', () => {
+  const r = fresh(),
+    id = r.s.choice.cards[0].id;
+  assert.equal(r.choose(id), false);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.deepEqual(copy.s.choice, r.s.choice);
+  assert.equal(copy.revealChest('wrong'), false);
+  assert.ok(reveal(copy));
+  assert.ok(copy.choose(id));
+  assert.equal(copy.choose(id), false);
+  assert.equal(copy.s.relics[0].rank, 1);
+});
+test('risk succeeds once with a strictly higher actual relic rank and preserves the saved outcome', () => {
+  const r = fresh();
+  assert.equal(r.riskChest(), false);
+  reveal(r);
+  assert.ok(r.canRiskChest());
+  assert.ok(r.riskChest());
+  assert.equal(r.s.choice.cards[0].quality, 2);
+  assert.equal(r.s.relics.length, 0);
+  assert.equal(r.riskChest(), false);
+  assert.equal(r.revealChest(r.s.choice.roll.id + ':0'), false);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  reveal(copy);
+  assert.equal(copy.canRiskChest(), false);
+  assert.ok(copy.choose(copy.s.choice.cards[0].id));
+  assert.equal(copy.s.relics[0].rank, 2);
+});
+test('failed gamble removes the reserved item without granting anything or charging again', () => {
+  const r = fresh();
+  r.s.coins = 42;
+  reveal(r);
+  r.random = () => 0.99;
+  assert.ok(r.riskChest());
+  assert.equal(r.s.choice.cards.length, 0);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  reveal(copy);
+  assert.equal(copy.canRiskChest(), false);
+  assert.equal(copy.choose('forged'), false);
+  assert.ok(copy.skipChest());
+  assert.equal(copy.s.coins, 42);
+  assert.equal(copy.s.relics.length, 0);
+});
+test('epic outcome has maximum actual rank and no gamble; a fully maxed build recycles bits', () => {
+  const r = fresh();
+  r.random = () => 0.97;
+  r.s.choice = r.chestChoices();
+  assert.equal(r.s.choice.cards[0].quality, 3);
+  reveal(r);
+  assert.equal(r.canRiskChest(), true);
+  assert.ok(r.choose(r.s.choice.cards[0].id));
+  assert.equal(r.s.relics[0].rank, 3);
+  r.s.relics = require('../game/loot')
+    .relics.slice(0, 4)
+    .map((x) => ({ id: x.id, rank: 3 }));
+  r.s.buddies = require('../game/loot').companions.map((x) => ({ species: x.id, clock: 0 }));
+  r.s.choice = r.chestChoices();
+  reveal(r);
+  const before = r.s.coins;
+  assert.ok(r.choose(r.s.choice.cards[0].id));
+  assert.equal(r.s.coins, before + 10);
+});
 
-test('shop purchase pays once, preserves chosen stat and waits for a quality roll before applying it',()=>{const r=fresh();r.s.choice=null;r.s.coins=200;const shop=r.map.pois.find(p=>p.type==='merchant');Object.assign(r.s.player,{x:shop.x,z:shop.z});assert.ok(r.interact().ok);const stat=r.s.choice.cards[0],before=r.s.player[stat.stat];assert.ok(r.choose(stat.id));assert.equal(r.s.coins,160);assert.equal(r.s.shopPurchases,1);assert.equal(r.s.player[stat.stat],before);assert.equal(r.s.choice.roll.source,'shop');assert.ok(r.s.choice.roll.pool.every(c=>c.stat===stat.stat));const saved=new C.Run(null,{saved:r.snapshot()});assert.deepEqual(saved.s.choice,r.s.choice);reveal(saved);assert.ok(saved.choose(saved.s.choice.cards[0].id));assert.ok(saved.s.player[stat.stat]>before);assert.equal(saved.s.coins,160);assert.equal(saved.s.shopPurchases,1);});
-test('shop risk upgrades the same stat and failure grants no stat or refund',()=>{for(const success of [true,false]){const r=fresh(),base={id:'area',type:'stat',title:'Resonancia',stat:'area',factor:1.15};r.s.choice=r.shopRoll(base);reveal(r);r.random=()=>success?0:.99;assert.ok(r.riskChest());assert.equal(r.s.player.area,1);reveal(r);if(success){assert.equal(r.s.choice.cards[0].stat,'area');assert.ok(r.choose(r.s.choice.cards[0].id));assert.ok(Math.abs(r.s.player.area-1.3)<1e-9);}else{assert.equal(r.s.choice.cards.length,0);assert.ok(r.skipChest());assert.equal(r.s.player.area,1);}}});
-test('quality improves damage, area, health and projectile amount while respecting remaining caps',()=>{const r=fresh();for(const base of [{id:'power',stat:'damage',factor:1.1},{id:'area',stat:'area',factor:1.15},{id:'heart',stat:'maxHp',amount:20},{id:'projectile',stat:'projectileBonus',amount:1}]){const pool=r.shopQualityPool({...base,type:'stat'});assert.equal(pool.length,3);assert.ok((pool[2].factor||pool[2].amount)>(pool[0].factor||pool[0].amount));}r.s.player.projectileBonus=4;const pool=r.shopQualityPool({id:'projectile',stat:'projectileBonus',amount:1,type:'stat'});assert.equal(pool.length,1);assert.equal(pool[0].amount,1);r.s.choice=r.shopRoll({id:'projectile',stat:'projectileBonus',amount:1,type:'stat'});reveal(r);assert.equal(r.canRiskChest(),false);assert.ok(r.choose(r.s.choice.cards[0].id));assert.equal(r.s.player.projectileBonus,5);});
+test('shop purchase pays once, preserves chosen stat and waits for a quality roll before applying it', () => {
+  const r = fresh();
+  r.s.choice = null;
+  r.s.coins = 200;
+  const shop = r.map.pois.find((p) => p.type === 'merchant');
+  Object.assign(r.s.player, { x: shop.x, z: shop.z });
+  assert.ok(r.interact().ok);
+  const stat = r.s.choice.cards[0],
+    before = r.s.player[stat.stat];
+  assert.ok(r.choose(stat.id));
+  assert.equal(r.s.coins, 160);
+  assert.equal(r.s.shopPurchases, 1);
+  assert.equal(r.s.player[stat.stat], before);
+  assert.equal(r.s.choice.roll.source, 'shop');
+  assert.ok(r.s.choice.roll.pool.every((c) => c.stat === stat.stat));
+  const saved = new C.Run(null, { saved: r.snapshot() });
+  assert.deepEqual(saved.s.choice, r.s.choice);
+  reveal(saved);
+  assert.ok(saved.choose(saved.s.choice.cards[0].id));
+  assert.ok(saved.s.player[stat.stat] > before);
+  assert.equal(saved.s.coins, 160);
+  assert.equal(saved.s.shopPurchases, 1);
+});
+test('shop risk upgrades the same stat and failure grants no stat or refund', () => {
+  for (const success of [true, false]) {
+    const r = fresh(),
+      base = { id: 'area', type: 'stat', title: 'Resonancia', stat: 'area', factor: 1.15 };
+    r.s.choice = r.shopRoll(base);
+    reveal(r);
+    r.random = () => (success ? 0 : 0.99);
+    assert.ok(r.riskChest());
+    assert.equal(r.s.player.area, 1);
+    reveal(r);
+    if (success) {
+      assert.equal(r.s.choice.cards[0].stat, 'area');
+      assert.ok(r.choose(r.s.choice.cards[0].id));
+      assert.ok(Math.abs(r.s.player.area - 1.3) < 1e-9);
+    } else {
+      assert.equal(r.s.choice.cards.length, 0);
+      assert.ok(r.skipChest());
+      assert.equal(r.s.player.area, 1);
+    }
+  }
+});
+test('quality improves damage, area, health and projectile amount while respecting remaining caps', () => {
+  const r = fresh();
+  for (const base of [
+    { id: 'power', stat: 'damage', factor: 1.1 },
+    { id: 'area', stat: 'area', factor: 1.15 },
+    { id: 'heart', stat: 'maxHp', amount: 20 },
+    { id: 'projectile', stat: 'projectileBonus', amount: 1 },
+  ]) {
+    const pool = r.shopQualityPool({ ...base, type: 'stat' });
+    assert.equal(pool.length, 3);
+    assert.ok((pool[2].factor || pool[2].amount) > (pool[0].factor || pool[0].amount));
+  }
+  r.s.player.projectileBonus = 4;
+  const pool = r.shopQualityPool({
+    id: 'projectile',
+    stat: 'projectileBonus',
+    amount: 1,
+    type: 'stat',
+  });
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].amount, 1);
+  r.s.choice = r.shopRoll({ id: 'projectile', stat: 'projectileBonus', amount: 1, type: 'stat' });
+  reveal(r);
+  assert.equal(r.canRiskChest(), false);
+  assert.ok(r.choose(r.s.choice.cards[0].id));
+  assert.equal(r.s.player.projectileBonus, 5);
+});

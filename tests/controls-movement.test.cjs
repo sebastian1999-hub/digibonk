@@ -1,7 +1,94 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),Input=require('../game/input-state'),fs=require('node:fs'),vm=require('node:vm'),box={window:{}};for(const n of ['species-catalog','evolution-routes'])vm.runInNewContext(fs.readFileSync(require.resolve('../game/'+n+'.js'),'utf8'),box);const B=require('../game/run-core'),C=B.create(box.window.SPECIES_CATALOG,box.window.EVOLUTION_ROUTES,require('../game/skill-system'));
-function fresh(){const r=new C.Run('Botamon',{seed:123});r.s.hatch=0;Object.assign(r.s.player,{species:'Botamon',stage:-1});r.s.spawnClock=100;r.s.nextBoss=1000;return r;}
-test('default E interacts, Q casts and R/F no longer trigger actions',()=>{const k=new Input();assert.equal(k.actionFor({code:'KeyE'}),'interact');assert.equal(k.actionFor({code:'KeyQ'}),'special');assert.equal(k.actionFor({code:'KeyR'}),null);assert.equal(k.actionFor({code:'KeyF'}),null);});
-test('custom movement and action bindings survive serialization and preserve held movement only',()=>{const k=new Input();assert.ok(k.bind('down',0,{code:'KeyK'}).ok);assert.ok(k.bind('special',0,{code:'KeyR'}).ok);assert.ok(k.bind('interact',1,{code:'KeyF'}).ok);const loaded=new Input(JSON.parse(JSON.stringify(k.bindings)));loaded.down({code:'KeyK'});loaded.down({code:'Space'});loaded.resumeMovement();assert.ok(loaded.pressed('down'));assert.equal(loaded.pressed('dash'),false);assert.equal(loaded.actionFor({code:'KeyS'}),null);assert.equal(loaded.actionFor({code:'KeyF'}),'interact');assert.equal(loaded.label('interact'),'E / F');loaded.up({code:'KeyK',key:'K'});assert.equal(loaded.pressed('down'),false);});
-test('duplicate keys and reserved shortcuts are rejected, secondary keys can be cleared and defaults restored',()=>{const k=new Input();assert.equal(k.bind('special',0,{code:'KeyE'}).ok,false);for(const code of ['Escape','F11','ControlLeft','Tab','Enter'])assert.equal(k.bind('special',0,{code}).ok,false);assert.equal(k.bind('up',0,'').ok,false);assert.ok(k.bind('up',1,'').ok);assert.equal(k.actionFor({code:'ArrowUp'}),null);k.resetBindings();assert.equal(k.actionFor({code:'ArrowUp'}),'up');assert.equal(k.label('special'),'Q');const malformed=new Input({special:['e','']});assert.equal(malformed.label('special'),'Q');});
-test('attracted experience catches a sprinting player quickly and remains attracted outside magnet range',()=>{const r=fresh(),p=r.s.player;p.speed=15;r.s.gems=[{id:100,x:-3.8,z:0,value:2}];r.update(.05,{x:1});assert.equal(r.s.gems[0].attracted,true);p.x=3;for(let i=0;i<10;i++)r.update(.05,{x:1});assert.equal(r.s.gems.length,0);assert.equal(r.s.totalXp,2);});
-test('player slides around a volcanic collision rock and fast units cannot tunnel through it',()=>{const r=fresh(),rock=r.map.obstacles.find(o=>o.type==='rock'&&[-3,-2.2,2.2,3].every(dx=>B.walkable(o.x+dx,o.z,r.s.mapSeed,.5))&&[-3,3].every(dz=>B.walkable(o.x,o.z+dz,r.s.mapSeed,.5)));assert.ok(rock);const p=r.s.player;p.x=rock.x-3;p.z=rock.z;for(let i=0;i<100&&p.x<rock.x+2.5;i++){r.move(p,1,0,8,.05);assert.ok(B.walkable(p.x,p.z,r.s.mapSeed,.5));}assert.ok(p.x>rock.x+2.4);const unit={x:rock.x-3,z:rock.z};r.move(unit,1,0,100,.1);assert.ok(unit.x<rock.x);assert.ok(B.walkable(unit.x,unit.z,r.s.mapSeed,.5));});
+const { test } = require('node:test'),
+  assert = require('node:assert/strict'),
+  Input = require('../game/input-state'),
+  fs = require('node:fs'),
+  vm = require('node:vm'),
+  box = { window: {} };
+for (const n of ['species-catalog', 'evolution-routes'])
+  vm.runInNewContext(fs.readFileSync(require.resolve('../game/' + n + '.js'), 'utf8'), box);
+const B = require('../game/run-core'),
+  C = B.create(
+    box.window.SPECIES_CATALOG,
+    box.window.EVOLUTION_ROUTES,
+    require('../game/skill-system'),
+  );
+function fresh() {
+  const r = new C.Run('Botamon', { seed: 123 });
+  r.s.hatch = 0;
+  Object.assign(r.s.player, { species: 'Botamon', stage: -1 });
+  r.s.spawnClock = 100;
+  r.s.nextBoss = 1000;
+  return r;
+}
+test('default E interacts, Q casts and R/F no longer trigger actions', () => {
+  const k = new Input();
+  assert.equal(k.actionFor({ code: 'KeyE' }), 'interact');
+  assert.equal(k.actionFor({ code: 'KeyQ' }), 'special');
+  assert.equal(k.actionFor({ code: 'KeyR' }), null);
+  assert.equal(k.actionFor({ code: 'KeyF' }), null);
+});
+test('custom movement and action bindings survive serialization and preserve held movement only', () => {
+  const k = new Input();
+  assert.ok(k.bind('down', 0, { code: 'KeyK' }).ok);
+  assert.ok(k.bind('special', 0, { code: 'KeyR' }).ok);
+  assert.ok(k.bind('interact', 1, { code: 'KeyF' }).ok);
+  const loaded = new Input(JSON.parse(JSON.stringify(k.bindings)));
+  loaded.down({ code: 'KeyK' });
+  loaded.down({ code: 'Space' });
+  loaded.resumeMovement();
+  assert.ok(loaded.pressed('down'));
+  assert.equal(loaded.pressed('dash'), false);
+  assert.equal(loaded.actionFor({ code: 'KeyS' }), null);
+  assert.equal(loaded.actionFor({ code: 'KeyF' }), 'interact');
+  assert.equal(loaded.label('interact'), 'E / F');
+  loaded.up({ code: 'KeyK', key: 'K' });
+  assert.equal(loaded.pressed('down'), false);
+});
+test('duplicate keys and reserved shortcuts are rejected, secondary keys can be cleared and defaults restored', () => {
+  const k = new Input();
+  assert.equal(k.bind('special', 0, { code: 'KeyE' }).ok, false);
+  for (const code of ['Escape', 'F11', 'ControlLeft', 'Tab', 'Enter'])
+    assert.equal(k.bind('special', 0, { code }).ok, false);
+  assert.equal(k.bind('up', 0, '').ok, false);
+  assert.ok(k.bind('up', 1, '').ok);
+  assert.equal(k.actionFor({ code: 'ArrowUp' }), null);
+  k.resetBindings();
+  assert.equal(k.actionFor({ code: 'ArrowUp' }), 'up');
+  assert.equal(k.label('special'), 'Q');
+  const malformed = new Input({ special: ['e', ''] });
+  assert.equal(malformed.label('special'), 'Q');
+});
+test('attracted experience catches a sprinting player quickly and remains attracted outside magnet range', () => {
+  const r = fresh(),
+    p = r.s.player;
+  p.speed = 15;
+  r.s.gems = [{ id: 100, x: -3.8, z: 0, value: 2 }];
+  r.update(0.05, { x: 1 });
+  assert.equal(r.s.gems[0].attracted, true);
+  p.x = 3;
+  for (let i = 0; i < 10; i++) r.update(0.05, { x: 1 });
+  assert.equal(r.s.gems.length, 0);
+  assert.equal(r.s.totalXp, 2);
+});
+test('player slides around a volcanic collision rock and fast units cannot tunnel through it', () => {
+  const r = fresh(),
+    rock = r.map.obstacles.find(
+      (o) =>
+        o.type === 'rock' &&
+        [-3, -2.2, 2.2, 3].every((dx) => B.walkable(o.x + dx, o.z, r.s.mapSeed, 0.5)) &&
+        [-3, 3].every((dz) => B.walkable(o.x, o.z + dz, r.s.mapSeed, 0.5)),
+    );
+  assert.ok(rock);
+  const p = r.s.player;
+  p.x = rock.x - 3;
+  p.z = rock.z;
+  for (let i = 0; i < 100 && p.x < rock.x + 2.5; i++) {
+    r.move(p, 1, 0, 8, 0.05);
+    assert.ok(B.walkable(p.x, p.z, r.s.mapSeed, 0.5));
+  }
+  assert.ok(p.x > rock.x + 2.4);
+  const unit = { x: rock.x - 3, z: rock.z };
+  r.move(unit, 1, 0, 100, 0.1);
+  assert.ok(unit.x < rock.x);
+  assert.ok(B.walkable(unit.x, unit.z, r.s.mapSeed, 0.5));
+});

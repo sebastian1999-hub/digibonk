@@ -1,10 +1,82 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),{username,record,Queue}=require('../game/cloud-core');
-function storage(){const data=new Map();return {getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)};}
-const completed={done:true,onlineOwner:'A',cloudVersion:'1.3.0',id:'run-1',score:250,time:60.9,kills:10,level:4,player:{species:'Koromon'}};
-test('existing private usernames normalize without accepting arbitrary email addresses',()=>{assert.equal(username(' Sebas '),'sebas');for(const name of ['a','sebas@example.com','../lucas','<script>','sebas x'])assert.throws(()=>username(name));});
-test('only completed new-version runs belong to the account that started them',()=>{assert.equal(record(completed,'A').time,60);assert.equal(record(completed,'B'),null);assert.equal(record({...completed,done:false},'A'),null);assert.equal(record({...completed,onlineOwner:null},'A'),null);assert.equal(record({...completed,cloudVersion:null},'A'),null);assert.equal(record({...completed,score:Infinity},'A'),null);});
-test('failed sends remain queued, survive restarting and are isolated per account',async()=>{const disk=storage(),q=new Queue(disk),r=record(completed,'A');q.add('A',r);q.add('A',r);q.add('B',{...r,id:'other'});await assert.rejects(q.flush('A',async()=>{throw Error('offline')}));assert.equal(q.read('A').length,1);const restarted=new Queue(disk),sent=[];await restarted.flush('A',async r=>sent.push(r.id));assert.deepEqual(sent,['run-1']);assert.equal(restarted.read('A').length,0);assert.equal(restarted.read('B').length,1);});
-test('signing out during a flush prevents sending further runs under another account',async()=>{const q=new Queue(storage());q.add('A',{id:'one',score:10,time:2});q.add('A',{id:'two',score:9,time:2});let current=true,sent=[];await q.flush('A',async r=>{sent.push(r.id);current=false;},()=>current);assert.deepEqual(sent,['one']);assert.equal(q.read('A')[0].id,'two');});
-test('adding a result during an upload does not lose the new pending result',async()=>{const q=new Queue(storage());q.add('A',{id:'one',score:10,time:2});await q.flush('A',async()=>q.add('A',{id:'two',score:20,time:3}));assert.equal(q.read('A')[0].id,'two');});
+const { test } = require('node:test'),
+  assert = require('node:assert/strict'),
+  { username, record, Queue } = require('../game/cloud-core');
+function storage() {
+  const data = new Map();
+  return { getItem: (k) => data.get(k) || null, setItem: (k, v) => data.set(k, v) };
+}
+const completed = {
+  done: true,
+  onlineOwner: 'A',
+  cloudVersion: '1.3.0',
+  id: 'run-1',
+  score: 250,
+  time: 60.9,
+  kills: 10,
+  level: 4,
+  player: { species: 'Koromon' },
+};
+test('existing private usernames normalize without accepting arbitrary email addresses', () => {
+  assert.equal(username(' Sebas '), 'sebas');
+  for (const name of ['a', 'sebas@example.com', '../lucas', '<script>', 'sebas x'])
+    assert.throws(() => username(name));
+});
+test('only completed new-version runs belong to the account that started them', () => {
+  assert.equal(record(completed, 'A').time, 60);
+  assert.equal(record(completed, 'B'), null);
+  assert.equal(record({ ...completed, done: false }, 'A'), null);
+  assert.equal(record({ ...completed, onlineOwner: null }, 'A'), null);
+  assert.equal(record({ ...completed, cloudVersion: null }, 'A'), null);
+  assert.equal(record({ ...completed, score: Infinity }, 'A'), null);
+});
+test('failed sends remain queued, survive restarting and are isolated per account', async () => {
+  const disk = storage(),
+    q = new Queue(disk),
+    r = record(completed, 'A');
+  q.add('A', r);
+  q.add('A', r);
+  q.add('B', { ...r, id: 'other' });
+  await assert.rejects(
+    q.flush('A', async () => {
+      throw Error('offline');
+    }),
+  );
+  assert.equal(q.read('A').length, 1);
+  const restarted = new Queue(disk),
+    sent = [];
+  await restarted.flush('A', async (r) => sent.push(r.id));
+  assert.deepEqual(sent, ['run-1']);
+  assert.equal(restarted.read('A').length, 0);
+  assert.equal(restarted.read('B').length, 1);
+});
+test('signing out during a flush prevents sending further runs under another account', async () => {
+  const q = new Queue(storage());
+  q.add('A', { id: 'one', score: 10, time: 2 });
+  q.add('A', { id: 'two', score: 9, time: 2 });
+  let current = true,
+    sent = [];
+  await q.flush(
+    'A',
+    async (r) => {
+      sent.push(r.id);
+      current = false;
+    },
+    () => current,
+  );
+  assert.deepEqual(sent, ['one']);
+  assert.equal(q.read('A')[0].id, 'two');
+});
+test('adding a result during an upload does not lose the new pending result', async () => {
+  const q = new Queue(storage());
+  q.add('A', { id: 'one', score: 10, time: 2 });
+  await q.flush('A', async () => q.add('A', { id: 'two', score: 20, time: 3 }));
+  assert.equal(q.read('A')[0].id, 'two');
+});
 
-test('full emails use standard Supabase login without exposing a private email mapping',()=>{const {loginEmail}=require('../game/cloud-core');assert.equal(loginEmail(' Jortach@Gmail.com '),'jortach@gmail.com');assert.equal(loginEmail(' Sebas '),'sebas@players.digital-ranch.invalid');for(const input of ['a@b','a@@b.com','a b@gmail.com','../jortach','<script>'])assert.throws(()=>loginEmail(input));});
+test('full emails use standard Supabase login without exposing a private email mapping', () => {
+  const { loginEmail } = require('../game/cloud-core');
+  assert.equal(loginEmail(' Jortach@Gmail.com '), 'jortach@gmail.com');
+  assert.equal(loginEmail(' Sebas '), 'sebas@players.digital-ranch.invalid');
+  for (const input of ['a@b', 'a@@b.com', 'a b@gmail.com', '../jortach', '<script>'])
+    assert.throws(() => loginEmail(input));
+});

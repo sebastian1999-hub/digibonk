@@ -1,3 +1,10 @@
+## 1.22.0 · Menú principal y marcos de rareza
+
+- Menú principal con Jugar, Incubadora, Técnicas y objetos, Récords, Liga y cuenta, Ajustes y Cómo jugar.
+- Huevos bloqueados en gris y oscurecidos, con indicación de bloqueo.
+- Marcos personalizados en el carrusel y en la recompensa revelada: plateado común, azul raro, morado épico y dorado legendario.
+- Código fuente formateado para facilitar su lectura.
+
 ## 1.21.1 · Corrección de bloqueo de arranque
 
 Restaurado el inicio del renderizador, el bucle de juego y los manejadores de combate que faltaban en el archivo principal desde la separación de Incubadora. Corrige la pantalla detenida en Preparando escenario. Nuevas pruebas del arranque y de finalización de la transición de carga. Conserva las partidas y la incubadora.

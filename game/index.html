@@ -1,18 +1,586 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Digibonk</title><link rel="stylesheet" href="style.css"></head><body><div id="portal-transition" class="active" aria-hidden="false"><div class="loading-card"><div class="loading-orbit">◈</div><div class="eyebrow">DIGIBONK</div><h2 id="loading-title">Preparando la isla</h2><p id="loading-detail" role="status">Preparando escenario</p><div class="loading-track" role="progressbar" aria-label="Carga del escenario" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="loading-progress"></i></div><button id="loading-retry" hidden>Reintentar carga</button></div></div>
-<canvas id="world" tabindex="-1" aria-label="Isla digital tridimensional con Digimon animados"></canvas><canvas id="vfx" aria-hidden="true"></canvas><div id="vignette"></div><div id="damage-flash"></div>
-<header id="top-brand"><a id="brand" href="#"><img src="assets/digibonk-logo.png" alt="Digibonk" width="2150" height="717"></a><div><button id="sound-toggle" aria-label="Activar o desactivar efectos de sonido">♫ Sonido</button><button id="music-toggle">♫ Música</button><button id="settings-toggle">⚙ Ajustes</button><button id="help-toggle">Controles</button><button id="records-toggle">Récords</button><button id="gear-toggle">Equipo</button><button id="book-toggle">Técnicas y objetos</button></div></header>
-<section id="home"><div id="home-panel"><div class="eyebrow">UN HUEVO. MUCHAS VIDAS POSIBLES.</div><h1 class="game-logo"><img src="assets/digibonk-logo.png" alt="Digibonk" width="2150" height="717" fetchpriority="high"></h1><span id="build-version" class="build-version">Versión 1.21.1</span><p class="tagline">Sobrevive. Digievoluciona. Rompe tu récord.</p><div id="home-records"></div><button id="continue-run" class="primary" hidden>Continuar partida</button><nav class="home-tabs" aria-label="Juego e incubadora"><button id="tab-play" role="tab" aria-selected="true">Jugar</button><button id="tab-incubator" role="tab" aria-selected="false">Incubadora</button><strong id="home-bits" aria-live="polite">0 bits</strong></nav><div class="section-label"><b id="egg-section-title">ELIGE TU HUEVO</b><span id="egg-section-hint">Selecciona un huevo para empezar</span></div><div id="egg-grid"></div><p class="home-note">Los bits y el entrenamiento de tus huevos se conservan entre partidas. Mejora la incubadora para abrir nuevas ramas hasta Mega. Entra con tu cuenta para competir en la clasificación del grupo.</p><p id="home-message" role="status"></p></div><aside id="home-aside" class="online-panel"><div class="eyebrow">VUESTRO GRUPO · RÉCORDS COMPARTIDOS</div><h2>La liga Digibonk</h2><form id="login-form"><label>Usuario o correo<input id="login-username" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="sebas o correo@ejemplo.com" required maxlength="254"></label><label>Contraseña<input id="login-password" type="password" autocomplete="current-password" required maxlength="128"></label><button id="login-submit" class="primary" disabled>Iniciar sesión</button></form><div id="signed-account" hidden><strong id="cloud-identity"></strong><button id="cloud-signout">Cerrar sesión</button></div><p id="cloud-status" role="status">Conectando con Supabase…</p><section id="leaderboard" hidden><div class="board-heading"><h3>Clasificación</h3><button id="leaderboard-refresh">Actualizar</button></div><div class="board-labels"><span>JUGADOR / DIGIMON</span><span>PUNTOS</span></div><ol id="leaderboard-list"></ol></section><p class="online-note">El mejor récord de cada jugador. Los resultados de las partidas iniciadas con tu cuenta se envían automáticamente al terminar.</p></aside></section>
-<section id="hud" hidden><div class="player-panel"><canvas id="portrait" width="80" height="80"></canvas><div><div class="player-name"><strong id="species-name"></strong><span id="stage-name"></span></div><div class="vital-caption"><svg class="hud-icon heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg><b>VIDA</b></div><div class="life"><div id="life-fill"></div><span id="life-label"></span></div><div class="vital-caption xp-caption"><svg class="hud-icon experience" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 8 8-8 12L4 10 8 2Z"/><path d="M4 10h16M8 2l4 8 4-8m-4 8v12"/></svg><b>EXPERIENCIA</b></div><div class="xp"><div id="xp-fill"></div></div><small id="level-label"></small></div></div><div class="run-stats"><b id="run-clock">00:00</b><span id="run-wave"></span><span><small><svg class="hud-icon trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10v5a5 5 0 0 1-10 0V3Zm0 2H3v2a4 4 0 0 0 5 4m9-6h4v2a4 4 0 0 1-5 4M12 13v5m-4 3h8m-9 0v-3h10v3"/></svg>PUNTOS</small><strong id="run-score"></strong></span><span><small><svg class="hud-icon swords" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 3 5 2 11 12-3 3L5 9 4 3Zm16 0-5 2-3 3m-4 4-5 5 3 3 5-5M3 21l3-3m12 0 3 3M3 14l7 7m4-7 7 7"/></svg>BAJAS</small><strong id="run-kills"></strong></span><span><small><svg class="hud-icon coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="10" cy="6" rx="7" ry="3"/><path d="M3 6v6c0 1.7 3.1 3 7 3m7-9v4M3 9c0 1.7 3.1 3 7 3"/><ellipse cx="16" cy="13" rx="5" ry="2.5"/><path d="M11 13v6c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-6m-10 3c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5"/></svg>BITS</small><strong id="run-coins"></strong></span><button id="pause-run">Ⅱ</button></div><div id="weapons"></div></section>
-<aside id="portal-timer" hidden aria-label="Plazo para entrar en un portal"><div><span id="portal-timer-label">PRÓXIMO PORTAL</span><strong id="portal-timer-value">03:00</strong></div><small id="portal-timer-detail"></small><div class="portal-timer-track"><i id="portal-timer-fill"></i></div></aside>
-<section id="boss-bar" hidden><div><b id="boss-name"></b><span id="boss-type">INVASOR</span></div><div class="boss-track"><i id="boss-fill"></i></div></section>
-<aside id="map-panel" hidden><div class="map-title"><span>MAPA DE LA ISLA</span><button id="map-toggle" title="Ampliar mapa" aria-label="Ampliar mapa">⛶</button></div><canvas id="minimap" width="220" height="220" aria-label="Mapa con iconos de cofres, tiendas, descansos, portales y torres"></canvas><div class="map-mini-legend"><span><canvas data-map-icon="chest"></canvas>Cofre</span><span><canvas data-map-icon="shop"></canvas>Tienda</span><span><canvas data-map-icon="portal"></canvas>Portal</span><span><canvas data-map-icon="tower"></canvas>Torre</span></div></aside>
-<aside id="style-panel" hidden><div class="eyebrow" id="style-name"></div><p id="style-passive"></p><button id="style-activate"></button><div id="skill-recharge" role="progressbar" aria-label="Recarga de habilidad" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="skill-recharge-fill"></i></div><small id="skill-recharge-label">Habilidad lista</small><small id="style-key-hint"></small></aside><div id="equipment-strip" hidden></div><div id="controls-hint" hidden>WASD / flechas o clic · Espacio: esquivar · E: interactuar · Q: habilidad · Esc: pausa</div><button id="interact" hidden></button><div id="challenge-label" hidden></div><div id="toast" role="status"></div>
-<section id="choice-overlay" class="overlay" hidden><div class="choice-shell"><div id="choice-kicker" class="eyebrow"></div><h2 id="choice-title"></h2><p id="choice-subtitle"></p><div id="chest-carousel" hidden></div><div id="choice-cards"></div><button id="skip-chest" hidden>Cerrar sin elegir</button><small id="choice-hint">El tiempo se detiene mientras eliges. Pulsa el número de una tarjeta para seleccionar.</small></div></section>
-<section id="evolution-cinema" hidden><span class="eyebrow">DIGIEVOLUCIÓN</span><h2 id="evolution-name"></h2><p id="evolution-line"></p></section>
-<section id="pause-overlay" class="overlay" hidden><div class="dialog"><div class="eyebrow">RESPIRA. PREPARA TU SIGUIENTE MOVIMIENTO.</div><h2>Partida en pausa</h2><p>Tu run permanece guardada. Al volver puedes seguir desde aquí.</p><button id="resume-run" class="primary">Continuar</button><button id="save-menu">Guardar y volver al menú</button><button id="pause-settings">Ajustes de controles</button><button id="pause-help">Ver controles</button></div></section>
-<section id="result-overlay" class="overlay" hidden><div class="result-shell"><div class="eyebrow">LOS DATOS DE TU LEYENDA</div><h2>Una vida. Un linaje.</h2><canvas id="result-portrait" width="180" height="150"></canvas><div id="result-species"></div><div id="result-stats"></div><div id="result-history"></div><div id="result-build"></div><div id="result-objective"></div><button id="new-run" class="primary">Elegir otro huevo</button><button id="result-records">Ver récords</button></div></section>
-<dialog id="map-dialog" aria-labelledby="map-dialog-title"><form method="dialog"><button class="close" aria-label="Cerrar mapa">×</button></form><div class="eyebrow">PARTIDA EN PAUSA · <span data-control="map">M</span> PARA CERRAR</div><h2 id="map-dialog-title">Mapa</h2><canvas id="world-map" width="680" height="680" aria-label="Mapa ampliado del mundo"></canvas><div id="map-full-legend"></div><p>Los símbolos indican qué hay en cada punto. Una marca de verificación indica un portal cerrado; la flecha dentro de un portal indica el regreso.</p></dialog><dialog id="settings-dialog" aria-labelledby="settings-title"><form method="dialog"><button class="close" aria-label="Cerrar ajustes">×</button></form><div class="eyebrow">A TU MANERA</div><h2 id="settings-title">Ajustes de controles</h2><p>Haz clic en una tecla y pulsa la que prefieras. Puedes asignar dos teclas por acción.</p><div class="settings-layout"><section class="keybind-settings"><div class="binding-heading"><span>ACCIÓN</span><span>PRINCIPAL</span><span>SECUNDARIA</span></div><div id="bindings-list"></div><p id="binding-message" role="status" aria-live="polite"></p></section><section class="visibility-settings"><h3>Visibilidad de proyectiles</h3><p>0 % oculta el efecto; 100 % muestra su máxima opacidad. Se aplica también a sus estelas y brillos.</p><label class="opacity-row" for="opacity-player"><span><i id="opacity-player-preview" class="opacity-preview player" aria-hidden="true">✦</i>Tus ataques</span><input id="opacity-player" type="range" min="0" max="100" step="1" value="100"><output id="opacity-player-value" for="opacity-player">100 %</output></label><label class="opacity-row" for="opacity-experience"><span><i id="opacity-experience-preview" class="opacity-preview experience" aria-hidden="true">◆</i>Fragmentos de experiencia</span><input id="opacity-experience" type="range" min="0" max="100" step="1" value="100"><output id="opacity-experience-value" for="opacity-experience">100 %</output></label><label class="opacity-row" for="opacity-enemy"><span><i id="opacity-enemy-preview" class="opacity-preview enemy" aria-hidden="true">●</i>Proyectiles enemigos</span><input id="opacity-enemy" type="range" min="0" max="100" step="1" value="100"><output id="opacity-enemy-value" for="opacity-enemy">100 %</output></label><button id="visibility-reset">Restaurar opacidades</button></section></div><div class="settings-actions"><button id="bindings-reset">Restaurar predeterminados</button><form method="dialog"><button class="primary">Listo</button></form></div></dialog><dialog id="help-dialog"><form method="dialog"><button class="close" aria-label="Cerrar controles">×</button></form><div class="eyebrow">CÓMO SOBREVIVIR</div><h2>Muévete. Recoge. Evoluciona.</h2><p>Movimiento: <b data-control="up"></b>, <b data-control="left"></b>, <b data-control="down"></b>, <b data-control="right"></b>. También puedes hacer clic en el suelo.</p><p><b data-control="dash"></b>: esquiva con un salto corto. Tiene recarga.</p><p><b data-control="interact"></b>: abre cofres, visita a Wizardmon o activa santuarios cercanos. Amplía el mapa con <b data-control="map">M</b> o el botón ⛶. La partida se pausa mientras está abierto.</p><p>Personaliza las teclas y la opacidad de los efectos en <b>⚙ Ajustes</b>, arriba o desde la pausa.</p><p>Los ataques son automáticos. Los elementos pueden aplicar estados sobre los enemigos: consulta sus probabilidades, duración y efectos en <b>Técnicas y objetos → Estados</b>. Empapar a un enemigo permite potenciar una descarga eléctrica posterior. Recoge los cristales de experiencia para subir de nivel y elegir una de tres mejoras.</p><p>La incubadora empieza con Botamon y una ruta desbloqueada. Gana bits permanentes durante las runs para comprar huevos o mejorar fuerza, velocidad de ataque, vitalidad y movimiento. Cada dos mejoras por huevo desbloquean otra rama por etapa; consulta las rutas y requisitos en su ficha. Las mejoras se aplican al iniciar una nueva run. Este progreso se guarda en este ordenador por cuenta.</p><p>En los niveles <b>3, 6, 12, 20 y 30</b> podrás escoger una rama de digievolución disponible. La tienda siempre ofrece mejoras de atributos para esta partida y encarece sus precios con cada compra. Tras elegir una mejora pagada, el carrusel determina su calidad: común, rara o épica. Puedes recogerla o arriesgarla una vez: 20 % de mejorar el mismo atributo y 80 % de perder la compra sin devolución. Cada nueva forma mejora tu vida y daño y aporta su técnica característica.</p><p>Puedes llevar hasta cuatro técnicas automáticas. Las técnicas heredadas forman parte de tu build. Tras Mega, la partida sigue: intenta aguantar y puntuar todo lo que puedas.</p><p><b><span data-control="special"></span> · Estilo de evolución:</b> desde Rookie, tu familia desbloquea una acción propia y una pasiva. La evolución puede cambiar tu estilo: consulta las tarjetas y Equipo.</p><p><b>Plazo de entrada:</b> tienes 3 minutos de partida para entrar en un portal. Al agotarse, los enemigos reciben mucha más vida y daño, y la corrupción sigue creciendo. Entrar detiene ese plazo; salir sin purificarlo reanuda el tiempo restante. Cerrar la Torre Negra concede otros 3 minutos. La dificultad general acelera con el tiempo y también sigue subiendo dentro de los portales. Pausa, menús y cargas detienen el tiempo de partida.</p><p><b>Portales:</b> explora el mapa principal y entra con <span data-control="interact"></span> en sus seis portales. Cada uno conduce a un mapa de incendio, inundación o fallo digital con tres oleadas y una Torre Negra.</p><p><b>Torre Negra:</b> completa las tres oleadas para romper su escudo, localízala en el minimapa (T) y destrúyela con tus ataques automáticos. Cerca de ella, <span data-control="interact"></span> permite fijarla como objetivo. Ganas 1000 puntos, 100 bits y 60 EXP; vuelves al mapa principal y el portal queda cerrado.</p><p>El portal verde de entrada permite volver antes: el progreso se conserva. Al cerrar los seis portales aparece <b>Devimon</b> en el centro del mapa principal. Derrotarlo da 5000 puntos, 250 bits y experiencia. La partida continúa para hacer récord.</p><p><b>Cofres:</b> cuestan 15 bits y muestran una recompensa mediante un carrusel. Puedes recogerla o arriesgarla una vez: 20 % de conseguir otra de mayor calidad y 80 % de perderla. Puedes llevar cuatro reliquias de rango 1–3 y hasta tres compañeros distintos. Un duplicado mejora su rango; los legendarios tienen un efecto único y no se duplican; Los compañeros se suman al grupo. Abre <b>Equipo</b> para consultar los efectos.</p><p>Los invasores llegan cada 90 segundos. Sus círculos rojos avisan de un ataque: sal de ellos o esquiva. Los santuarios exigen resistir dentro del círculo durante ocho segundos.</p><fieldset class="music-settings"><legend>Música de fondo</legend><p>Banda sonora original de aventura digital. Puedes elegir un archivo de música de tu PC para esta sesión.</p><label>Volumen <input id="music-volume" type="range" min="0" max="100" value="30"></label><label>Tu canción <input id="music-file" type="file" accept="audio/*"></label><small id="music-track">Aventura digital · composición original</small></fieldset><p><b>Esc / <span data-control="pause"></span>:</b> pausa. El juego se pausa al cambiar de ventana. <b>F11:</b> pantalla completa en Windows.</p></dialog>
-<dialog id="book-dialog" aria-labelledby="book-title"><form method="dialog"><button class="close" aria-label="Cerrar catálogo">×</button></form><div class="eyebrow">ELIGE TU ESTILO DE COMBATE</div><h2 id="book-title">Técnicas y objetos</h2><p>Las técnicas se ofrecen al subir de nivel según tu Digimon. Puedes llevar cuatro; si están ocupadas, eliges cuál sustituir. Los objetos se obtienen en cofres: cuatro reliquias y hasta tres compañeros.</p><div class="book-controls"><button id="book-techniques" class="primary">64 técnicas</button><button id="book-relics">44 objetos · 9 legendarios</button><button id="book-states">Estados</button><label id="book-family-label">Familia <select id="book-family"><option value="all">Todas</option></select></label></div><div id="book-grid"></div></dialog><dialog id="gear-dialog"><form method="dialog"><button class="close" aria-label="Cerrar equipo">×</button></form><div class="eyebrow">TU ESTILO DE JUEGO</div><h2>Técnicas y equipo</h2><p>Los cofres contienen reliquias y compañeros: recoge el resultado del carrusel o arriésgalo por calidad superior. Hasta cuatro reliquias de rango 1–3 o legendarias únicas, y hasta tres compañeros distintos. Los objetos duran esta partida.</p><div id="gear-list"></div></dialog><dialog id="records-dialog"><form method="dialog"><button class="close" aria-label="Cerrar récords">×</button></form><div class="eyebrow">SOLO UN INTENTO MÁS</div><h2>Tus mejores partidas</h2><div id="records-list"></div><p class="fine-print">Récords locales de este ordenador. Las partidas de Digibruto se conservan por separado.</p></dialog>
-<div id="fatal-error" hidden><h2>No se ha podido iniciar el escenario 3D</h2><p id="fatal-text"></p><p>En Windows necesitas Microsoft Edge WebView2 Runtime y una tarjeta gráfica con WebGL 2. Consulta LEEME.txt.</p></div>
-<script src="species-catalog.js"></script><script src="evolution-routes.js"></script><script src="status-rules.js"></script><script src="status-icons.js"></script><script src="skill-system.js"></script><script src="assets/sprites-data.js"></script><script src="assets/portrait-data.js"></script><script src="sprite-renderer.js"></script><script src="assets/eggs-data.js"></script><script src="egg-renderer.js"></script><script src="map-icons.js"></script><script src="input-state.js"></script><script src="loot.js"></script><script src="world-rules.js"></script><script src="balance.js"></script><script src="portal-system.js"></script><script src="world-system.js"></script><script src="chest-system.js"></script><script src="relic-effects.js"></script><script src="pattern-combat.js"></script><script src="status-system.js"></script><script src="difficulty-system.js"></script><script src="progression.js"></script><script src="run-core.js"></script><script src="vendor/supabase-2.118.0.js"></script><script src="cloud-config.js"></script><script src="cloud-core.js"></script><script type="module" src="game.js"></script>
-</body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Digibonk</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="portal-transition" class="active" aria-hidden="false">
+      <div class="loading-card">
+        <div class="loading-orbit">◈</div>
+        <div class="eyebrow">DIGIBONK</div>
+        <h2 id="loading-title">Preparando la isla</h2>
+        <p id="loading-detail" role="status">Preparando escenario</p>
+        <div
+          class="loading-track"
+          role="progressbar"
+          aria-label="Carga del escenario"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <i id="loading-progress"></i>
+        </div>
+        <button id="loading-retry" hidden>Reintentar carga</button>
+      </div>
+    </div>
+    <canvas
+      id="world"
+      tabindex="-1"
+      aria-label="Isla digital tridimensional con Digimon animados"
+    ></canvas
+    ><canvas id="vfx" aria-hidden="true"></canvas>
+    <div id="vignette"></div>
+    <div id="damage-flash"></div>
+    <header id="top-brand">
+      <a id="brand" href="#"
+        ><img src="assets/digibonk-logo.png" alt="Digibonk" width="2150" height="717"
+      /></a>
+      <div>
+        <button id="sound-toggle" aria-label="Activar o desactivar efectos de sonido">
+          ♫ Sonido</button
+        ><button id="music-toggle">♫ Música</button><button id="settings-toggle">⚙ Ajustes</button
+        ><button id="help-toggle">Controles</button><button id="records-toggle">Récords</button
+        ><button id="gear-toggle">Equipo</button
+        ><button id="book-toggle">Técnicas y objetos</button>
+      </div>
+    </header>
+    <section id="home">
+      <div id="home-panel">
+        <div class="eyebrow">UN HUEVO. MUCHAS VIDAS POSIBLES.</div>
+        <h1 class="game-logo">
+          <img
+            src="assets/digibonk-logo.png"
+            alt="Digibonk"
+            width="2150"
+            height="717"
+            fetchpriority="high"
+          />
+        </h1>
+        <span id="build-version" class="build-version">Versión 1.22.0</span>
+        <p class="tagline">Sobrevive. Digievoluciona. Rompe tu récord.</p>
+        <div id="home-records"></div>
+        <button id="continue-run" class="primary" hidden>Continuar partida</button>
+        <div class="home-wallet">
+          <span>BITS DISPONIBLES</span><strong id="home-bits" aria-live="polite">0 bits</strong>
+        </div>
+        <nav id="main-menu" aria-label="Menú principal">
+          <button id="tab-play" class="primary">Jugar</button
+          ><button id="tab-incubator">Incubadora</button
+          ><button id="menu-book">Técnicas y objetos</button
+          ><button id="menu-records">Récords</button><button id="menu-league">Liga y cuenta</button
+          ><button id="menu-settings">Ajustes</button><button id="menu-help">Cómo jugar</button>
+        </nav>
+        <section id="home-content" hidden>
+          <button id="menu-back" class="menu-back">← Menú principal</button>
+          <div class="section-label">
+            <b id="egg-section-title">ELIGE TU HUEVO</b
+            ><span id="egg-section-hint">Selecciona un huevo para empezar</span>
+          </div>
+          <div id="egg-grid"></div>
+        </section>
+        <p class="home-note">
+          Los bits y el entrenamiento de tus huevos se conservan entre partidas. Mejora la
+          incubadora para abrir nuevas ramas hasta Mega. Entra con tu cuenta para competir en la
+          clasificación del grupo.
+        </p>
+        <p id="home-message" role="status"></p>
+      </div>
+      <aside id="home-aside" class="online-panel">
+        <div class="eyebrow">VUESTRO GRUPO · RÉCORDS COMPARTIDOS</div>
+        <h2>La liga Digibonk</h2>
+        <form id="login-form">
+          <label
+            >Usuario o correo<input
+              id="login-username"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              placeholder="sebas o correo@ejemplo.com"
+              required
+              maxlength="254" /></label
+          ><label
+            >Contraseña<input
+              id="login-password"
+              type="password"
+              autocomplete="current-password"
+              required
+              maxlength="128" /></label
+          ><button id="login-submit" class="primary" disabled>Iniciar sesión</button>
+        </form>
+        <div id="signed-account" hidden>
+          <strong id="cloud-identity"></strong><button id="cloud-signout">Cerrar sesión</button>
+        </div>
+        <p id="cloud-status" role="status">Conectando con Supabase…</p>
+        <section id="leaderboard" hidden>
+          <div class="board-heading">
+            <h3>Clasificación</h3>
+            <button id="leaderboard-refresh">Actualizar</button>
+          </div>
+          <div class="board-labels"><span>JUGADOR / DIGIMON</span><span>PUNTOS</span></div>
+          <ol id="leaderboard-list"></ol>
+        </section>
+        <p class="online-note">
+          El mejor récord de cada jugador. Los resultados de las partidas iniciadas con tu cuenta se
+          envían automáticamente al terminar.
+        </p>
+      </aside>
+    </section>
+    <section id="hud" hidden>
+      <div class="player-panel">
+        <canvas id="portrait" width="80" height="80"></canvas>
+        <div>
+          <div class="player-name">
+            <strong id="species-name"></strong><span id="stage-name"></span>
+          </div>
+          <div class="vital-caption">
+            <svg
+              class="hud-icon heart"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"
+              /></svg
+            ><b>VIDA</b>
+          </div>
+          <div class="life">
+            <div id="life-fill"></div>
+            <span id="life-label"></span>
+          </div>
+          <div class="vital-caption xp-caption">
+            <svg
+              class="hud-icon experience"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m12 2 8 8-8 12L4 10 8 2Z" />
+              <path d="M4 10h16M8 2l4 8 4-8m-4 8v12" /></svg
+            ><b>EXPERIENCIA</b>
+          </div>
+          <div class="xp"><div id="xp-fill"></div></div>
+          <small id="level-label"></small>
+        </div>
+      </div>
+      <div class="run-stats">
+        <b id="run-clock">00:00</b><span id="run-wave"></span
+        ><span
+          ><small
+            ><svg
+              class="hud-icon trophy"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M7 3h10v5a5 5 0 0 1-10 0V3Zm0 2H3v2a4 4 0 0 0 5 4m9-6h4v2a4 4 0 0 1-5 4M12 13v5m-4 3h8m-9 0v-3h10v3"
+              /></svg
+            >PUNTOS</small
+          ><strong id="run-score"></strong></span
+        ><span
+          ><small
+            ><svg
+              class="hud-icon swords"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="m4 3 5 2 11 12-3 3L5 9 4 3Zm16 0-5 2-3 3m-4 4-5 5 3 3 5-5M3 21l3-3m12 0 3 3M3 14l7 7m4-7 7 7"
+              /></svg
+            >BAJAS</small
+          ><strong id="run-kills"></strong></span
+        ><span
+          ><small
+            ><svg
+              class="hud-icon coin"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <ellipse cx="10" cy="6" rx="7" ry="3" />
+              <path d="M3 6v6c0 1.7 3.1 3 7 3m7-9v4M3 9c0 1.7 3.1 3 7 3" />
+              <ellipse cx="16" cy="13" rx="5" ry="2.5" />
+              <path
+                d="M11 13v6c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-6m-10 3c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5"
+              /></svg
+            >BITS</small
+          ><strong id="run-coins"></strong></span
+        ><button id="pause-run">Ⅱ</button>
+      </div>
+      <div id="weapons"></div>
+    </section>
+    <aside id="portal-timer" hidden aria-label="Plazo para entrar en un portal">
+      <div>
+        <span id="portal-timer-label">PRÓXIMO PORTAL</span
+        ><strong id="portal-timer-value">03:00</strong>
+      </div>
+      <small id="portal-timer-detail"></small>
+      <div class="portal-timer-track"><i id="portal-timer-fill"></i></div>
+    </aside>
+    <section id="boss-bar" hidden>
+      <div><b id="boss-name"></b><span id="boss-type">INVASOR</span></div>
+      <div class="boss-track"><i id="boss-fill"></i></div>
+    </section>
+    <aside id="map-panel" hidden>
+      <div class="map-title">
+        <span>MAPA DE LA ISLA</span
+        ><button id="map-toggle" title="Ampliar mapa" aria-label="Ampliar mapa">⛶</button>
+      </div>
+      <canvas
+        id="minimap"
+        width="220"
+        height="220"
+        aria-label="Mapa con iconos de cofres, tiendas, descansos, portales y torres"
+      ></canvas>
+      <div class="map-mini-legend">
+        <span><canvas data-map-icon="chest"></canvas>Cofre</span
+        ><span><canvas data-map-icon="shop"></canvas>Tienda</span
+        ><span><canvas data-map-icon="portal"></canvas>Portal</span
+        ><span><canvas data-map-icon="tower"></canvas>Torre</span>
+      </div>
+    </aside>
+    <aside id="style-panel" hidden>
+      <div class="eyebrow" id="style-name"></div>
+      <p id="style-passive"></p>
+      <button id="style-activate"></button>
+      <div
+        id="skill-recharge"
+        role="progressbar"
+        aria-label="Recarga de habilidad"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+      >
+        <i id="skill-recharge-fill"></i>
+      </div>
+      <small id="skill-recharge-label">Habilidad lista</small><small id="style-key-hint"></small>
+    </aside>
+    <div id="equipment-strip" hidden></div>
+    <div id="controls-hint" hidden>
+      WASD / flechas o clic · Espacio: esquivar · E: interactuar · Q: habilidad · Esc: pausa
+    </div>
+    <button id="interact" hidden></button>
+    <div id="challenge-label" hidden></div>
+    <div id="toast" role="status"></div>
+    <section id="choice-overlay" class="overlay" hidden>
+      <div class="choice-shell">
+        <div id="choice-kicker" class="eyebrow"></div>
+        <h2 id="choice-title"></h2>
+        <p id="choice-subtitle"></p>
+        <div id="chest-carousel" hidden></div>
+        <div id="choice-cards"></div>
+        <button id="skip-chest" hidden>Cerrar sin elegir</button
+        ><small id="choice-hint"
+          >El tiempo se detiene mientras eliges. Pulsa el número de una tarjeta para
+          seleccionar.</small
+        >
+      </div>
+    </section>
+    <section id="evolution-cinema" hidden>
+      <span class="eyebrow">DIGIEVOLUCIÓN</span>
+      <h2 id="evolution-name"></h2>
+      <p id="evolution-line"></p>
+    </section>
+    <section id="pause-overlay" class="overlay" hidden>
+      <div class="dialog">
+        <div class="eyebrow">RESPIRA. PREPARA TU SIGUIENTE MOVIMIENTO.</div>
+        <h2>Partida en pausa</h2>
+        <p>Tu run permanece guardada. Al volver puedes seguir desde aquí.</p>
+        <button id="resume-run" class="primary">Continuar</button
+        ><button id="save-menu">Guardar y volver al menú</button
+        ><button id="pause-settings">Ajustes de controles</button
+        ><button id="pause-help">Ver controles</button>
+      </div>
+    </section>
+    <section id="result-overlay" class="overlay" hidden>
+      <div class="result-shell">
+        <div class="eyebrow">LOS DATOS DE TU LEYENDA</div>
+        <h2>Una vida. Un linaje.</h2>
+        <canvas id="result-portrait" width="180" height="150"></canvas>
+        <div id="result-species"></div>
+        <div id="result-stats"></div>
+        <div id="result-history"></div>
+        <div id="result-build"></div>
+        <div id="result-objective"></div>
+        <button id="new-run" class="primary">Elegir otro huevo</button
+        ><button id="result-records">Ver récords</button>
+      </div>
+    </section>
+    <dialog id="map-dialog" aria-labelledby="map-dialog-title">
+      <form method="dialog"><button class="close" aria-label="Cerrar mapa">×</button></form>
+      <div class="eyebrow">PARTIDA EN PAUSA · <span data-control="map">M</span> PARA CERRAR</div>
+      <h2 id="map-dialog-title">Mapa</h2>
+      <canvas id="world-map" width="680" height="680" aria-label="Mapa ampliado del mundo"></canvas>
+      <div id="map-full-legend"></div>
+      <p>
+        Los símbolos indican qué hay en cada punto. Una marca de verificación indica un portal
+        cerrado; la flecha dentro de un portal indica el regreso.
+      </p>
+    </dialog>
+    <dialog id="settings-dialog" aria-labelledby="settings-title">
+      <form method="dialog"><button class="close" aria-label="Cerrar ajustes">×</button></form>
+      <div class="eyebrow">A TU MANERA</div>
+      <h2 id="settings-title">Ajustes de controles</h2>
+      <p>Haz clic en una tecla y pulsa la que prefieras. Puedes asignar dos teclas por acción.</p>
+      <div class="settings-layout">
+        <section class="keybind-settings">
+          <div class="binding-heading">
+            <span>ACCIÓN</span><span>PRINCIPAL</span><span>SECUNDARIA</span>
+          </div>
+          <div id="bindings-list"></div>
+          <p id="binding-message" role="status" aria-live="polite"></p>
+        </section>
+        <section class="visibility-settings">
+          <h3>Visibilidad de proyectiles</h3>
+          <p>
+            0 % oculta el efecto; 100 % muestra su máxima opacidad. Se aplica también a sus estelas
+            y brillos.
+          </p>
+          <label class="opacity-row" for="opacity-player"
+            ><span
+              ><i id="opacity-player-preview" class="opacity-preview player" aria-hidden="true">✦</i
+              >Tus ataques</span
+            ><input
+              id="opacity-player"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="100"
+            /><output id="opacity-player-value" for="opacity-player">100 %</output></label
+          ><label class="opacity-row" for="opacity-experience"
+            ><span
+              ><i
+                id="opacity-experience-preview"
+                class="opacity-preview experience"
+                aria-hidden="true"
+                >◆</i
+              >Fragmentos de experiencia</span
+            ><input
+              id="opacity-experience"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value="100"
+            /><output id="opacity-experience-value" for="opacity-experience">100 %</output></label
+          ><label class="opacity-row" for="opacity-enemy"
+            ><span
+              ><i id="opacity-enemy-preview" class="opacity-preview enemy" aria-hidden="true">●</i
+              >Proyectiles enemigos</span
+            ><input id="opacity-enemy" type="range" min="0" max="100" step="1" value="100" /><output
+              id="opacity-enemy-value"
+              for="opacity-enemy"
+              >100 %</output
+            ></label
+          ><button id="visibility-reset">Restaurar opacidades</button>
+        </section>
+      </div>
+      <div class="settings-actions">
+        <button id="bindings-reset">Restaurar predeterminados</button>
+        <form method="dialog"><button class="primary">Listo</button></form>
+      </div>
+    </dialog>
+    <dialog id="help-dialog">
+      <form method="dialog"><button class="close" aria-label="Cerrar controles">×</button></form>
+      <div class="eyebrow">CÓMO SOBREVIVIR</div>
+      <h2>Muévete. Recoge. Evoluciona.</h2>
+      <p>
+        Movimiento: <b data-control="up"></b>, <b data-control="left"></b>,
+        <b data-control="down"></b>, <b data-control="right"></b>. También puedes hacer clic en el
+        suelo.
+      </p>
+      <p><b data-control="dash"></b>: esquiva con un salto corto. Tiene recarga.</p>
+      <p>
+        <b data-control="interact"></b>: abre cofres, visita a Wizardmon o activa santuarios
+        cercanos. Amplía el mapa con <b data-control="map">M</b> o el botón ⛶. La partida se pausa
+        mientras está abierto.
+      </p>
+      <p>
+        Personaliza las teclas y la opacidad de los efectos en <b>⚙ Ajustes</b>, arriba o desde la
+        pausa.
+      </p>
+      <p>
+        Los ataques son automáticos. Los elementos pueden aplicar estados sobre los enemigos:
+        consulta sus probabilidades, duración y efectos en <b>Técnicas y objetos → Estados</b>.
+        Empapar a un enemigo permite potenciar una descarga eléctrica posterior. Recoge los
+        cristales de experiencia para subir de nivel y elegir una de tres mejoras.
+      </p>
+      <p>
+        La incubadora empieza con Botamon y una ruta desbloqueada. Gana bits permanentes durante las
+        runs para comprar huevos o mejorar fuerza, velocidad de ataque, vitalidad y movimiento. Cada
+        dos mejoras por huevo desbloquean otra rama por etapa; consulta las rutas y requisitos en su
+        ficha. Las mejoras se aplican al iniciar una nueva run. Este progreso se guarda en este
+        ordenador por cuenta.
+      </p>
+      <p>
+        En los niveles <b>3, 6, 12, 20 y 30</b> podrás escoger una rama de digievolución disponible.
+        La tienda siempre ofrece mejoras de atributos para esta partida y encarece sus precios con
+        cada compra. Tras elegir una mejora pagada, el carrusel determina su calidad: común, rara o
+        épica. Puedes recogerla o arriesgarla una vez: 20 % de mejorar el mismo atributo y 80 % de
+        perder la compra sin devolución. Cada nueva forma mejora tu vida y daño y aporta su técnica
+        característica.
+      </p>
+      <p>
+        Puedes llevar hasta cuatro técnicas automáticas. Las técnicas heredadas forman parte de tu
+        build. Tras Mega, la partida sigue: intenta aguantar y puntuar todo lo que puedas.
+      </p>
+      <p>
+        <b><span data-control="special"></span> · Estilo de evolución:</b> desde Rookie, tu familia
+        desbloquea una acción propia y una pasiva. La evolución puede cambiar tu estilo: consulta
+        las tarjetas y Equipo.
+      </p>
+      <p>
+        <b>Plazo de entrada:</b> tienes 3 minutos de partida para entrar en un portal. Al agotarse,
+        los enemigos reciben mucha más vida y daño, y la corrupción sigue creciendo. Entrar detiene
+        ese plazo; salir sin purificarlo reanuda el tiempo restante. Cerrar la Torre Negra concede
+        otros 3 minutos. La dificultad general acelera con el tiempo y también sigue subiendo dentro
+        de los portales. Pausa, menús y cargas detienen el tiempo de partida.
+      </p>
+      <p>
+        <b>Portales:</b> explora el mapa principal y entra con
+        <span data-control="interact"></span> en sus seis portales. Cada uno conduce a un mapa de
+        incendio, inundación o fallo digital con tres oleadas y una Torre Negra.
+      </p>
+      <p>
+        <b>Torre Negra:</b> completa las tres oleadas para romper su escudo, localízala en el
+        minimapa (T) y destrúyela con tus ataques automáticos. Cerca de ella,
+        <span data-control="interact"></span> permite fijarla como objetivo. Ganas 1000 puntos, 100
+        bits y 60 EXP; vuelves al mapa principal y el portal queda cerrado.
+      </p>
+      <p>
+        El portal verde de entrada permite volver antes: el progreso se conserva. Al cerrar los seis
+        portales aparece <b>Devimon</b> en el centro del mapa principal. Derrotarlo da 5000 puntos,
+        250 bits y experiencia. La partida continúa para hacer récord.
+      </p>
+      <p>
+        <b>Cofres:</b> cuestan 15 bits y muestran una recompensa mediante un carrusel. Puedes
+        recogerla o arriesgarla una vez: 20 % de conseguir otra de mayor calidad y 80 % de perderla.
+        Puedes llevar cuatro reliquias de rango 1–3 y hasta tres compañeros distintos. Un duplicado
+        mejora su rango; los legendarios tienen un efecto único y no se duplican; Los compañeros se
+        suman al grupo. Abre <b>Equipo</b> para consultar los efectos.
+      </p>
+      <p>
+        Los invasores llegan cada 90 segundos. Sus círculos rojos avisan de un ataque: sal de ellos
+        o esquiva. Los santuarios exigen resistir dentro del círculo durante ocho segundos.
+      </p>
+      <fieldset class="music-settings">
+        <legend>Música de fondo</legend>
+        <p>
+          Banda sonora original de aventura digital. Puedes elegir un archivo de música de tu PC
+          para esta sesión.
+        </p>
+        <label>Volumen <input id="music-volume" type="range" min="0" max="100" value="30" /></label
+        ><label>Tu canción <input id="music-file" type="file" accept="audio/*" /></label
+        ><small id="music-track">Aventura digital · composición original</small>
+      </fieldset>
+      <p>
+        <b>Esc / <span data-control="pause"></span>:</b> pausa. El juego se pausa al cambiar de
+        ventana. <b>F11:</b> pantalla completa en Windows.
+      </p>
+    </dialog>
+    <dialog id="book-dialog" aria-labelledby="book-title">
+      <form method="dialog"><button class="close" aria-label="Cerrar catálogo">×</button></form>
+      <div class="eyebrow">ELIGE TU ESTILO DE COMBATE</div>
+      <h2 id="book-title">Técnicas y objetos</h2>
+      <p>
+        Las técnicas se ofrecen al subir de nivel según tu Digimon. Puedes llevar cuatro; si están
+        ocupadas, eliges cuál sustituir. Los objetos se obtienen en cofres: cuatro reliquias y hasta
+        tres compañeros.
+      </p>
+      <div class="book-controls">
+        <button id="book-techniques" class="primary">64 técnicas</button
+        ><button id="book-relics">44 objetos · 9 legendarios</button
+        ><button id="book-states">Estados</button
+        ><label id="book-family-label"
+          >Familia
+          <select id="book-family">
+            <option value="all">Todas</option>
+          </select></label
+        >
+      </div>
+      <div id="book-grid"></div>
+    </dialog>
+    <dialog id="gear-dialog">
+      <form method="dialog"><button class="close" aria-label="Cerrar equipo">×</button></form>
+      <div class="eyebrow">TU ESTILO DE JUEGO</div>
+      <h2>Técnicas y equipo</h2>
+      <p>
+        Los cofres contienen reliquias y compañeros: recoge el resultado del carrusel o arriésgalo
+        por calidad superior. Hasta cuatro reliquias de rango 1–3 o legendarias únicas, y hasta tres
+        compañeros distintos. Los objetos duran esta partida.
+      </p>
+      <div id="gear-list"></div>
+    </dialog>
+    <dialog id="records-dialog">
+      <form method="dialog"><button class="close" aria-label="Cerrar récords">×</button></form>
+      <div class="eyebrow">SOLO UN INTENTO MÁS</div>
+      <h2>Tus mejores partidas</h2>
+      <div id="records-list"></div>
+      <p class="fine-print">
+        Récords locales de este ordenador. Las partidas de Digibruto se conservan por separado.
+      </p>
+    </dialog>
+    <div id="fatal-error" hidden>
+      <h2>No se ha podido iniciar el escenario 3D</h2>
+      <p id="fatal-text"></p>
+      <p>
+        En Windows necesitas Microsoft Edge WebView2 Runtime y una tarjeta gráfica con WebGL 2.
+        Consulta LEEME.txt.
+      </p>
+    </div>
+    <script src="species-catalog.js"></script>
+    <script src="evolution-routes.js"></script>
+    <script src="status-rules.js"></script>
+    <script src="status-icons.js"></script>
+    <script src="skill-system.js"></script>
+    <script src="assets/sprites-data.js"></script>
+    <script src="assets/portrait-data.js"></script>
+    <script src="sprite-renderer.js"></script>
+    <script src="assets/eggs-data.js"></script>
+    <script src="egg-renderer.js"></script>
+    <script src="map-icons.js"></script>
+    <script src="input-state.js"></script>
+    <script src="loot.js"></script>
+    <script src="world-rules.js"></script>
+    <script src="balance.js"></script>
+    <script src="portal-system.js"></script>
+    <script src="world-system.js"></script>
+    <script src="chest-system.js"></script>
+    <script src="relic-effects.js"></script>
+    <script src="pattern-combat.js"></script>
+    <script src="status-system.js"></script>
+    <script src="difficulty-system.js"></script>
+    <script src="progression.js"></script>
+    <script src="run-core.js"></script>
+    <script src="vendor/supabase-2.118.0.js"></script>
+    <script src="cloud-config.js"></script>
+    <script src="cloud-core.js"></script>
+    <script type="module" src="game.js"></script>
+  </body>
+</html>

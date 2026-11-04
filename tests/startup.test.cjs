@@ -1,3 +1,72 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');const source=fs.readFileSync(require.resolve('../game/game.js'),'utf8');
-test('entrypoint contains runtime functions and starts renderer, transition and animation loop',()=>{new vm.Script(source.replace(/^import .*;\r?\n/gm,''));for(const name of ['sceneTransition','loop','refreshHud','choose','end','drawPortraits'])assert.match(source,new RegExp('(?:async )?function '+name+'\\('));const boot=source.slice(source.lastIndexOf('try{renderer=new Renderer3D'));assert.ok(boot.length>100);const calls=[];vm.runInNewContext(boot,{Renderer3D:class{},$:()=>({}),keys:{},settings:{visibility:{}},sceneTransition:()=>calls.push('prepare'),requestAnimationFrame:fn=>{assert.equal(typeof fn,'function');calls.push('loop');},loop(){},console,document:{body:{dataset:{}}}});assert.deepEqual(calls,['prepare','loop']);});
-test('actual transition prepares scene and releases loading overlay',async()=>{const start=source.indexOf('async function sceneTransition('),end=source.indexOf('\n',start);assert.ok(start>=0);const nodes=new Map(),get=id=>{if(!nodes.has(id))nodes.set(id,{style:{},classList:{add(){},remove(){}},setAttribute(k,v){this[k]=v;},querySelector(){return this;}});return nodes.get(id);};let prepared=0;const box={$:get,loading:false,run:null,active:false,keys:{clear(){}},renderer:{async prepare(run,progress){prepared++;progress(1,'Todo listo');}},requestAnimationFrame:fn=>setImmediate(fn),setTimeout:fn=>setImmediate(fn),performance,console};vm.createContext(box);vm.runInContext(source.slice(start,end),box);await vm.runInContext('sceneTransition()',box);assert.equal(prepared,1);assert.equal(box.loading,false);assert.equal(get('#portal-transition')['aria-hidden'],'true');});
+const { test } = require('node:test'),
+  assert = require('node:assert/strict'),
+  fs = require('fs'),
+  vm = require('vm');
+const source = fs.readFileSync(require.resolve('../game/game.js'), 'utf8');
+test('entrypoint contains runtime functions and starts renderer, transition and animation loop', () => {
+  new vm.Script(source.replace(/^import .*;\r?\n/gm, ''));
+  for (const name of ['sceneTransition', 'loop', 'refreshHud', 'choose', 'end', 'drawPortraits'])
+    assert.match(source, new RegExp('(?:async )?function ' + name + '\\('));
+  const boot = source.slice(source.search(/try\s*\{\s*renderer\s*=\s*new Renderer3D/));
+  assert.ok(boot.length > 100);
+  const calls = [];
+  vm.runInNewContext(boot, {
+    Renderer3D: class {},
+    $: () => ({}),
+    keys: {},
+    settings: { visibility: {} },
+    sceneTransition: () => calls.push('prepare'),
+    requestAnimationFrame: (fn) => {
+      assert.equal(typeof fn, 'function');
+      calls.push('loop');
+    },
+    loop() {},
+    console,
+    document: { body: { dataset: {} } },
+  });
+  assert.deepEqual(calls, ['prepare', 'loop']);
+});
+test('actual transition prepares scene and releases loading overlay', async () => {
+  const start = source.indexOf('async function sceneTransition('),
+    end = source.indexOf('function interact(', start);
+  assert.ok(start >= 0);
+  const nodes = new Map(),
+    get = (id) => {
+      if (!nodes.has(id))
+        nodes.set(id, {
+          style: {},
+          classList: { add() {}, remove() {} },
+          setAttribute(k, v) {
+            this[k] = v;
+          },
+          querySelector() {
+            return this;
+          },
+        });
+      return nodes.get(id);
+    };
+  let prepared = 0;
+  const box = {
+    $: get,
+    loading: false,
+    run: null,
+    active: false,
+    keys: { clear() {} },
+    renderer: {
+      async prepare(run, progress) {
+        prepared++;
+        progress(1, 'Todo listo');
+      },
+    },
+    requestAnimationFrame: (fn) => setImmediate(fn),
+    setTimeout: (fn) => setImmediate(fn),
+    performance,
+    console,
+  };
+  vm.createContext(box);
+  vm.runInContext(source.slice(start, end), box);
+  await vm.runInContext('sceneTransition()', box);
+  assert.equal(prepared, 1);
+  assert.equal(box.loading, false);
+  assert.equal(get('#portal-transition')['aria-hidden'], 'true');
+});

@@ -1,28 +1,558 @@
-(function(root){'use strict';
- const W=typeof module!=='undefined'?require('./world-rules'):root.DigibonkWorld;
- const B=typeof module!=='undefined'?require('./balance.js'):root.DigibonkBalance;
- const sceneFields=['mapSeed','sectors','enemies','hostile','shots','gems','fx','usedPois','poiPrices','challenge','worldHazards','styleFields','spawnClock','nextBoss','attackFields'];
- function install(C,base,original){const proto=C.Run.prototype,dist=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z),oldUpdate=proto.updateWorld,oldSpawnDevimon=proto.spawnDevimon;
-  proto.initializeWorld=function(){const s=this.s,p=s.player;if(s.world?.missionVersion!==W.MAP_VERSION){s.realm=null;s.mainScene=null;s.portalRuns={};s.sectors=W.sectors(s.mapSeed,base.walkable);const outer=[0,1,2,3,5,6,7,8],seeds=new Set([s.mapSeed]);for(let i=outer.length-1;i>0;i--){const j=base.hash(i,91,s.mapSeed)%(i+1);[outer[i],outer[j]]=[outer[j],outer[i]];}const portals=outer.slice(0,W.OBJECTIVE_ZONES).map((id,i)=>{let seed=base.hash(id,731,s.mapSeed);while(seeds.has(seed))seed=(seed+1)>>>0;seeds.add(seed);const zone=s.sectors[id];return {id,name:zone.name,kind:['fire','flood','glitch'][i%3],x:zone.anchor.x,z:zone.anchor.z,seed,closed:false};});s.world={missionVersion:W.MAP_VERSION,target:portals.length,cleansed:0,phase:'portals',portals,devimonSpawned:false,devimonDefeated:false,hazardClock:6,lastX:p.x,lastZ:p.z};s.enemies=[];s.hostile=[];s.shots=[];s.worldHazards=[];s.styleFields=[];s.purifying=null;s.sceneSerial=(s.sceneSerial||0)+1;this.placeSafely(p);for(const buddy of s.buddies){buddy.x=p.x;buddy.z=p.z;this.placeSafely(buddy);}}
-   s.portalRuns??={};s.realm??=null;s.mainScene??=null;s.worldHazards??=[];s.styleFields??=[];s.purifying=null;s.sceneSerial??=0;p.styleCooldown??=0;p.moveMomentum??=0;p.stillTime??=0;if(s.realm){this.configureRealmMap(s.realm);if(s.realm.pressure?.version!==3)this.refreshRealmPressure();}
-  };
-  proto.placeSafely=function(unit){const limit=W.WORLD-3;unit.x=Math.max(-limit,Math.min(limit,Number.isFinite(unit.x)?unit.x:0));unit.z=Math.max(-limit,Math.min(limit,Number.isFinite(unit.z)?unit.z:0));if(base.walkable(unit.x,unit.z,this.s.mapSeed,.6))return;const x=unit.x,z=unit.z;for(let i=0;i<200;i++){const a=i*2.399963,r=Math.sqrt(i)*.8,xx=x+Math.cos(a)*r,zz=z+Math.sin(a)*r;if(base.walkable(xx,zz,this.s.mapSeed,.6)){unit.x=xx;unit.z=zz;return;}}unit.x=unit.z=0;};
-  proto.captureScene=function(){const s=this.s;return structuredClone({...Object.fromEntries(sceneFields.map(k=>[k,s[k]])),position:{x:s.player.x,z:s.player.z},buddyPositions:s.buddies.map(b=>({species:b.species,x:b.x,z:b.z}))});};
-  proto.applyScene=function(scene){const s=this.s;for(const key of sceneFields)s[key]=structuredClone(scene[key]);this.map=base.mapFor(s.mapSeed);s.player.x=scene.position.x;s.player.z=scene.position.z;this.placeSafely(s.player);for(const buddy of s.buddies){const pos=scene.buddyPositions?.find(b=>b.species===buddy.species)||scene.buddyPosition;buddy.x=pos?.x??s.player.x;buddy.z=pos?.z??s.player.z;this.placeSafely(buddy);}s.player.dashLeft=0;s.player.chargeTrail=0;s.player.moveMomentum=0;s.player.stillTime=0;s.player.invulnerable=Math.max(1.2,s.player.invulnerable);s.world.lastX=s.player.x;s.world.lastZ=s.player.z;s.world.hazardClock=6;s.sceneSerial++;};
-  proto.configureRealmMap=function(realm){const s=this.s,map=base.mapFor(s.mapSeed);map.isRealm=true;map.pois=map.pois.filter(p=>p.type==='chest').slice(0,10);if(!realm.towerPosition){for(let i=0;i<300;i++){const a=(base.hash(realm.portalId,7,s.mapSeed)%6283)/1000+i*2.399963,r=100+(i%8)*8,x=Math.cos(a)*r,z=Math.sin(a)*r;if(base.walkable(x,z,s.mapSeed,3)&&!map.pois.some(p=>dist(p,{x,z})<8)){realm.towerPosition={x,z};break;}}if(!realm.towerPosition)throw Error('No hay posición transitable para la torre.');}
-   if(!map.towerObstacle){const o={id:'black-tower',x:realm.towerPosition.x,z:realm.towerPosition.z,type:'tower',r:1.8,size:1};map.obstacles.push(o);const key=Math.floor(o.x/8)+':'+Math.floor(o.z/8);if(!map.grid.has(key))map.grid.set(key,[]);map.grid.get(key).push(o);map.towerObstacle=o;}this.map=map;
-  };
-  proto.refreshRealmPressure=function(timedOnly=false){const s=this.s,r=s.realm;if(!r)return;const input=timedOnly&&r.pressure?{...r.pressure,time:s.time}:{level:s.level,time:s.time,stage:s.player.stage,shops:s.shopPurchases,cleansed:s.world.cleansed,overdue:s.portalCycle?.overdue||0},pressure=B.pressure(input,r.pressure);r.pressure=pressure;for(const enemy of s.enemies){if(enemy.hp<=0)continue;if(enemy.tower){const hp=B.tower(pressure);enemy.hp=hp*(enemy.hp/enemy.maxHp);enemy.maxHp=hp;}else if(enemy.realmMob){const stats=B.realm(pressure,enemy.wave||1,Math.max(enemy.stage,B.realm(pressure).stage)),hp=stats.hp*(enemy.elite?1.4:1);enemy.hp=hp*(enemy.hp/enemy.maxHp);enemy.maxHp=hp;enemy.speed=stats.speed;enemy.contactDamage=stats.contact;enemy.shotDamage=stats.shot;enemy.projectileSpeed=stats.projectileSpeed;enemy.shotInterval=stats.shotInterval;enemy.xpValue=stats.xp;enemy.coinValue=stats.coins+(enemy.elite?2:0);}}return pressure;};
-  proto.enterPortal=function(id){const s=this.s,portal=s.world.portals.find(p=>p.id===id);if(s.realm||!portal||portal.closed||s.done||s.choice||s.evolution||s.hatch>0)return false;s.mainScene=this.captureScene();const cached=s.portalRuns[id];if(cached){s.attackFields=[];s.realm=structuredClone(cached.progress);this.applyScene(cached.scene);this.configureRealmMap(s.realm);this.refreshRealmPressure();}else{s.realm={portalId:id,kind:portal.kind,name:portal.name,seed:portal.seed,phase:'waves',wave:0,maxWaves:3,waiting:true,nextWave:2,focusTower:false,reinforcements:12};this.refreshRealmPressure();s.mapSeed=portal.seed;s.attackFields=[];s.enemies=[];s.hostile=[];s.shots=[];s.gems=[];s.fx=[];s.usedPois=[];s.poiPrices={};s.challenge=null;s.worldHazards=[];s.styleFields=[];s.purifying=null;s.spawnClock=1000;s.nextBoss=s.time+90;s.sectors=W.sectors(s.mapSeed,base.walkable).map(z=>({...z,kind:portal.kind,revision:1}));this.configureRealmMap(s.realm);const hp=B.tower(s.realm.pressure);const tower={id:s.nextId++,species:'Torre Negra',tower:true,structure:true,shielded:true,x:s.realm.towerPosition.x,z:s.realm.towerPosition.z,hp,maxHp:hp,stage:0,hit:0,speed:0};s.enemies.push(tower);s.realm.towerId=tower.id;s.player.x=s.player.z=0;for(const [i,buddy] of s.buddies.entries()){buddy.x=(i-1)*2;buddy.z=2;this.placeSafely(buddy);}s.player.dashLeft=0;s.player.chargeTrail=0;s.player.moveMomentum=0;s.player.stillTime=0;s.player.invulnerable=Math.max(1.2,s.player.invulnerable);s.world.lastX=s.player.x;s.world.lastZ=s.player.z;s.world.hazardClock=6;s.sceneSerial++;}this.emit('portal-entered',{name:portal.name,kind:portal.kind,level:s.realm.pressure.level});return true;};
-  proto.leaveRealm=function(){const s=this.s,realm=s.realm;if(!realm||!s.mainScene)return false;if(!s.world.portals.find(p=>p.id===realm.portalId)?.closed)s.portalRuns[realm.portalId]={scene:this.captureScene(),progress:structuredClone(realm)};else delete s.portalRuns[realm.portalId];const scene=s.mainScene;s.realm=null;s.mainScene=null;this.applyScene(scene);s.nextBoss=Math.max(s.nextBoss,s.time+45);s.spawnClock=Math.max(.3,s.spawnClock);this.emit('portal-returned');if(s.world.cleansed>=s.world.target)this.spawnDevimon();return true;};
-  proto.onTowerDestroyed=function(tower){const s=this.s,r=s.realm;if(!r||r.towerId!==tower.id||r.phase==='cleared'||tower.shielded)return false;const portal=s.world.portals.find(p=>p.id===r.portalId);if(!portal||portal.closed)return false;portal.closed=true;s.world.cleansed++;s.score+=1000;s.coins+=100;s.xp+=60;s.totalXp+=60;r.phase='cleared';r.focusTower=false;r.clearedAt=s.time;r.returnDelay=1.6;for(const enemy of s.enemies)enemy.hp=0;s.hostile=[];s.worldHazards=[];s.styleFields=[];for(const zone of s.sectors){zone.kind=null;zone.purified=true;zone.revision++;}this.effect('heal',tower.x,tower.z,{size:7,life:1.5,maxLife:1.5});this.emit('tower-destroyed',{name:portal.name});return true;};
-  proto.spawnRealmMob=function(wave,token){const s=this.s,r=s.realm;if(!r||s.enemies.filter(e=>e.hp>0).length>=150)return false;const pressure=r.pressure,baseStage=B.realm(pressure,wave).stage,stage=baseStage,pool=[...C.species.values()].filter(c=>c.stage===stage&&c.id!=='Devimon');for(let i=0;i<16;i++){const a=this.random()*Math.PI*2,radius=19+this.random()*7,x=Math.max(-W.WORLD+6,Math.min(W.WORLD-6,s.player.x+Math.cos(a)*radius)),z=Math.max(-W.WORLD+6,Math.min(W.WORLD-6,s.player.z+Math.sin(a)*radius));if(!base.walkable(x,z,s.mapSeed,.6))continue;const cohort=Math.floor(s.time/35),type=pool[((base.hash(0,stage,s.mapSeed)>>>0)+cohort)%pool.length],stats=B.realm(pressure,wave,stage),elite=this.random()<stats.eliteChance,hp=stats.hp*(elite?1.4:1);s.enemies.push({id:s.nextId++,species:type.id,x,z,stage,hp,maxHp:hp,realmMob:true,waveToken:token,wave,elite,hit:0,speed:stats.speed,contactDamage:stats.contact,shotDamage:stats.shot,projectileSpeed:stats.projectileSpeed,shotInterval:stats.shotInterval,xpValue:stats.xp,coinValue:stats.coins+(elite?2:0),ranged:elite||this.random()<stats.rangedChance,shotClock:2+this.random()*5});return true;}return false;};
-  proto.updateRealmWaves=function(dt){const s=this.s,r=s.realm;if(!r||r.phase==='cleared')return;if(r.phase==='waves'){const remaining=s.enemies.filter(e=>e.hp>0&&e.waveToken===r.waveToken).length;if(r.wave>0&&!r.waiting&&remaining===0&&(r.pendingSpawns||0)===0){r.waiting=true;r.nextWave=4;this.emit('wave-cleared',{wave:r.wave});}if(!r.waiting&&(r.pendingSpawns||0)>0){r.spawnTimer=(r.spawnTimer??0)-dt;if(r.spawnTimer<=0){if(this.spawnRealmMob(r.wave,r.waveToken))r.pendingSpawns--;r.spawnTimer=Math.max(.18,Math.min(.65,16/B.realm(r.pressure,r.wave).count));}}if(r.waiting){r.nextWave-=dt;if(r.nextWave<=0){if(r.wave<r.maxWaves){r.wave++;r.waveToken=r.portalId+':'+r.wave;r.waiting=false;r.pendingSpawns=B.realm(r.pressure,r.wave).count;r.spawnTimer=.25;this.emit('realm-wave',{wave:r.wave});}else{r.phase='tower';r.focusTower=false;const tower=s.enemies.find(e=>e.id===r.towerId);if(tower)tower.shielded=false;this.emit('tower-vulnerable');}}}}else if(r.phase==='tower'){if((r.pendingReinforcements||0)>0){r.reinforcementSpawnTimer=(r.reinforcementSpawnTimer||0)-dt;if(r.reinforcementSpawnTimer<=0){if(this.spawnRealmMob(3,'reinforcement'))r.pendingReinforcements--;r.reinforcementSpawnTimer=.5;}}r.reinforcements-=dt;if(r.reinforcements<=0){const stats=B.realm(r.pressure,3);r.reinforcements=stats.reinforcementInterval;r.pendingReinforcements=(r.pendingReinforcements||0)+stats.reinforcementCount;}}};
-  proto.updateWorld=function(dt,input){const s=this.s;if(s.realm?.phase==='cleared'){s.realm.returnDelay-=dt;if(s.realm.returnDelay<=0)return this.leaveRealm();}oldUpdate.call(this,dt,input);if(!s.done&&s.realm)this.updateRealmWaves(dt);return false;};
-  proto.spawnDevimon=function(){if(this.s.realm)return false;return oldSpawnDevimon.call(this);};
-  proto.combatTargets=function(enemies){const s=this.s;return enemies.filter(e=>e.hp>0&&!e.shielded).sort((a,b)=>{const focus=s.realm?.focusTower;return (focus?(b.tower?1:0)-(a.tower?1:0):0)||dist(a,s.player)-dist(b,s.player);});};
-  proto.nearestPoi=function(){const s=this.s,p=s.player;if(s.realm){if(Math.hypot(p.x,p.z)<4)return {id:'realm-exit',type:'realm-exit',x:0,z:0,cost:0,name:'Volver al mapa principal · progreso guardado'};const tower=s.enemies.find(e=>e.tower&&e.hp>0);if(tower&&dist(tower,p)<12)return {id:'tower-target',type:'tower-target',cost:0,x:tower.x,z:tower.z,name:tower.shielded?'Torre protegida · completa las tres oleadas':s.realm.focusTower?'Liberar objetivo de la Torre Negra':'Fijar Torre Negra como objetivo'};}else{const portal=s.world.portals.filter(p=>!p.closed&&dist(p,s.player)<4.2).sort((a,b)=>dist(a,s.player)-dist(b,s.player))[0];if(portal)return {id:'portal-'+portal.id,type:'portal',portalId:portal.id,x:portal.x,z:portal.z,cost:0,name:'Entrar en portal '+portal.name+' · '+W.types[portal.kind].name};}return original.nearest.call(this);};
-  proto.interact=function(){const s=this.s,poi=this.nearestPoi();if(s.done||s.choice||s.evolution||s.hatch>0||s.realm?.phase==='cleared')return {ok:false};if(poi?.type==='portal')return {ok:this.enterPortal(poi.portalId),sceneChanged:true};if(poi?.type==='realm-exit')return {ok:this.leaveRealm(),sceneChanged:true};if(poi?.type==='tower-target'){const tower=s.enemies.find(e=>e.tower);if(tower?.shielded)return {ok:false,message:'La torre está protegida. Derrota las tres oleadas.'};s.realm.focusTower=!s.realm.focusTower;return {ok:true,message:s.realm.focusTower?'Torre fijada. Acércate para que tus técnicas alcancen el núcleo.':'Objetivo liberado.'};}return original.interact.call(this);};
- }
- if(typeof module!=='undefined')module.exports={install};else root.DigibonkPortals={install};
-})(typeof window!=='undefined'?window:globalThis);
+(function (root) {
+  'use strict';
+  const W = typeof module !== 'undefined' ? require('./world-rules') : root.DigibonkWorld;
+  const B = typeof module !== 'undefined' ? require('./balance.js') : root.DigibonkBalance;
+  const sceneFields = [
+    'mapSeed',
+    'sectors',
+    'enemies',
+    'hostile',
+    'shots',
+    'gems',
+    'fx',
+    'usedPois',
+    'poiPrices',
+    'challenge',
+    'worldHazards',
+    'styleFields',
+    'spawnClock',
+    'nextBoss',
+    'attackFields',
+  ];
+  function install(C, base, original) {
+    const proto = C.Run.prototype,
+      dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z),
+      oldUpdate = proto.updateWorld,
+      oldSpawnDevimon = proto.spawnDevimon;
+    proto.initializeWorld = function () {
+      const s = this.s,
+        p = s.player;
+      if (s.world?.missionVersion !== W.MAP_VERSION) {
+        s.realm = null;
+        s.mainScene = null;
+        s.portalRuns = {};
+        s.sectors = W.sectors(s.mapSeed, base.walkable);
+        const outer = [0, 1, 2, 3, 5, 6, 7, 8],
+          seeds = new Set([s.mapSeed]);
+        for (let i = outer.length - 1; i > 0; i--) {
+          const j = base.hash(i, 91, s.mapSeed) % (i + 1);
+          [outer[i], outer[j]] = [outer[j], outer[i]];
+        }
+        const portals = outer.slice(0, W.OBJECTIVE_ZONES).map((id, i) => {
+          let seed = base.hash(id, 731, s.mapSeed);
+          while (seeds.has(seed)) seed = (seed + 1) >>> 0;
+          seeds.add(seed);
+          const zone = s.sectors[id];
+          return {
+            id,
+            name: zone.name,
+            kind: ['fire', 'flood', 'glitch'][i % 3],
+            x: zone.anchor.x,
+            z: zone.anchor.z,
+            seed,
+            closed: false,
+          };
+        });
+        s.world = {
+          missionVersion: W.MAP_VERSION,
+          target: portals.length,
+          cleansed: 0,
+          phase: 'portals',
+          portals,
+          devimonSpawned: false,
+          devimonDefeated: false,
+          hazardClock: 6,
+          lastX: p.x,
+          lastZ: p.z,
+        };
+        s.enemies = [];
+        s.hostile = [];
+        s.shots = [];
+        s.worldHazards = [];
+        s.styleFields = [];
+        s.purifying = null;
+        s.sceneSerial = (s.sceneSerial || 0) + 1;
+        this.placeSafely(p);
+        for (const buddy of s.buddies) {
+          buddy.x = p.x;
+          buddy.z = p.z;
+          this.placeSafely(buddy);
+        }
+      }
+      s.portalRuns ??= {};
+      s.realm ??= null;
+      s.mainScene ??= null;
+      s.worldHazards ??= [];
+      s.styleFields ??= [];
+      s.purifying = null;
+      s.sceneSerial ??= 0;
+      p.styleCooldown ??= 0;
+      p.moveMomentum ??= 0;
+      p.stillTime ??= 0;
+      if (s.realm) {
+        this.configureRealmMap(s.realm);
+        if (s.realm.pressure?.version !== 3) this.refreshRealmPressure();
+      }
+    };
+    proto.placeSafely = function (unit) {
+      const limit = W.WORLD - 3;
+      unit.x = Math.max(-limit, Math.min(limit, Number.isFinite(unit.x) ? unit.x : 0));
+      unit.z = Math.max(-limit, Math.min(limit, Number.isFinite(unit.z) ? unit.z : 0));
+      if (base.walkable(unit.x, unit.z, this.s.mapSeed, 0.6)) return;
+      const x = unit.x,
+        z = unit.z;
+      for (let i = 0; i < 200; i++) {
+        const a = i * 2.399963,
+          r = Math.sqrt(i) * 0.8,
+          xx = x + Math.cos(a) * r,
+          zz = z + Math.sin(a) * r;
+        if (base.walkable(xx, zz, this.s.mapSeed, 0.6)) {
+          unit.x = xx;
+          unit.z = zz;
+          return;
+        }
+      }
+      unit.x = unit.z = 0;
+    };
+    proto.captureScene = function () {
+      const s = this.s;
+      return structuredClone({
+        ...Object.fromEntries(sceneFields.map((k) => [k, s[k]])),
+        position: { x: s.player.x, z: s.player.z },
+        buddyPositions: s.buddies.map((b) => ({ species: b.species, x: b.x, z: b.z })),
+      });
+    };
+    proto.applyScene = function (scene) {
+      const s = this.s;
+      for (const key of sceneFields) s[key] = structuredClone(scene[key]);
+      this.map = base.mapFor(s.mapSeed);
+      s.player.x = scene.position.x;
+      s.player.z = scene.position.z;
+      this.placeSafely(s.player);
+      for (const buddy of s.buddies) {
+        const pos =
+          scene.buddyPositions?.find((b) => b.species === buddy.species) || scene.buddyPosition;
+        buddy.x = pos?.x ?? s.player.x;
+        buddy.z = pos?.z ?? s.player.z;
+        this.placeSafely(buddy);
+      }
+      s.player.dashLeft = 0;
+      s.player.chargeTrail = 0;
+      s.player.moveMomentum = 0;
+      s.player.stillTime = 0;
+      s.player.invulnerable = Math.max(1.2, s.player.invulnerable);
+      s.world.lastX = s.player.x;
+      s.world.lastZ = s.player.z;
+      s.world.hazardClock = 6;
+      s.sceneSerial++;
+    };
+    proto.configureRealmMap = function (realm) {
+      const s = this.s,
+        map = base.mapFor(s.mapSeed);
+      map.isRealm = true;
+      map.pois = map.pois.filter((p) => p.type === 'chest').slice(0, 10);
+      if (!realm.towerPosition) {
+        for (let i = 0; i < 300; i++) {
+          const a = (base.hash(realm.portalId, 7, s.mapSeed) % 6283) / 1000 + i * 2.399963,
+            r = 100 + (i % 8) * 8,
+            x = Math.cos(a) * r,
+            z = Math.sin(a) * r;
+          if (base.walkable(x, z, s.mapSeed, 3) && !map.pois.some((p) => dist(p, { x, z }) < 8)) {
+            realm.towerPosition = { x, z };
+            break;
+          }
+        }
+        if (!realm.towerPosition) throw Error('No hay posición transitable para la torre.');
+      }
+      if (!map.towerObstacle) {
+        const o = {
+          id: 'black-tower',
+          x: realm.towerPosition.x,
+          z: realm.towerPosition.z,
+          type: 'tower',
+          r: 1.8,
+          size: 1,
+        };
+        map.obstacles.push(o);
+        const key = Math.floor(o.x / 8) + ':' + Math.floor(o.z / 8);
+        if (!map.grid.has(key)) map.grid.set(key, []);
+        map.grid.get(key).push(o);
+        map.towerObstacle = o;
+      }
+      this.map = map;
+    };
+    proto.refreshRealmPressure = function (timedOnly = false) {
+      const s = this.s,
+        r = s.realm;
+      if (!r) return;
+      const input =
+          timedOnly && r.pressure
+            ? { ...r.pressure, time: s.time }
+            : {
+                level: s.level,
+                time: s.time,
+                stage: s.player.stage,
+                shops: s.shopPurchases,
+                cleansed: s.world.cleansed,
+                overdue: s.portalCycle?.overdue || 0,
+              },
+        pressure = B.pressure(input, r.pressure);
+      r.pressure = pressure;
+      for (const enemy of s.enemies) {
+        if (enemy.hp <= 0) continue;
+        if (enemy.tower) {
+          const hp = B.tower(pressure);
+          enemy.hp = hp * (enemy.hp / enemy.maxHp);
+          enemy.maxHp = hp;
+        } else if (enemy.realmMob) {
+          const stats = B.realm(
+              pressure,
+              enemy.wave || 1,
+              Math.max(enemy.stage, B.realm(pressure).stage),
+            ),
+            hp = stats.hp * (enemy.elite ? 1.4 : 1);
+          enemy.hp = hp * (enemy.hp / enemy.maxHp);
+          enemy.maxHp = hp;
+          enemy.speed = stats.speed;
+          enemy.contactDamage = stats.contact;
+          enemy.shotDamage = stats.shot;
+          enemy.projectileSpeed = stats.projectileSpeed;
+          enemy.shotInterval = stats.shotInterval;
+          enemy.xpValue = stats.xp;
+          enemy.coinValue = stats.coins + (enemy.elite ? 2 : 0);
+        }
+      }
+      return pressure;
+    };
+    proto.enterPortal = function (id) {
+      const s = this.s,
+        portal = s.world.portals.find((p) => p.id === id);
+      if (s.realm || !portal || portal.closed || s.done || s.choice || s.evolution || s.hatch > 0)
+        return false;
+      s.mainScene = this.captureScene();
+      const cached = s.portalRuns[id];
+      if (cached) {
+        s.attackFields = [];
+        s.realm = structuredClone(cached.progress);
+        this.applyScene(cached.scene);
+        this.configureRealmMap(s.realm);
+        this.refreshRealmPressure();
+      } else {
+        s.realm = {
+          portalId: id,
+          kind: portal.kind,
+          name: portal.name,
+          seed: portal.seed,
+          phase: 'waves',
+          wave: 0,
+          maxWaves: 3,
+          waiting: true,
+          nextWave: 2,
+          focusTower: false,
+          reinforcements: 12,
+        };
+        this.refreshRealmPressure();
+        s.mapSeed = portal.seed;
+        s.attackFields = [];
+        s.enemies = [];
+        s.hostile = [];
+        s.shots = [];
+        s.gems = [];
+        s.fx = [];
+        s.usedPois = [];
+        s.poiPrices = {};
+        s.challenge = null;
+        s.worldHazards = [];
+        s.styleFields = [];
+        s.purifying = null;
+        s.spawnClock = 1000;
+        s.nextBoss = s.time + 90;
+        s.sectors = W.sectors(s.mapSeed, base.walkable).map((z) => ({
+          ...z,
+          kind: portal.kind,
+          revision: 1,
+        }));
+        this.configureRealmMap(s.realm);
+        const hp = B.tower(s.realm.pressure);
+        const tower = {
+          id: s.nextId++,
+          species: 'Torre Negra',
+          tower: true,
+          structure: true,
+          shielded: true,
+          x: s.realm.towerPosition.x,
+          z: s.realm.towerPosition.z,
+          hp,
+          maxHp: hp,
+          stage: 0,
+          hit: 0,
+          speed: 0,
+        };
+        s.enemies.push(tower);
+        s.realm.towerId = tower.id;
+        s.player.x = s.player.z = 0;
+        for (const [i, buddy] of s.buddies.entries()) {
+          buddy.x = (i - 1) * 2;
+          buddy.z = 2;
+          this.placeSafely(buddy);
+        }
+        s.player.dashLeft = 0;
+        s.player.chargeTrail = 0;
+        s.player.moveMomentum = 0;
+        s.player.stillTime = 0;
+        s.player.invulnerable = Math.max(1.2, s.player.invulnerable);
+        s.world.lastX = s.player.x;
+        s.world.lastZ = s.player.z;
+        s.world.hazardClock = 6;
+        s.sceneSerial++;
+      }
+      this.emit('portal-entered', {
+        name: portal.name,
+        kind: portal.kind,
+        level: s.realm.pressure.level,
+      });
+      return true;
+    };
+    proto.leaveRealm = function () {
+      const s = this.s,
+        realm = s.realm;
+      if (!realm || !s.mainScene) return false;
+      if (!s.world.portals.find((p) => p.id === realm.portalId)?.closed)
+        s.portalRuns[realm.portalId] = {
+          scene: this.captureScene(),
+          progress: structuredClone(realm),
+        };
+      else delete s.portalRuns[realm.portalId];
+      const scene = s.mainScene;
+      s.realm = null;
+      s.mainScene = null;
+      this.applyScene(scene);
+      s.nextBoss = Math.max(s.nextBoss, s.time + 45);
+      s.spawnClock = Math.max(0.3, s.spawnClock);
+      this.emit('portal-returned');
+      if (s.world.cleansed >= s.world.target) this.spawnDevimon();
+      return true;
+    };
+    proto.onTowerDestroyed = function (tower) {
+      const s = this.s,
+        r = s.realm;
+      if (!r || r.towerId !== tower.id || r.phase === 'cleared' || tower.shielded) return false;
+      const portal = s.world.portals.find((p) => p.id === r.portalId);
+      if (!portal || portal.closed) return false;
+      portal.closed = true;
+      s.world.cleansed++;
+      s.score += 1000;
+      s.coins += 100;
+      s.xp += 60;
+      s.totalXp += 60;
+      r.phase = 'cleared';
+      r.focusTower = false;
+      r.clearedAt = s.time;
+      r.returnDelay = 1.6;
+      for (const enemy of s.enemies) enemy.hp = 0;
+      s.hostile = [];
+      s.worldHazards = [];
+      s.styleFields = [];
+      for (const zone of s.sectors) {
+        zone.kind = null;
+        zone.purified = true;
+        zone.revision++;
+      }
+      this.effect('heal', tower.x, tower.z, { size: 7, life: 1.5, maxLife: 1.5 });
+      this.emit('tower-destroyed', { name: portal.name });
+      return true;
+    };
+    proto.spawnRealmMob = function (wave, token) {
+      const s = this.s,
+        r = s.realm;
+      if (!r || s.enemies.filter((e) => e.hp > 0).length >= 150) return false;
+      const pressure = r.pressure,
+        baseStage = B.realm(pressure, wave).stage,
+        stage = baseStage,
+        pool = [...C.species.values()].filter((c) => c.stage === stage && c.id !== 'Devimon');
+      for (let i = 0; i < 16; i++) {
+        const a = this.random() * Math.PI * 2,
+          radius = 19 + this.random() * 7,
+          x = Math.max(-W.WORLD + 6, Math.min(W.WORLD - 6, s.player.x + Math.cos(a) * radius)),
+          z = Math.max(-W.WORLD + 6, Math.min(W.WORLD - 6, s.player.z + Math.sin(a) * radius));
+        if (!base.walkable(x, z, s.mapSeed, 0.6)) continue;
+        const cohort = Math.floor(s.time / 35),
+          type = pool[((base.hash(0, stage, s.mapSeed) >>> 0) + cohort) % pool.length],
+          stats = B.realm(pressure, wave, stage),
+          elite = this.random() < stats.eliteChance,
+          hp = stats.hp * (elite ? 1.4 : 1);
+        s.enemies.push({
+          id: s.nextId++,
+          species: type.id,
+          x,
+          z,
+          stage,
+          hp,
+          maxHp: hp,
+          realmMob: true,
+          waveToken: token,
+          wave,
+          elite,
+          hit: 0,
+          speed: stats.speed,
+          contactDamage: stats.contact,
+          shotDamage: stats.shot,
+          projectileSpeed: stats.projectileSpeed,
+          shotInterval: stats.shotInterval,
+          xpValue: stats.xp,
+          coinValue: stats.coins + (elite ? 2 : 0),
+          ranged: elite || this.random() < stats.rangedChance,
+          shotClock: 2 + this.random() * 5,
+        });
+        return true;
+      }
+      return false;
+    };
+    proto.updateRealmWaves = function (dt) {
+      const s = this.s,
+        r = s.realm;
+      if (!r || r.phase === 'cleared') return;
+      if (r.phase === 'waves') {
+        const remaining = s.enemies.filter((e) => e.hp > 0 && e.waveToken === r.waveToken).length;
+        if (r.wave > 0 && !r.waiting && remaining === 0 && (r.pendingSpawns || 0) === 0) {
+          r.waiting = true;
+          r.nextWave = 4;
+          this.emit('wave-cleared', { wave: r.wave });
+        }
+        if (!r.waiting && (r.pendingSpawns || 0) > 0) {
+          r.spawnTimer = (r.spawnTimer ?? 0) - dt;
+          if (r.spawnTimer <= 0) {
+            if (this.spawnRealmMob(r.wave, r.waveToken)) r.pendingSpawns--;
+            r.spawnTimer = Math.max(0.18, Math.min(0.65, 16 / B.realm(r.pressure, r.wave).count));
+          }
+        }
+        if (r.waiting) {
+          r.nextWave -= dt;
+          if (r.nextWave <= 0) {
+            if (r.wave < r.maxWaves) {
+              r.wave++;
+              r.waveToken = r.portalId + ':' + r.wave;
+              r.waiting = false;
+              r.pendingSpawns = B.realm(r.pressure, r.wave).count;
+              r.spawnTimer = 0.25;
+              this.emit('realm-wave', { wave: r.wave });
+            } else {
+              r.phase = 'tower';
+              r.focusTower = false;
+              const tower = s.enemies.find((e) => e.id === r.towerId);
+              if (tower) tower.shielded = false;
+              this.emit('tower-vulnerable');
+            }
+          }
+        }
+      } else if (r.phase === 'tower') {
+        if ((r.pendingReinforcements || 0) > 0) {
+          r.reinforcementSpawnTimer = (r.reinforcementSpawnTimer || 0) - dt;
+          if (r.reinforcementSpawnTimer <= 0) {
+            if (this.spawnRealmMob(3, 'reinforcement')) r.pendingReinforcements--;
+            r.reinforcementSpawnTimer = 0.5;
+          }
+        }
+        r.reinforcements -= dt;
+        if (r.reinforcements <= 0) {
+          const stats = B.realm(r.pressure, 3);
+          r.reinforcements = stats.reinforcementInterval;
+          r.pendingReinforcements = (r.pendingReinforcements || 0) + stats.reinforcementCount;
+        }
+      }
+    };
+    proto.updateWorld = function (dt, input) {
+      const s = this.s;
+      if (s.realm?.phase === 'cleared') {
+        s.realm.returnDelay -= dt;
+        if (s.realm.returnDelay <= 0) return this.leaveRealm();
+      }
+      oldUpdate.call(this, dt, input);
+      if (!s.done && s.realm) this.updateRealmWaves(dt);
+      return false;
+    };
+    proto.spawnDevimon = function () {
+      if (this.s.realm) return false;
+      return oldSpawnDevimon.call(this);
+    };
+    proto.combatTargets = function (enemies) {
+      const s = this.s;
+      return enemies
+        .filter((e) => e.hp > 0 && !e.shielded)
+        .sort((a, b) => {
+          const focus = s.realm?.focusTower;
+          return (
+            (focus ? (b.tower ? 1 : 0) - (a.tower ? 1 : 0) : 0) ||
+            dist(a, s.player) - dist(b, s.player)
+          );
+        });
+    };
+    proto.nearestPoi = function () {
+      const s = this.s,
+        p = s.player;
+      if (s.realm) {
+        if (Math.hypot(p.x, p.z) < 4)
+          return {
+            id: 'realm-exit',
+            type: 'realm-exit',
+            x: 0,
+            z: 0,
+            cost: 0,
+            name: 'Volver al mapa principal · progreso guardado',
+          };
+        const tower = s.enemies.find((e) => e.tower && e.hp > 0);
+        if (tower && dist(tower, p) < 12)
+          return {
+            id: 'tower-target',
+            type: 'tower-target',
+            cost: 0,
+            x: tower.x,
+            z: tower.z,
+            name: tower.shielded
+              ? 'Torre protegida · completa las tres oleadas'
+              : s.realm.focusTower
+                ? 'Liberar objetivo de la Torre Negra'
+                : 'Fijar Torre Negra como objetivo',
+          };
+      } else {
+        const portal = s.world.portals
+          .filter((p) => !p.closed && dist(p, s.player) < 4.2)
+          .sort((a, b) => dist(a, s.player) - dist(b, s.player))[0];
+        if (portal)
+          return {
+            id: 'portal-' + portal.id,
+            type: 'portal',
+            portalId: portal.id,
+            x: portal.x,
+            z: portal.z,
+            cost: 0,
+            name: 'Entrar en portal ' + portal.name + ' · ' + W.types[portal.kind].name,
+          };
+      }
+      return original.nearest.call(this);
+    };
+    proto.interact = function () {
+      const s = this.s,
+        poi = this.nearestPoi();
+      if (s.done || s.choice || s.evolution || s.hatch > 0 || s.realm?.phase === 'cleared')
+        return { ok: false };
+      if (poi?.type === 'portal') return { ok: this.enterPortal(poi.portalId), sceneChanged: true };
+      if (poi?.type === 'realm-exit') return { ok: this.leaveRealm(), sceneChanged: true };
+      if (poi?.type === 'tower-target') {
+        const tower = s.enemies.find((e) => e.tower);
+        if (tower?.shielded)
+          return { ok: false, message: 'La torre está protegida. Derrota las tres oleadas.' };
+        s.realm.focusTower = !s.realm.focusTower;
+        return {
+          ok: true,
+          message: s.realm.focusTower
+            ? 'Torre fijada. Acércate para que tus técnicas alcancen el núcleo.'
+            : 'Objetivo liberado.',
+        };
+      }
+      return original.interact.call(this);
+    };
+  }
+  if (typeof module !== 'undefined') module.exports = { install };
+  else root.DigibonkPortals = { install };
+})(typeof window !== 'undefined' ? window : globalThis);
