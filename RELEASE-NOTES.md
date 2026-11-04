@@ -1,3 +1,7 @@
+## 1.23.5 · Objetos sin límite y cofres más caros
+
+Eliminado el límite de cuatro reliquias. Los cofres cuestan 30 bits en lugar de 15, también en partidas guardadas. Se mantienen los rangos de calidad y el límite de tres compañeros.
+
 ## 1.23.4 · Tamaño por fase evolutiva
 
 Los Digimon crecen en cada fase, desde Bebé I hasta Mega. Se aplica al jugador, compañeros y enemigos, con sombras proporcionales y escala corregida según la altura real de los sprites.

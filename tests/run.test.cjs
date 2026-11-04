@@ -125,7 +125,7 @@ test('cofres and merchants charge once and saved shrine completion cannot be cla
   const chest = run.map.pois.find((p) => p.type === 'chest');
   Object.assign(s.player, { x: chest.x, z: chest.z });
   assert.ok(run.interact().ok);
-  assert.equal(s.coins, 185);
+  assert.equal(s.coins, 170);
   assert.ok(s.usedPois.includes(chest.id));
   assert.equal(run.interact().ok, false);
   pick(run);

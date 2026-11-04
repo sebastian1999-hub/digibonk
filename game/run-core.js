@@ -109,7 +109,7 @@
         Math.hypot(x, z) < 15 ||
         pois.some((p) => Math.hypot(x - p.x, z - p.z) < 7)
       );
-      pois.push({ id: 'chest-' + i, type: 'chest', name: 'Cofre de datos', x, z, cost: 15 });
+      pois.push({ id: 'chest-' + i, type: 'chest', name: 'Cofre de datos', x, z, cost: 30 });
     }
     const obstacles = [],
       grid = new Map();
@@ -725,6 +725,7 @@
         return 40 + 25 * n + 5 * Math.floor(n / 5) ** 2;
       }
       poiCost(poi) {
+        if (poi.type === 'chest') return Math.max(30, this.s.poiPrices[poi.id] ?? poi.cost ?? 30);
         return poi.type === 'merchant' ? this.shopPrice() : (this.s.poiPrices[poi.id] ?? poi.cost);
       }
       choices(kind = 'level') {
@@ -820,7 +821,7 @@
             rarity:
               rank > 1
                 ? 'MEJORA DE RELIQUIA · ' + rank + '/3'
-                : 'RELIQUIA · ' + (s.relics.length + 1) + '/4',
+                : 'RELIQUIA · ' + (s.relics.length + 1),
           });
         }
         const buddies =

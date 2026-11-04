@@ -131,10 +131,10 @@
             text:
               item.description(item.legendary ? 1 : q) +
               (item.legendary
-                ? ' Legendario único. Ocupa un hueco de reliquia.'
+                ? ' Legendario único. Sin límite de reliquias.'
                 : owned
                   ? ' Mejora tu rango ' + rank + ' → ' + q + '.'
-                  : ' Rango ' + q + '/3. Ocupa un hueco de reliquia.'),
+                  : ' Rango ' + q + '/3. Sin límite de reliquias.'),
           });
       }
       if (s.buddies.length < 3)

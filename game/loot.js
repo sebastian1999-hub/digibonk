@@ -289,7 +289,7 @@
     },
   ];
   const icon = (id) => 'assets/loot/' + (relics.find((r) => r.id === id)?.art || id) + '.png';
-  const api = { relics, companions, icon, maxRelics: 4, maxRank: 3 };
+  const api = { relics, companions, icon, maxRelics: Infinity, maxRank: 3 };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DigibonkLoot = api;
 })(typeof window !== 'undefined' ? window : globalThis);

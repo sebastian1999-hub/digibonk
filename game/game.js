@@ -1145,7 +1145,7 @@ function showChoice() {
             run.shopPrice() +
             ' bits.'
           : choice.kind === 'chest'
-            ? 'Hasta 4 reliquias de rango 1–3 y 3 compañeros distintos. Los compañeros se suman a tu grupo. Puedes cerrar sin elegir; el cofre queda consumido.'
+            ? 'Reliquias sin límite de cantidad, de rango 1–3 y 3 compañeros distintos. Los compañeros se suman a tu grupo. Puedes cerrar sin elegir; el cofre queda consumido.'
             : 'Combina técnicas y mejoras. Todo el poder de esta build dura esta partida.';
   $('#choice-cards').replaceChildren(
     ...choice.cards.map((card, i) => {

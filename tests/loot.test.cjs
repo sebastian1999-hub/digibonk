@@ -48,7 +48,7 @@ test('chests offer dedicated relics and real companions, charge once and preserv
   const r = fresh(),
     chest = r.map.pois.find((p) => p.type === 'chest');
   Object.assign(r.s.player, { x: chest.x, z: chest.z });
-  r.s.coins = 20;
+  r.s.coins = 35;
   assert.ok(r.interact().ok);
   assert.equal(r.s.coins, 5);
   assert.equal(r.s.choice.kind, 'chest');
@@ -65,15 +65,14 @@ test('chests offer dedicated relics and real companions, charge once and preserv
   assert.equal(r.interact().ok, false);
   assert.equal(r.s.coins, 5);
 });
-test('four relic slots, maximum rank three, and three companions enforce bounded builds', () => {
+test('unlimited relic slots retain maximum quality rank and three companions', () => {
   const r = fresh();
   for (const id of ['vacuum', 'thorns', 'finisher', 'boss-hunter']) grant(r, id);
   assert.equal(r.s.relics.length, 4);
   for (let i = 0; i < 4; i++) grant(r, 'vacuum');
   assert.equal(r.relicRank('vacuum'), 3);
   for (const card of r.chestChoices().cards)
-    if (card.type === 'artifact')
-      assert.ok(r.s.relics.some((x) => x.id === card.item) && card.rank <= 3);
+    if (card.type === 'artifact') assert.ok(card.rank <= 3);
   grant(r, 'Terriermon', 'companion');
   grant(r, 'Salamon', 'companion');
   assert.deepEqual(
@@ -183,7 +182,7 @@ test('closing a chest keeps all companions and consumes the paid chest once', ()
   grant(r, 'Terriermon', 'companion');
   const chest = r.map.pois.find((p) => p.type === 'chest');
   Object.assign(r.s.player, chest);
-  r.s.coins = 20;
+  r.s.coins = 35;
   r.interact();
   assert.equal(r.s.coins, 5);
   assert.ok(r.skipChest());

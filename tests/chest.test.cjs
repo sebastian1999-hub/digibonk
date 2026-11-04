@@ -72,9 +72,7 @@ test('epic outcome has maximum actual rank and no gamble; a fully maxed build re
   assert.equal(r.canRiskChest(), true);
   assert.ok(r.choose(r.s.choice.cards[0].id));
   assert.equal(r.s.relics[0].rank, 3);
-  r.s.relics = require('../game/loot')
-    .relics.slice(0, 4)
-    .map((x) => ({ id: x.id, rank: 3 }));
+  r.s.relics = require('../game/loot').relics.map((x) => ({ id: x.id, rank: 3 }));
   r.s.buddies = require('../game/loot').companions.map((x) => ({ species: x.id, clock: 0 }));
   r.s.choice = r.chestChoices();
   reveal(r);
@@ -153,4 +151,20 @@ test('quality improves damage, area, health and projectile amount while respecti
   assert.equal(r.canRiskChest(), false);
   assert.ok(r.choose(r.s.choice.cards[0].id));
   assert.equal(r.s.player.projectileBonus, 5);
+});
+
+test('chests offer and award new relics beyond four and old chest prices rise to 30', () => {
+  const r = fresh(),
+    L = require('../game/loot');
+  r.s.relics = L.relics.slice(0, 4).map((x) => ({ id: x.id, rank: 3 }));
+  const card = r
+    .chestPool()
+    .find((c) => c.type === 'artifact' && !r.s.relics.some((x) => x.id === c.item));
+  assert.ok(card);
+  r.s.choice = { kind: 'chest', cards: [card] };
+  assert.ok(r.choose(card.id));
+  assert.equal(r.s.relics.length, 5);
+  const chest = r.map.pois.find((p) => p.type === 'chest');
+  r.s.poiPrices[chest.id] = 15;
+  assert.equal(r.poiCost(chest), 30);
 });
