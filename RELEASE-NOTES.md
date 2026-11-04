@@ -1,3 +1,7 @@
+## 1.20.1 · Publicación de la incubadora
+
+Incluye el inicio simplificado, pestaña Incubadora y saldo de bits visible. Reintentos ante fallos transitorios del servicio de publicación.
+
 ## 1.20.0 · Incubadora separada
 
 Inicio simplificado con pestañas Jugar e Incubadora. Selecciona un huevo y juega desde el inicio; mejora su calidad y atributos o desbloquea nuevos huevos en Incubadora. Saldo de bits destacado junto a las pestañas y en el panel de mejoras, actualizado tras cada compra.

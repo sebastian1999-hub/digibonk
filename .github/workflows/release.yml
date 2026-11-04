@@ -38,4 +38,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $version=(Get-Content version.txt -Raw).Trim()
-          gh release create "v$version" "release/Digibonk-PC-$version.zip" release/Digibonk-update.zip release/Digibonk-update.sha256 --verify-tag --title "Digibonk $version" --notes-file RELEASE-NOTES.md
+          for($attempt=1;$attempt -le 3;$attempt++){
+            gh release view "v$version" --repo $env:GITHUB_REPOSITORY *> $null
+            if($LASTEXITCODE -eq 0){
+              gh release upload "v$version" "release/Digibonk-PC-$version.zip" release/Digibonk-update.zip release/Digibonk-update.sha256 --clobber
+            }else{
+              gh release create "v$version" "release/Digibonk-PC-$version.zip" release/Digibonk-update.zip release/Digibonk-update.sha256 --verify-tag --title "Digibonk $version" --notes-file RELEASE-NOTES.md
+            }
+            if($LASTEXITCODE -eq 0){exit 0}
+            Start-Sleep -Seconds 10
+          }
+          throw 'No se ha podido publicar la release tras tres intentos.'
