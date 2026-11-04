@@ -1,3 +1,9 @@
+## 1.24.0 · Fortuna y música de Devimon
+
+- Eliminada la opción de arriesgar recompensas de cofres y tiendas.
+- Nuevo Talismán de la fortuna: +2, +4 o +6 puntos porcentuales de probabilidad de legendario según su rango. Las probabilidades visibles reflejan el efecto.
+- Canción dedicada durante la pelea contra Devimon, en bucle y con el volumen de Ajustes.
+
 ## 1.23.5 · Objetos sin límite y cofres más caros
 
 Eliminado el límite de cuatro reliquias. Los cofres cuestan 30 bits en lugar de 15, también en partidas guardadas. Se mantienen los rangos de calidad y el límite de tres compañeros.

@@ -32,44 +32,13 @@ test('carousel outcome survives reload, cannot be collected during spin, and sta
   assert.equal(copy.choose(id), false);
   assert.equal(copy.s.relics[0].rank, 1);
 });
-test('risk succeeds once with a strictly higher actual relic rank and preserves the saved outcome', () => {
-  const r = fresh();
-  assert.equal(r.riskChest(), false);
-  reveal(r);
-  assert.ok(r.canRiskChest());
-  assert.ok(r.riskChest());
-  assert.equal(r.s.choice.cards[0].quality, 2);
-  assert.equal(r.s.relics.length, 0);
-  assert.equal(r.riskChest(), false);
-  assert.equal(r.revealChest(r.s.choice.roll.id + ':0'), false);
-  const copy = new C.Run(null, { saved: r.snapshot() });
-  reveal(copy);
-  assert.equal(copy.canRiskChest(), false);
-  assert.ok(copy.choose(copy.s.choice.cards[0].id));
-  assert.equal(copy.s.relics[0].rank, 2);
-});
-test('failed gamble removes the reserved item without granting anything or charging again', () => {
-  const r = fresh();
-  r.s.coins = 42;
-  reveal(r);
-  r.random = () => 0.99;
-  assert.ok(r.riskChest());
-  assert.equal(r.s.choice.cards.length, 0);
-  const copy = new C.Run(null, { saved: r.snapshot() });
-  reveal(copy);
-  assert.equal(copy.canRiskChest(), false);
-  assert.equal(copy.choose('forged'), false);
-  assert.ok(copy.skipChest());
-  assert.equal(copy.s.coins, 42);
-  assert.equal(copy.s.relics.length, 0);
-});
 test('epic outcome has maximum actual rank and no gamble; a fully maxed build recycles bits', () => {
   const r = fresh();
   r.random = () => 0.97;
   r.s.choice = r.chestChoices();
   assert.equal(r.s.choice.cards[0].quality, 3);
   reveal(r);
-  assert.equal(r.canRiskChest(), true);
+  assert.equal(r.canRiskChest(), false);
   assert.ok(r.choose(r.s.choice.cards[0].id));
   assert.equal(r.s.relics[0].rank, 3);
   r.s.relics = require('../game/loot').relics.map((x) => ({ id: x.id, rank: 3 }));
@@ -103,27 +72,6 @@ test('shop purchase pays once, preserves chosen stat and waits for a quality rol
   assert.ok(saved.s.player[stat.stat] > before);
   assert.equal(saved.s.coins, 160);
   assert.equal(saved.s.shopPurchases, 1);
-});
-test('shop risk upgrades the same stat and failure grants no stat or refund', () => {
-  for (const success of [true, false]) {
-    const r = fresh(),
-      base = { id: 'area', type: 'stat', title: 'Resonancia', stat: 'area', factor: 1.15 };
-    r.s.choice = r.shopRoll(base);
-    reveal(r);
-    r.random = () => (success ? 0 : 0.99);
-    assert.ok(r.riskChest());
-    assert.equal(r.s.player.area, 1);
-    reveal(r);
-    if (success) {
-      assert.equal(r.s.choice.cards[0].stat, 'area');
-      assert.ok(r.choose(r.s.choice.cards[0].id));
-      assert.ok(Math.abs(r.s.player.area - 1.3) < 1e-9);
-    } else {
-      assert.equal(r.s.choice.cards.length, 0);
-      assert.ok(r.skipChest());
-      assert.equal(r.s.player.area, 1);
-    }
-  }
 });
 test('quality improves damage, area, health and projectile amount while respecting remaining caps', () => {
   const r = fresh();
@@ -167,4 +115,30 @@ test('chests offer and award new relics beyond four and old chest prices rise to
   const chest = r.map.pois.find((p) => p.type === 'chest');
   r.s.poiPrices[chest.id] = 15;
   assert.equal(r.poiCost(chest), 30);
+});
+
+test('gamble is disabled and the original reward remains collectible', () => {
+  const r = fresh();
+  reveal(r);
+  const before = structuredClone(r.s.choice);
+  assert.equal(r.canRiskChest(), false);
+  assert.equal(r.riskChest(), false);
+  assert.deepEqual(r.s.choice, before);
+  assert.ok(r.choose(before.cards[0].id));
+});
+test('fortune charm increases actual legendary odds by two points per rank', () => {
+  const r = fresh(),
+    pool = r.chestPool(),
+    base = r.chestOdds(pool).find((o) => o.quality === 4).chance;
+  assert.ok(pool.some((c) => c.item === 'fortune-charm'));
+  for (const rank of [1, 2, 3]) {
+    r.s.relics = [{ id: 'fortune-charm', rank }];
+    const odds = r.chestOdds(pool);
+    assert.ok(Math.abs(odds.find((o) => o.quality === 4).chance - base - rank * 0.02) < 1e-10);
+    assert.ok(Math.abs(odds.reduce((n, o) => n + o.chance, 0) - 1) < 1e-10);
+    const noLegend = r.chestOdds(pool.filter((c) => c.quality !== 4));
+    assert.ok(noLegend.every((o) => o.quality !== 4));
+  }
+  const saved = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(saved.relicRank('fortune-charm'), 3);
 });

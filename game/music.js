@@ -17,8 +17,10 @@ export class Music {
     this.mapTrack.volume = this.volume;
     this.mapTrack.preload = 'metadata';
     this.biomeTracks = Object.fromEntries(
-      ['fire', 'flood', 'glitch'].map((id) => {
-        const audio = new window.Audio('assets/music/biome-' + id + '.mp3');
+      ['fire', 'flood', 'glitch', 'devimon'].map((id) => {
+        const audio = new window.Audio(
+          id === 'devimon' ? 'assets/music/boss-devimon.mp3' : 'assets/music/biome-' + id + '.mp3',
+        );
         audio.loop = true;
         audio.volume = this.volume;
         audio.preload = 'metadata';

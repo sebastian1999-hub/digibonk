@@ -171,23 +171,10 @@ test('time keeps scaling a portal while entry level and enemy stages remain fixe
   r.enterPortal(r.s.world.portals[0].id);
   assert.equal(r.s.realm.pressure.level, 30);
 });
-test('gamble chance is 20 percent, fails at the exact threshold, saves its chance and does not charge again', () => {
-  assert.equal(Chest.riskSuccess, 0.2);
-  let won = 0;
-  for (let n = 0; n < 1000; n++) {
-    const r = fresh();
-    r.random = () => 0;
-    r.s.choice = r.chestChoices();
-    r.revealChest(r.s.choice.roll.id + ':0');
-    r.s.coins = 40;
-    r.random = () => n / 1000;
-    assert.ok(r.riskChest());
-    if (r.s.choice.cards.length) won++;
-    assert.equal(r.s.choice.roll.riskChance, 0.2);
-    assert.equal(r.s.coins, 40);
-    assert.equal(r.riskChest(), false);
-  }
-  assert.equal(won, 200);
+test('saved revealed chests cannot be gambled and preserve coins and reward',()=>{
+ const r=fresh();r.s.choice=r.chestChoices();r.revealChest(r.s.choice.roll.id+':0');
+ const before=JSON.stringify(r.s.choice),coins=r.s.coins;
+ assert.equal(r.riskChest(),false);assert.equal(JSON.stringify(r.s.choice),before);assert.equal(r.s.coins,coins);
 });
 
 test('old ambient mobs catch up to current base strength rather than retaining their weak starting stats', () => {

@@ -153,9 +153,19 @@
       return cards;
     };
     p.chestOdds = function (pool) {
-      const qs = [1, 2, 3, 4].filter((q) => pool.some((c) => c.quality === q)),
-        sum = qs.reduce((n, q) => n + qualities[q].weight, 0);
-      return qs.map((q) => ({ quality: q, chance: qualities[q].weight / sum }));
+      const qs = [1, 2, 3, 4].filter((q) => pool.some((c) => c.quality === q));
+      const sum = qs.reduce((n, q) => n + qualities[q].weight, 0);
+      if (!sum) return [];
+      const base = qs.includes(4) ? qualities[4].weight / sum : 0;
+      const bonus = this.relicRank('fortune-charm') * 0.02;
+      const legendary = qs.includes(4) ? Math.min(1, base + bonus) : 0;
+      return qs.map((q) => ({
+        quality: q,
+        chance:
+          q === 4
+            ? legendary
+            : (qualities[q].weight / sum) * (base ? (1 - legendary) / (1 - base) : 1),
+      }));
     };
     p.rollChestCard = function (pool) {
       if (!pool.length) return null;
@@ -222,40 +232,9 @@
       c.roll.phase = 'revealed';
       return true;
     };
-    p.canRiskChest = function () {
-      const c = this.s.choice;
-      return !!(
-        c?.kind === 'chest' &&
-        c.roll?.phase === 'revealed' &&
-        !c.roll.riskUsed &&
-        c.cards[0] &&
-        this.riskPool().some((x) => x.quality > c.cards[0].quality)
-      );
-    };
-    p.riskChest = function () {
-      if (!this.canRiskChest()) return false;
-      const c = this.s.choice,
-        pool = this.riskPool().filter((x) => x.quality > c.cards[0].quality);
-      c.roll.riskUsed = true;
-      c.roll.riskChance = riskSuccess;
-      c.roll.revision++;
-      c.roll.phase = 'spinning';
-      c.roll.pool = [
-        ...pool,
-        {
-          id: 'empty-chest',
-          type: 'empty',
-          quality: 0,
-          title: 'Cofre vacío',
-          iconPath: L.icon('empty'),
-          rarity: 'Sin recompensa',
-        },
-      ];
-      const card = this.random() < riskSuccess ? this.rollChestCard(pool) : null;
-      c.cards = card ? [card] : [];
-      c.roll.empty = !card;
-      return true;
-    };
+    // Keep compatibility with old saved/UI callers, without allowing new gambles.
+    p.canRiskChest = () => false;
+    p.riskChest = () => false;
   }
   const api = { install, qualities, riskSuccess };
   if (typeof module !== 'undefined') module.exports = api;

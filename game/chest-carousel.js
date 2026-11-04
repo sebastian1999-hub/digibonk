@@ -64,11 +64,14 @@ export class ChestCarousel {
         if (roll.riskUsed && random() >= chance) return roll.pool.find((c) => c.type === 'empty');
         const pool = roll.pool.filter((c) => c.quality > 0),
           qualities = [1, 2, 3, 4].filter((q) => pool.some((c) => c.quality === q)),
-          total = qualities.reduce((n, q) => n + DigibonkChest.qualities[q].weight, 0);
+          weight = (q) =>
+            (!roll.riskUsed ? roll.odds?.find((o) => o.quality === q)?.chance : null) ??
+            DigibonkChest.qualities[q].weight,
+          total = qualities.reduce((n, q) => n + weight(q), 0);
         let value = random() * total,
           quality = qualities.at(-1);
         for (const q of qualities) {
-          value -= DigibonkChest.qualities[q].weight;
+          value -= weight(q);
           if (value < 0) {
             quality = q;
             break;
@@ -134,22 +137,8 @@ export class ChestCarousel {
       buttons.append(b);
     };
     if (choice.cards.length) button('1 · Quedármelo', () => callbacks.claim(winner.id), true);
-    if (callbacks.canRisk()) button('2 · Arriesgar por calidad superior', callbacks.risk);
     button(choice.cards.length ? 'Cerrar sin recoger' : 'Continuar', callbacks.discard);
-    if (!roll.riskUsed && callbacks.canRisk()) {
-      const warning = document.createElement('p');
-      warning.className = 'chest-warning';
-      warning.textContent =
-        'Cambias esta recompensa por otra de mayor calidad: ' +
-        success +
-        ' % de éxito y ' +
-        failure +
-        ' % de perderla. Solo un intento por cofre.';
-      this.host.append(warning);
-    } else if (
-      !spinning &&
-      (winner.quality === 4 || (winner.quality === 3 && roll.source === 'shop'))
-    ) {
+    if (!spinning && (winner.quality === 4 || (winner.quality === 3 && roll.source === 'shop'))) {
       const note = document.createElement('p');
       note.className = 'chest-warning';
       note.textContent = (winner.quality === 4 ? 'Legendario' : 'Épico') + ' · calidad máxima';

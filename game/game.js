@@ -1433,7 +1433,6 @@ document.addEventListener('keydown', (event) => {
     if (!event.repeat) {
       if (run.s.choice.roll) {
         if (key === '1' && run.s.choice.cards[0]) choose(run.s.choice.cards[0].id);
-        else if (key === '2') riskChest();
       } else {
         const card = run.s.choice.cards[Number(key) - 1];
         if (card) choose(card.id);
@@ -1638,11 +1637,19 @@ function loop(now) {
     toastLeft -= dt;
     if (toastLeft <= 0) $('#toast').textContent = '';
   }
+  const devimonFight =
+    active &&
+    !run?.s.done &&
+    run?.s.enemies.find((e) => e.finalBoss && e.species === 'Devimon' && e.engaged && e.hp > 0);
   music.tick(
     active && !paused && !document.hidden && !window.DigibonkDesktopHidden && !run?.s.done,
     !active && !document.hidden && !window.DigibonkDesktopHidden && !loading,
-    active && !run?.s.realm && !run?.s.done,
-    active && !run?.s.done ? run?.s.realm : null,
+    active && !run?.s.realm && !run?.s.done && !devimonFight,
+    devimonFight
+      ? { kind: 'devimon', portalId: devimonFight.id }
+      : active && !run?.s.done
+        ? run?.s.realm
+        : null,
   );
   if (!loading) renderer.render(active ? run : null, dt, { menu: !active });
   drawPortraits(now / 1000);

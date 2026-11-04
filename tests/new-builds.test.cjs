@@ -39,9 +39,9 @@ function enemy(id = 99, x = 2, z = 0) {
     ranged: false,
   };
 }
-test('44 distinct relics include nine legendary unique drops with real PNG icons', () => {
-  assert.equal(loot.relics.length, 44);
-  assert.equal(new Set(loot.relics.map((r) => r.id)).size, 44);
+test('45 distinct relics include nine legendary unique drops with real PNG icons', () => {
+  assert.equal(loot.relics.length, 45);
+  assert.equal(new Set(loot.relics.map((r) => r.id)).size, 45);
   assert.equal(loot.relics.filter((r) => r.legendary).length, 9);
   const r = fresh(),
     pool = r.chestPool();
@@ -243,17 +243,9 @@ test('singularity attracts gems and damages nearby foes only at its kill thresho
   assert.equal(r.s.enemies[1].hp, 9980);
   assert.equal(r.s.relicClocks.void, 8);
 });
-test('an epic chest can risk into a unique legendary and cannot risk it again', () => {
-  const r = fresh();
-  r.random = () => 0.97;
-  r.s.choice = r.chestChoices();
-  assert.equal(r.s.choice.cards[0].quality, 3);
-  r.revealChest(r.s.choice.roll.id + ':0');
-  r.random = () => 0;
-  assert.ok(r.riskChest());
-  assert.equal(r.s.choice.cards[0].quality, 4);
-  r.revealChest(r.s.choice.roll.id + ':1');
-  assert.equal(r.canRiskChest(), false);
-  assert.ok(r.choose(r.s.choice.cards[0].id));
-  assert.ok(loot.relics.find((x) => x.id === r.s.relics[0].id).legendary);
+test('legendary drops are collected directly and cannot be gambled', () => {
+ const r=fresh();r.random=()=>0.999;r.s.choice=r.chestChoices();
+ assert.equal(r.s.choice.cards[0].quality,4);r.revealChest(r.s.choice.roll.id+':0');
+ assert.equal(r.canRiskChest(),false);assert.equal(r.riskChest(),false);
+ assert.ok(r.choose(r.s.choice.cards[0].id));assert.ok(loot.relics.find(x=>x.id===r.s.relics[0].id).legendary);
 });

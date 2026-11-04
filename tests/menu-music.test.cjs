@@ -94,3 +94,21 @@ test('each portal biome uses its own recording and restarts on entry', async () 
   m.tick(true, false, true, null);
   for (const track of Object.values(m.biomeTracks)) assert.equal(track.paused, true);
 });
+
+test('Devimon recording replaces biome music and restarts for each encounter', async () => {
+  const { Music } = await import(pathToFileURL(require.resolve('../game/music.js')).href);
+  const m = new Music();
+  m.tick(true, false, false, { kind: 'fire', portalId: 1 });
+  m.tick(true, false, false, { kind: 'devimon', portalId: 2 });
+  assert.equal(m.biomeTracks.fire.paused, true);
+  assert.equal(m.biomeTracks.devimon.paused, false);
+  assert.equal(m.biomeTracks.devimon.src, 'assets/music/boss-devimon.mp3');
+  m.biomeTracks.devimon.currentTime = 20;
+  m.tick(false, false, false, { kind: 'devimon', portalId: 2 });
+  m.tick(true, false, false, { kind: 'devimon', portalId: 2 });
+  assert.equal(m.biomeTracks.devimon.currentTime, 20);
+  m.tick(true, false, true);
+  assert.equal(m.biomeTracks.devimon.paused, true);
+  m.tick(true, false, false, { kind: 'devimon', portalId: 3 });
+  assert.equal(m.biomeTracks.devimon.currentTime, 0);
+});

@@ -226,6 +226,17 @@
         'Un crítico encadena rayos a hasta 3 enemigos cercanos: 90 % de tu daño por objetivo. Recarga: 1,5 s.',
     },
   ];
+  relics.push({
+    id: 'fortune-charm',
+    name: 'Talismán de la fortuna',
+    icon: '✦',
+    art: 'boss-hunter',
+    theme: 'gold',
+    description: (r) =>
+      'Aumenta en ' +
+      r * 2 +
+      ' puntos porcentuales la probabilidad de obtener legendarios en los próximos cofres, si quedan legendarios disponibles. No cambia las recompensas ya sorteadas.',
+  });
   const extra = [
     ['training-band', 'Banda de entrenamiento', 'damage', 0.04, 'daño', 'power-chip'],
     ['combat-gloves', 'Guantes de combate', 'damage', 0.06, 'daño', 'power-chip'],
