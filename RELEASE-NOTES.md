@@ -1,3 +1,7 @@
+## 1.18.0 · Incubadora y efectos de combate
+
+Huevos y ramas desbloqueables con bits permanentes; mejoras de atributos por huevo; 16 objetos nuevos; partículas de vuelo, preparación e impactos por elemento.
+
 # Digibonk 1.17.0
 
 - Cuenta atrás visible de 3 minutos para entrar en un portal. Se suspende dentro y se renueva solo al purificar una Torre Negra. Salir sin cerrar no reinicia el plazo.
@@ -68,3 +72,11 @@ Abre Digibonk.exe para actualizar.
 - Los nuevos programas gráficos se preparan durante la pantalla de carga. Se conservan los límites de partículas, proyectiles y opacidad configurable.
 
 Cambios visuales: daño, alcance, recargas y recompensas se mantienen. Abre **Digibonk.exe** para actualizar.
+
+## Incubadora y progresión permanente
+
+- 44 objetos: 35 reliquias de calidades común, rara y épica y 9 legendarios. Los 16 nuevos objetos afectan a atributos reales y reutilizan iconos del catálogo.
+- Inicio con Botamon y una única ruta hasta Mega. El resto de huevos se compra con bits permanentes.
+- Cada huevo tiene mejoras de fuerza (+6 %), cadencia (+5 %), vitalidad (+8) y movimiento (+2 %) por nivel, hasta 10 niveles por atributo. Coste inicial 60 bits, +40 por nivel del atributo. Cada dos mejoras totales habilitan una rama adicional por etapa; la incubadora muestra especies y requisitos.
+- Recompensas permanentes: 1 bit por 3 bajas, 1 por 20 segundos, 50 por portal y 250 por Devimon. Se abonan incrementalmente al guardar y al terminar, sin duplicados al continuar. Son independientes de la moneda gastada dentro de cada run.
+- Progreso local separado por cuenta. Las runs guardadas anteriores mantienen sus rutas y atributos.

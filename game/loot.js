@@ -29,11 +29,12 @@
   {id:'void-core',name:'Singularidad digital',icon:'◎',theme:'mint',legendary:true,description:()=> 'Cada 12 bajas atrae toda la experiencia y libera una explosión del 200 % de tu daño a 6 m. Recarga: 8 s.'},
   {id:'storm-core',name:'Corazón de tormenta',icon:'ϟ',theme:'gold',legendary:true,description:()=> 'Un crítico encadena rayos a hasta 3 enemigos cercanos: 90 % de tu daño por objetivo. Recarga: 1,5 s.'}
  ];
+ const extra=[["training-band","Banda de entrenamiento","damage",0.04,"daño","power-chip"],["combat-gloves","Guantes de combate","damage",0.06,"daño","power-chip"],["servo","Servomotor","haste",0.06,"velocidad de ataque","haste-chip"],["clockwork","Engranaje acelerado","haste",0.1,"velocidad de ataque","haste-chip"],["shell","Caparazón de datos","armor",1,"armadura","armor-chip"],["repair-kit","Kit de reparación","regen",0.2,"vida por segundo","regen-chip"],["life-cell","Célula vital","maxHp",12,"vida máxima","vitality-chip"],["wind-ribbon","Cinta de viento","speed",0.04,"movimiento","swift-chip"],["data-cache","Caché de aprendizaje","xpMult",0.06,"experiencia","xp-chip"],["scope","Mira digital","crit",0.03,"crítico","critical-chip"],["field-coil","Bobina de expansión","area",0.08,"área","area-chip"],["signal","Receptor de señal","magnet",0.12,"recogida","magnet-chip"],["omega-reactor","Reactor de Omegamon","damage",0.35,"daño","power-chip",true],["ulforce-drive","Motor Ulforce","haste",0.35,"velocidad de ataque","haste-chip",true],["aegis","Égida real","armor",6,"armadura","armor-chip",true],["yggdrasil","Semilla de Yggdrasil","regen",2,"vida por segundo","regen-chip",true]];for(const [id,name,stat,value,label,art,legendary] of extra)relics.push({id,name,stat,value,art,legendary:!!legendary,icon:'◆',theme:legendary?'gold':'mint',description:r=>'+'+Number((value*r*(['armor','regen','maxHp'].includes(stat)?1:100)).toFixed(2))+(['armor','regen','maxHp'].includes(stat)?'':' %')+' de '+label+'. Activo durante esta run.'});
  const companions=[
   {id:'Terriermon',name:'Terriermon',role:'Artillero',description:'Dispara aire cada 3,8 s. Su daño equivale al 55 % de tu ataque.',skill:'air-shot',cooldown:3.8},
   {id:'Salamon',name:'Salamon',role:'Sanador',description:'Recupera el 6 % de tu vida máxima cada 14 s si estás herido.',skill:'heal',cooldown:14},
   {id:'Hagurumon',name:'Hagurumon',role:'Recolector',description:'Cada 9 s atrae los fragmentos situados a 14 metros de él.',skill:'focus',cooldown:9}
  ];
- const icon=id=>'assets/loot/'+id+'.png';
+ const icon=id=>'assets/loot/'+(relics.find(r=>r.id===id)?.art||id)+'.png';
  const api={relics,companions,icon,maxRelics:4,maxRank:3};if(typeof module!=='undefined')module.exports=api;else root.DigibonkLoot=api;
 })(typeof window!=='undefined'?window:globalThis);
