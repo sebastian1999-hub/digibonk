@@ -50,29 +50,25 @@ test('epic outcome has maximum actual rank and no gamble; a fully maxed build re
   assert.equal(r.s.coins, before + 10);
 });
 
-test('shop purchase pays once, preserves chosen stat and waits for a quality roll before applying it', () => {
+test('Wizardmon sells a new technique once and saves the purchase', () => {
   const r = fresh();
   r.s.choice = null;
   r.s.coins = 200;
+  r.s.player.species = 'Agumon';
+  r.s.player.stage = 1;
   const shop = r.map.pois.find((p) => p.type === 'merchant');
   Object.assign(r.s.player, { x: shop.x, z: shop.z });
   assert.ok(r.interact().ok);
-  const stat = r.s.choice.cards[0],
-    before = r.s.player[stat.stat];
-  assert.ok(r.choose(stat.id));
+  const card = r.s.choice.cards[0];
+  assert.equal(card.type, 'weapon');
+  assert.ok(r.choose(card.id));
   assert.equal(r.s.coins, 160);
   assert.equal(r.s.shopPurchases, 1);
-  assert.equal(r.s.player[stat.stat], before);
-  assert.equal(r.s.choice.roll.source, 'shop');
-  assert.ok(r.s.choice.roll.pool.every((c) => c.stat === stat.stat));
-  const saved = new C.Run(null, { saved: r.snapshot() });
-  assert.deepEqual(saved.s.choice, r.s.choice);
-  reveal(saved);
-  assert.ok(saved.choose(saved.s.choice.cards[0].id));
-  assert.ok(saved.s.player[stat.stat] > before);
-  assert.equal(saved.s.coins, 160);
-  assert.equal(saved.s.shopPurchases, 1);
+  assert.ok(r.s.player.weapons.some((w) => w.id === card.weapon));
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.deepEqual(copy.s.player.weapons, r.s.player.weapons);
 });
+
 test('quality improves damage, area, health and projectile amount while respecting remaining caps', () => {
   const r = fresh();
   for (const base of [

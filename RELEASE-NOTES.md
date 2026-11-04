@@ -1,3 +1,10 @@
+## 1.25.0 · Técnicas claras y compras en Wizardmon
+
+- Wizardmon vende las técnicas nuevas y permite sustituir las equipadas. Los niveles mejoran atributos o técnicas actuales.
+- Descripciones con funcionamiento, golpes por activación, daño, recarga y tamaño.
+- El área aumenta también el tamaño visible de proyectiles, cortes y efectos.
+- Los proyectiles extra añaden disparos o golpes a todas las técnicas ofensivas, incluso contra un solo enemigo.
+
 ## 1.24.0 · Fortuna y música de Devimon
 
 - Eliminada la opción de arriesgar recompensas de cofres y tiendas.

@@ -71,7 +71,7 @@ export function renderBook(host, run, mode = 'techniques', family = 'all') {
     state.textContent = weapon
       ? 'EQUIPADA · RANGO ' + weapon.rank + '/9'
       : !p
-        ? 'Se puede elegir al subir de nivel'
+        ? 'Se compra a Wizardmon'
         : skills.compatible({ ...p, isEgg: p.stage === -2 }, skill)
           ? 'PUEDE APARECER AL SUBIR DE NIVEL'
           : 'Requiere una forma compatible de ' + stageNames[skill.stage] + ' o superior';

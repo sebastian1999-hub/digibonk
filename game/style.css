@@ -2869,3 +2869,9 @@ body[data-screen='home'] #continue-run:focus-visible {
     padding: 20px 32px;
   }
 }
+
+.choice-card p,
+.book-card p {
+  white-space: pre-line;
+  line-height: 1.55;
+}

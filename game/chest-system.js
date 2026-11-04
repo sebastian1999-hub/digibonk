@@ -21,7 +21,7 @@
           xpMult: 'experiencia recogida',
           area: 'área de las técnicas',
           armor: 'armadura',
-          projectileBonus: 'proyectiles en técnicas a distancia',
+          projectileBonus: 'golpes o proyectiles extra en todas las técnicas ofensivas',
           orbits: 'orbes alrededor del personaje',
         },
         icons = {

@@ -38,8 +38,8 @@ class Painter {
     this.seed = Math.abs(e.id || 1);
     this.t = phase === 'flight' ? 0 : clamp(1 - e.life / (e.maxLife || 1));
     this.fade = Math.pow(1 - this.t, 1.5);
-    this.p = 0.85 + Math.max(0, skill.stage) * 0.14;
-    this.r = Math.min(9, e.radius || (e.size || 1) * 1.7);
+    this.p = (0.85 + Math.max(0, skill.stage) * 0.14) * (e.visualScale || 1);
+    this.r = e.radius || (e.size || 1) * 1.7;
     [this.ink, this.color, this.hot] = palettes[skill.family] || palettes.neutral;
     if (skill.visual === 'blue-flame')
       [this.ink, this.color, this.hot] = ['#245fda', '#47cfff', '#e1ffff'];

@@ -78,7 +78,7 @@
       {
         id: 'merchant',
         type: 'merchant',
-        name: 'Wizardmon · Tienda de mejoras',
+        name: 'Wizardmon · Técnicas nuevas',
         species: 'Wizardmon',
         x: 23,
         z: 23,
@@ -324,7 +324,7 @@
     {
       id: 'projectile',
       title: 'Disparo gemelo',
-      text: '+1 proyectil en las técnicas a distancia',
+      text: '+1 golpe o proyectil en todas las técnicas ofensivas',
       stat: 'projectileBonus',
       amount: 1,
       rare: true,
@@ -431,24 +431,40 @@
       if (!skill) return '';
       const format = (n) => Number(n.toFixed(1)).toLocaleString('es-ES'),
         haste = player.haste || 1;
-      if (skill.kind === 'damage')
+      if (skill.kind === 'damage') {
+        const behavior =
+          {
+            cone: 'Barre un cono delante de ti.',
+            ring: 'Golpea alrededor de tu Digimon.',
+            pillar: 'Marca al enemigo y golpea su zona tras 0,4 s.',
+            meteor: 'Deja caer un meteorito tras 0,4 s.',
+            rain: 'Ataca una zona con lluvia de impactos tras 0,4 s.',
+            chain: 'Salta entre hasta 3 enemigos.',
+            volley: 'Dispara una ráfaga de proyectiles dirigidos.',
+          }[skill.pattern] ||
+          (skill.mode === 'melee'
+            ? 'Golpea a los enemigos cercanos.'
+            : 'Lanza un proyectil que persigue al enemigo.');
+        const count =
+          (skill.pattern === 'volley' ? 3 : 1) +
+          (player.projectileBonus || 0) +
+          Math.floor(rank / 4);
         return (
-          (skill.nextOrder
-            ? skills.familyNames[skill.family] +
-              ' · ' +
-              skills.patternNames[skill.pattern] +
-              ' ' +
-              ''
-            : '') +
-          (skills.statusText(skill) ? skills.statusText(skill) + ' ' : '') +
-          'Ataque automático ' +
-          (skill.mode === 'melee' ? 'cuerpo a cuerpo' : 'a distancia') +
-          '. Daño: ' +
+          behavior +
+          '\n' +
+          count +
+          (count === 1 ? ' golpe por activación.\n' : ' golpes por activación.\n') +
+          'Cada golpe: ' +
           Math.round(skill.power * (1 + (rank - 1) * 0.15) * 100) +
-          ' % de tu ataque. Recarga: ' +
+          '% de tu ataque. Cada ' +
           format(Math.max(0.18, (skill.cooldown * 0.48) / (haste * (1 + (rank - 1) * 0.045)))) +
-          ' s.'
+          ' s.\n' +
+          'Área y tamaño: ' +
+          Math.round((player.area || 1) * 100) +
+          '%. ' +
+          (skills.statusText(skill) || '')
         );
+      }
       const e = supportEffect(skill, rank),
         duration = format(e.duration),
         cooldown = format(e.cooldown / haste),
@@ -733,35 +749,27 @@
           pool = upgrades
             .filter((u) => this.upgradeAvailable(u))
             .map((u) => ({ ...u, type: 'stat', rarity: u.rare ? 'ÉPICA' : 'MEJORA' }));
-        if (kind === 'shop') {
-          const cards = [];
-          for (const group of [
-            ['power', 'haste'],
-            ['heart', 'regen', 'armor'],
-            pool.map((u) => u.id),
-          ]) {
-            const options = pool.filter(
-              (u) => group.includes(u.id) && !cards.some((c) => c.id === u.id),
-            );
-            cards.push(options[Math.floor(this.random() * options.length)]);
-          }
-          return { kind, title: 'Tienda · Mejora para esta partida', cards };
-        }
         for (const w of p.weapons)
-          if (w.rank < 9)
+          if (kind !== 'shop' && w.rank < 9)
             pool.push({
               id: 'rank-' + w.id,
               type: 'weapon-rank',
               weapon: w.id,
-              title: skills.skills[w.id].name + ' ' + (w.rank + 1),
-              text: describeTechnique(w.id, w.rank + 1, p),
+              title: skills.skills[w.id].name + ' · Rango ' + (w.rank + 1),
+              text:
+                (skills.skills[w.id].kind === 'damage'
+                  ? 'Mejora: más daño y menor recarga.' +
+                    ((w.rank + 1) % 4 === 0 ? ' Añade un golpe por activación.' : '') +
+                    ' '
+                  : '') + describeTechnique(w.id, w.rank + 1, p),
               rarity: 'TÉCNICA',
             });
-        {
+        if (kind === 'shop') {
+          pool.length = 0;
           const known = new Set(p.weapons.map((w) => w.id));
           for (const skill of skills
             .available({ isEgg: false, species: p.species, stage: p.stage })
-            .filter((k) => !known.has(k.id) && (p.weapons.length < 4 || k.kind === 'damage')))
+            .filter((k) => !known.has(k.id)))
             pool.push({
               id: 'learn-' + skill.id,
               type: 'weapon',
@@ -789,7 +797,7 @@
           kind,
           title:
             kind === 'shop'
-              ? 'Elige una técnica del maestro'
+              ? 'Wizardmon · Compra una técnica'
               : kind === 'relic'
                 ? 'Un regalo de los datos'
                 : 'Nivel ' + this.s.level + ' · Elige tu mejora',
@@ -1239,6 +1247,17 @@
           s.challenge = { id: poi.id, x: poi.x, z: poi.z, progress: 0 };
           return { ok: true, message: 'Resiste 8 segundos dentro del círculo del santuario.' };
         }
+        if (
+          poi.type === 'merchant' &&
+          !skills
+            .available({ isEgg: false, species: p.species, stage: p.stage })
+            .some((k) => !p.weapons.some((w) => w.id === k.id))
+        )
+          return {
+            ok: false,
+            message:
+              'Wizardmon no tiene técnicas nuevas para tu fase actual. Vuelve después de digievolucionar.',
+          };
         s.coins -= cost;
         if (poi.type === 'chest') {
           s.usedPois.push(poi.id);
@@ -1385,42 +1404,24 @@
           if (skill.stage >= 1) this.effect('cast', p.x, p.z, { skillId: skill.id });
           const damage = damageMultiplier * skill.power * (1 + (w.rank - 1) * 0.15),
             area = (skill.stage >= 2 ? 1.7 : 0) * p.area * (1 + w.rank * 0.06);
-          if (skill.pattern) {
-            this.castPattern(skill, w.rank, nearest, damage);
-          } else if (skill.mode === 'melee') {
-            for (const e of alive) if (distance(e, p) < 4 * p.area) this.hurt(e, damage, skill.id);
-            this.effect('slash', p.x, p.z, { skillId: skill.id });
-          } else {
-            const targets = this.combatTargets(alive).slice(
-              0,
-              Math.min(6, 1 + p.projectileBonus + Math.floor(w.rank / 4)),
-            );
-            for (const target of targets)
-              s.shots.push({
-                id: s.nextId++,
-                x: p.x,
-                z: p.z,
-                ox: p.x,
-                oz: p.z,
-                target: target.id,
-                height: 1.1 + Math.max(0, p.stage) * 0.23,
-                bornAt: s.time,
-                speed:
-                  skill.visual === 'wave'
-                    ? 18
-                    : skill.visual === 'missile'
-                      ? 22
-                      : skill.visual.includes('beam') || skill.visual === 'laser'
-                        ? 40
-                        : 24,
+          this.castTechnique(skill, w.rank, nearest, damage, area);
+          const count =
+            (skill.pattern === 'volley' ? 3 : 1) + p.projectileBonus + Math.floor(w.rank / 4);
+          if (count > 1) {
+            s.techniqueEchoes ??= [];
+            for (let i = 1; i < count && s.techniqueEchoes.length < 128; i++)
+              s.techniqueEchoes.push({
+                skillId: skill.id,
+                rank: w.rank,
                 damage,
                 area,
-                life: 2.8,
-                skillId: skill.id,
-                color: skill.color,
+                target: nearest.id,
+                left: i * 0.12,
+                scene: s.realm?.portalId ?? 'main',
               });
           }
         }
+
         for (const shot of s.shots) {
           shot.prevX = shot.x;
           shot.prevZ = shot.z;
@@ -1431,7 +1432,7 @@
             continue;
           }
           const d = distance(shot, target);
-          if (d < shot.speed * dt + 0.5) {
+          if (d < shot.speed * dt + 0.5 * (shot.visualScale || 1)) {
             shot.life = 0;
             this.hurt(target, shot.damage, shot.skillId);
             if (shot.area > 0)
@@ -1442,6 +1443,8 @@
               skillId: shot.skillId,
               color: shot.color,
               size: shot.area || 1,
+              radius: shot.area || 0.6 * (shot.visualScale || 1),
+              visualScale: shot.visualScale || 1,
             });
           } else {
             shot.x += ((target.x - shot.x) / (d || 1)) * shot.speed * dt;

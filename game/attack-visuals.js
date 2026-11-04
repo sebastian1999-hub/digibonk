@@ -768,7 +768,7 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
       shot.x,
       y,
       shot.z,
-      1 + Math.max(0, skill.stage) * 0.14,
+      (1 + Math.max(0, skill.stage) * 0.14) * (shot.visualScale || 1),
     );
     drawAttack(this, skill, shot, s, time, owner, 'flight');
   }

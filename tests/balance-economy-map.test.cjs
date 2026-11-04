@@ -28,7 +28,7 @@ test('intro has lower density, damage and speed, with normal pressure restored a
   assert.equal(early.elite, 0);
   assert.ok(B.main(100, -1).elite > 0);
 });
-test('shop offers useful repeatable attributes indefinitely after technique and limited stat caps', () => {
+test('level upgrades remain useful after capped attributes and maxed techniques', () => {
   const r = fresh();
   Object.assign(r.s.player, {
     speed: 15,
@@ -43,20 +43,10 @@ test('shop offers useful repeatable attributes indefinitely after technique and 
       { id: 'focus', rank: 9 },
     ],
   });
-  r.s.coins = 10000000;
-  const shops = r.map.pois.filter((p) => p.type === 'merchant');
-  let previous = 0;
   for (let i = 0; i < 100; i++) {
-    const shop = shops[i % shops.length];
-    Object.assign(r.s.player, { x: shop.x, z: shop.z });
-    const price = r.poiCost(shop),
-      before = r.s.coins;
-    assert.ok(price > previous);
-    assert.ok(r.interact().ok);
-    assert.equal(r.s.coins, before - price);
+    r.s.choice = r.choices();
     const cards = r.s.choice.cards;
     assert.equal(cards.length, 3);
-    assert.equal(new Set(cards.map((c) => c.id)).size, 3);
     assert.ok(
       cards.every(
         (c) =>
@@ -64,26 +54,20 @@ test('shop offers useful repeatable attributes indefinitely after technique and 
       ),
     );
     const card = cards[0],
-      value = r.s.player[card.stat];
+      before = r.s.player[card.stat];
     assert.ok(r.choose(card.id));
-    assert.equal(r.s.player[card.stat], value);
-    assert.ok(r.revealChest(r.s.choice.roll.id + ':0'));
-    assert.ok(r.choose(r.s.choice.cards[0].id));
-    assert.ok(r.s.player[card.stat] > value);
-    previous = price;
+    assert.ok(r.s.player[card.stat] > before);
   }
-  assert.equal(r.s.shopPurchases, 100);
-  const saved = new C.Run(null, { saved: r.snapshot() });
-  assert.equal(saved.shopPrice(), r.shopPrice());
 });
+
 test('global shop price survives portals and legacy merchant price migration', () => {
   const r = fresh();
   r.s.coins = 200;
+  r.s.player.species = 'Agumon';
+  r.s.player.stage = 1;
   const shop = r.map.pois.find((p) => p.type === 'merchant');
   Object.assign(r.s.player, shop);
   r.interact();
-  r.choose(r.s.choice.cards[0].id);
-  r.revealChest(r.s.choice.roll.id + ':0');
   r.choose(r.s.choice.cards[0].id);
   const price = r.shopPrice();
   r.enterPortal(r.s.world.portals[0].id);

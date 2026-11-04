@@ -1130,7 +1130,7 @@ function showChoice() {
     choice.kind === 'evolution'
       ? 'LA SIGUIENTE FORMA DE TU LEYENDA'
       : choice.kind === 'shop'
-        ? 'TIENDA · MEJORAS SIN LÍMITE DE COMPRAS'
+        ? 'WIZARDMON · NUEVAS TÉCNICAS'
         : choice.kind === 'chest'
           ? 'TESORO DIGITAL · ELIGE UNA RECOMPENSA'
           : 'CONSTRUYE TU PROPIA RUN';
@@ -1141,7 +1141,7 @@ function showChoice() {
       : choice.kind === 'replace'
         ? 'Selecciona una de tus cuatro técnicas para reemplazarla, o conserva tu equipo actual.'
         : choice.kind === 'shop'
-          ? 'Elige el atributo: el carrusel dará calidad común ×1, rara ×2 o épica ×3 al efecto mostrado. Cada compra encarece todos los puestos; próxima compra: ' +
+          ? 'Compra una técnica nueva. Si llevas cuatro, elige cuál sustituir. Al subir de nivel mejoras las que ya tienes. Próxima compra: ' +
             run.shopPrice() +
             ' bits.'
           : choice.kind === 'chest'

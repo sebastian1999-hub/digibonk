@@ -153,7 +153,7 @@ test('full builds can learn a replacement technique without a fifth slot or repl
   });
   let card;
   for (let i = 0; i < 300 && !card; i++) {
-    r.s.choice = r.choices();
+    r.s.choice = r.choices('shop');
     card = r.s.choice.cards.find((c) => c.weapon === 'terra-force');
   }
   assert.ok(card);
