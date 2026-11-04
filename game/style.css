@@ -2812,3 +2812,17 @@ body[data-screen='home'] #home-content {
     margin: 0;
   }
 }
+
+#information-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 390px;
+  margin: 20px auto;
+}
+#information-menu button {
+  padding: 14px 22px;
+  font-size: 17px;
+  text-align: center;
+}

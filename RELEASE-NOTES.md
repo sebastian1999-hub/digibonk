@@ -1,3 +1,7 @@
+## 1.22.2 · Información agrupada
+
+Técnicas y objetos y Cómo jugar se agrupan en Información. Retirado el acceso Récords del menú principal. Incluye el inicio centrado y la clasificación visible de 1.22.1.
+
 ## 1.22.1 · Inicio centrado y clasificación visible
 
 Logotipo y opciones centrados. Panel de Liga y cuenta visible junto al menú; en pantallas pequeñas aparece debajo. El inicio permite desplazamiento sin cortar botones. La clasificación mantiene el acceso mediante inicio de sesión.

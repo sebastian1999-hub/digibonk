@@ -706,12 +706,13 @@ function makeEggs() {
   if (!C.eggChoices.some((e) => e.id === selectedEgg)) selectedEgg = 'Botamon';
   $('#home-bits').textContent = number(progression.bits) + ' bits';
   $('#main-menu').hidden = homeTab !== 'menu';
+  $('#information-menu').hidden = homeTab !== 'information';
   $('#home-content').hidden = !['play', 'incubator'].includes(homeTab);
   $('#home-aside').hidden = false;
   $('#menu-back').hidden = false;
   $('#continue-run').hidden =
     homeTab !== 'menu' || !read(RUN_KEY, null) || !!read(RUN_KEY, null)?.done;
-  if (homeTab === 'menu' || homeTab === 'league') return;
+  if (['menu', 'league', 'information'].includes(homeTab)) return;
   $('#tab-play').classList.toggle('primary', homeTab === 'play');
   $('#tab-incubator').classList.toggle('primary', homeTab === 'incubator');
   $('#tab-play').setAttribute('aria-selected', homeTab === 'play');
@@ -827,13 +828,20 @@ $('#tab-incubator').onclick = () => {
   homeTab = 'incubator';
   makeEggs();
 };
+$('#menu-information').onclick = () => {
+  homeTab = 'information';
+  makeEggs();
+};
+$('#information-back').onclick = () => {
+  homeTab = 'menu';
+  makeEggs();
+};
 $('#menu-back').onclick = () => {
   homeTab = 'menu';
   makeEggs();
 };
 for (const [id, target] of [
   ['menu-book', 'book-toggle'],
-  ['menu-records', 'records-toggle'],
   ['menu-settings', 'settings-toggle'],
   ['menu-help', 'help-toggle'],
 ])
