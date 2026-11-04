@@ -96,6 +96,10 @@ export class Music {
     o.stop(at + 0.15);
   }
   tick(playing, menu = false, mainMap = false) {
+    if (menu && !this.wasMenu) this.menuTrack.currentTime = 0;
+    if (mainMap && !this.wasMainMap) this.mapTrack.currentTime = 0;
+    this.wasMenu = menu;
+    this.wasMainMap = mainMap;
     if (menu && this.enabled) {
       if (this.menuTrack.paused && !this.menuBlocked) {
         this.menuBlocked = true;

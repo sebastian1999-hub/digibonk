@@ -54,3 +54,23 @@ test('main map recording loops during island play and pauses in portals, menus a
   m.tick(true, false, true);
   assert.equal(m.mapTrack.paused, true);
 });
+
+test('recordings restart on scene entry but keep their position through pause', async () => {
+  const { Music } = await import(pathToFileURL(require.resolve('../game/music.js')).href);
+  const m = new Music();
+  m.tick(false, true, false);
+  m.menuTrack.currentTime = 18;
+  m.tick(false, true, false);
+  assert.equal(m.menuTrack.currentTime, 18);
+  m.tick(true, false, true);
+  assert.equal(m.mapTrack.currentTime, 0);
+  m.mapTrack.currentTime = 24;
+  m.tick(false, false, true);
+  m.tick(true, false, true);
+  assert.equal(m.mapTrack.currentTime, 24);
+  m.tick(true, false, false);
+  m.tick(true, false, true);
+  assert.equal(m.mapTrack.currentTime, 0);
+  m.tick(false, true, false);
+  assert.equal(m.menuTrack.currentTime, 0);
+});

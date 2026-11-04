@@ -1,3 +1,7 @@
+## 1.23.2 · Música desde el principio
+
+La música del menú y de la isla vuelve a comenzar al entrar en cada escenario. Pausar dentro del mismo mapa conserva la posición. Incluye los banners y el volumen guardado de 1.23.1.
+
 ## 1.23.1 · Banners del menú y volumen de música
 
 - Opciones del menú principal con el banner digital proporcionado.

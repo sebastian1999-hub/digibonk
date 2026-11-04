@@ -1641,7 +1641,7 @@ function loop(now) {
   music.tick(
     active && !paused && !document.hidden && !window.DigibonkDesktopHidden && !run?.s.done,
     !active && !document.hidden && !window.DigibonkDesktopHidden && !loading,
-    !run?.s.realm,
+    active && !run?.s.realm && !run?.s.done,
   );
   if (!loading) renderer.render(active ? run : null, dt, { menu: !active });
   drawPortraits(now / 1000);
