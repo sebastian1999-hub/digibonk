@@ -1,3 +1,7 @@
+## 1.19.0 · Animaciones elementales
+
+Nuevas cargas convergentes y estelas helicoidales para las técnicas. Impactos animados por familia: brasas parabólicas, coronas fluidas, cristales, espirales astrales, pétalos y trazos cinéticos. Escala por etapa evolutiva, desvanecimiento gradual y presupuesto compartido de partículas.
+
 ## 1.18.0 · Incubadora y efectos de combate
 
 Huevos y ramas desbloqueables con bits permanentes; mejoras de atributos por huevo; 16 objetos nuevos; partículas de vuelo, preparación e impactos por elemento.
