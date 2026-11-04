@@ -1,3 +1,7 @@
+## 1.20.0 · Incubadora separada
+
+Inicio simplificado con pestañas Jugar e Incubadora. Selecciona un huevo y juega desde el inicio; mejora su calidad y atributos o desbloquea nuevos huevos en Incubadora. Saldo de bits destacado junto a las pestañas y en el panel de mejoras, actualizado tras cada compra.
+
 ## 1.19.0 · Animaciones elementales
 
 Nuevas cargas convergentes y estelas helicoidales para las técnicas. Impactos animados por familia: brasas parabólicas, coronas fluidas, cristales, espirales astrales, pétalos y trazos cinéticos. Escala por etapa evolutiva, desvanecimiento gradual y presupuesto compartido de partículas.
