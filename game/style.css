@@ -2740,3 +2740,75 @@ body[data-screen='home'] #home-panel {
     animation: none;
   }
 }
+
+/* Center the home composition and keep the league visible beside it. */
+body[data-screen='home'] #home {
+  display: grid;
+  grid-template-columns: minmax(0, 640px) minmax(270px, 360px);
+  justify-content: center;
+  align-items: start;
+  gap: clamp(24px, 4vw, 64px);
+  padding: 80px 32px 40px;
+  overflow: auto;
+  background: linear-gradient(90deg, #123b32e8, #173e35ad);
+}
+body[data-screen='home'] #home-panel {
+  position: static;
+  left: auto;
+  top: auto;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  text-align: center;
+}
+body[data-screen='home'] #home-panel h1.game-logo {
+  margin: 10px auto 16px;
+}
+body[data-screen='home'] #home-records {
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+}
+body[data-screen='home'] #main-menu,
+body[data-screen='home'] .home-wallet {
+  width: 100%;
+  max-width: 390px;
+  margin-left: auto;
+  margin-right: auto;
+}
+body[data-screen='home'] #main-menu button {
+  text-align: center;
+}
+body[data-screen='home'] #continue-run {
+  width: min(390px, 100%);
+  margin: 0 auto 14px;
+}
+body[data-screen='home'] #home-aside.online-panel {
+  display: block;
+  position: static;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  margin: 32px 0 0;
+  padding: 24px;
+  text-align: left;
+}
+body[data-screen='home'] #home-content {
+  text-align: left;
+}
+@media (max-width: 800px) {
+  body[data-screen='home'] #home {
+    grid-template-columns: minmax(0, 640px);
+    padding: 75px 20px 30px;
+    gap: 20px;
+  }
+  body[data-screen='home'] #home-aside.online-panel {
+    margin: 0;
+  }
+}

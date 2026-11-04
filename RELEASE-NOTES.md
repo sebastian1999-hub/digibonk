@@ -1,3 +1,7 @@
+## 1.22.1 · Inicio centrado y clasificación visible
+
+Logotipo y opciones centrados. Panel de Liga y cuenta visible junto al menú; en pantallas pequeñas aparece debajo. El inicio permite desplazamiento sin cortar botones. La clasificación mantiene el acceso mediante inicio de sesión.
+
 ## 1.22.0 · Menú principal y marcos de rareza
 
 - Menú principal con Jugar, Incubadora, Técnicas y objetos, Récords, Liga y cuenta, Ajustes y Cómo jugar.

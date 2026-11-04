@@ -707,7 +707,7 @@ function makeEggs() {
   $('#home-bits').textContent = number(progression.bits) + ' bits';
   $('#main-menu').hidden = homeTab !== 'menu';
   $('#home-content').hidden = !['play', 'incubator'].includes(homeTab);
-  $('#home-aside').hidden = homeTab !== 'league';
+  $('#home-aside').hidden = false;
   $('#menu-back').hidden = false;
   $('#continue-run').hidden =
     homeTab !== 'menu' || !read(RUN_KEY, null) || !!read(RUN_KEY, null)?.done;
@@ -839,9 +839,9 @@ for (const [id, target] of [
 ])
   $('#' + id).onclick = () => $('#' + target).click();
 $('#menu-league').onclick = () => {
-  homeTab = 'league';
+  homeTab = 'menu';
   makeEggs();
-  $('#main-menu').hidden = false;
+  $('#home-aside').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
 
 showHome();
