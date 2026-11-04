@@ -1,3 +1,7 @@
+## 1.21.1 · Corrección de bloqueo de arranque
+
+Restaurado el inicio del renderizador, el bucle de juego y los manejadores de combate que faltaban en el archivo principal desde la separación de Incubadora. Corrige la pantalla detenida en Preparando escenario. Nuevas pruebas del arranque y de finalización de la transición de carga. Conserva las partidas y la incubadora.
+
 ## 1.21.0 · Oleadas progresivas y tandas de enemigos
 
 - Los enemigos de las oleadas y refuerzos de portal aparecen progresivamente. La siguiente oleada espera a que se agote la cola y se derroten los enemigos. El progreso pendiente se conserva al guardar y salir.
