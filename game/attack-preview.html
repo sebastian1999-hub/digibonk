@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Digibonk · Galería de técnicas</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #0b171a;
+      color: #e9f1df;
+      font: 14px system-ui;
+    }
+    header {
+      padding: 20px 28px 14px;
+      background: #101f23;
+      border-bottom: 1px solid #38504b;
+    }
+    h1 {
+      font-size: 23px;
+      margin: 0 0 6px;
+    }
+    p {
+      margin: 0;
+      color: #a2bdb5;
+      font-size: 13px;
+    }
+    nav {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 14px 28px;
+    }
+    button,
+    select {
+      background: #233c3d;
+      color: #e9f1df;
+      border: 1px solid #45635e;
+      border-radius: 7px;
+      padding: 9px 12px;
+      font: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+    button:hover {
+      background: #365b56;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    main {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 0 28px 24px;
+    }
+    .card {
+      height: 230px;
+      border: 1px solid #355449;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card h2 {
+      font-size: 16px;
+      margin: 14px 16px 4px;
+    }
+    .card small {
+      margin: 0 16px;
+      color: #b0c9ba;
+    }
+    .viewport {
+      position: absolute;
+      inset: 60px 0 0;
+    }
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+    #report {
+      margin-left: auto;
+      color: #a8c6b9;
+      font-size: 12px;
+    }
+    .phase {
+      position: absolute;
+      bottom: 10px;
+      left: 14px;
+      color: #bdcfc2;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 800px) {
+      main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0 12px 20px;
+      }
+      nav,
+      header {
+        padding: 14px;
+      }
+      .card {
+        height: 240px;
+      }
+    }
+  </style>
+  <header>
+    <h1>DIGIBONK / Técnicas en movimiento</h1>
+    <p>Lanzamiento, recorrido e impacto · Las mismas animaciones que utiliza el juego.</p>
+  </header>
+  <nav>
+    <label
+      >Familia
+      <select id="family" aria-label="Familia">
+        <option value="featured">Selección</option>
+        <option value="all">Todas</option>
+      </select></label
+    >
+    <button id="previous">← Anteriores</button><button id="next">Siguientes →</button>
+    <label
+      >Vista
+      <select id="phase" aria-label="Vista">
+        <option value="cycle">Secuencia completa</option>
+        <option value="flight">Proyectil</option>
+        <option value="impact">Impacto</option>
+      </select></label
+    >
+    <label
+      >Velocidad
+      <select id="speed" aria-label="Velocidad">
+        <option value="1">Normal</option>
+        <option value="0.3">Cámara lenta</option>
+      </select></label
+    >
+    <button id="pause">Pausar</button><button id="step">Avanzar fotograma</button>
+    <label
+      >Instante <input id="scrub" aria-label="Instante" type="range" min="0" max="100" value="0"
+    /></label>
+    <label
+      >Fondo
+      <select id="ground" aria-label="Fondo">
+        <option value="island">Isla</option>
+        <option value="dark">Oscuro</option>
+      </select></label
+    >
+    <button id="audit">Revisar las 64 técnicas</button>
+    <span id="report" role="status">Preparando…</span>
+  </nav>
+  <main id="cards"></main>
+  <canvas id="stage"></canvas>
+  <script src="status-rules.js"></script>
+  <script src="skill-system.js"></script>
+  <script src="assets/sprites-data.js"></script>
+  <script type="module" src="attack-preview.js"></script>
+</html>

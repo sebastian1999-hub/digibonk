@@ -1,5 +1,5 @@
 // Original score: minor-key adventure, four harmonic sections and layered synthesis.
-// No copyrighted recordings, remote requests, or audio assets are required.
+// Menu recording supplied by the project owner.
 export class Music {
   constructor() {
     this.enabled = true;
@@ -8,6 +8,28 @@ export class Music {
     this.next = 0;
     this.running = false;
     this.track = null;
+    this.menuTrack = new window.Audio('assets/music/menu-intro.mp3');
+    this.menuTrack.loop = true;
+    this.menuTrack.volume = this.volume;
+    this.menuTrack.preload = 'metadata';
+    this.mapTrack = new window.Audio('assets/music/main-map.mp3');
+    this.mapTrack.loop = true;
+    this.mapTrack.volume = this.volume;
+    this.mapTrack.preload = 'metadata';
+    this.mapBlocked = false;
+    this.menuBlocked = false;
+    document.addEventListener(
+      'pointerdown',
+      () => {
+        this.menuBlocked = false;
+        this.mapBlocked = false;
+      },
+      { passive: true },
+    );
+    document.addEventListener('keydown', () => {
+      this.mapBlocked = false;
+      this.menuBlocked = false;
+    });
   }
   start() {
     if (!this.ctx) {
@@ -28,6 +50,8 @@ export class Music {
   setVolume(value) {
     this.volume = value;
     if (this.track) this.track.volume = value;
+    this.menuTrack.volume = value;
+    this.mapTrack.volume = value;
   }
   load(file) {
     this.start();
@@ -71,9 +95,28 @@ export class Music {
     o.start(at);
     o.stop(at + 0.15);
   }
-  tick(playing) {
+  tick(playing, menu = false, mainMap = false) {
+    if (menu && this.enabled) {
+      if (this.menuTrack.paused && !this.menuBlocked) {
+        this.menuBlocked = true;
+        void this.menuTrack.play().catch(() => {});
+      }
+    } else {
+      if (!this.menuTrack.paused) this.menuTrack.pause();
+      this.menuBlocked = false;
+    }
+    const mapAudible = playing && mainMap && this.enabled && !this.track;
+    if (mapAudible) {
+      if (this.mapTrack.paused && !this.mapBlocked) {
+        this.mapBlocked = true;
+        void this.mapTrack.play().catch(() => {});
+      }
+    } else {
+      if (!this.mapTrack.paused) this.mapTrack.pause();
+      this.mapBlocked = false;
+    }
     if (!this.ctx) return;
-    const audible = playing && this.enabled;
+    const audible = playing && this.enabled && !mapAudible;
     this.bus.gain.setTargetAtTime(
       audible && !this.track ? this.volume * 0.6 : 0,
       this.ctx.currentTime,

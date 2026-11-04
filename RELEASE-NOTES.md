@@ -1,3 +1,10 @@
+## 1.23.0 · Técnicas renovadas y música original
+
+- Renovadas las 64 técnicas, sus proyectiles, impactos y efectos de apoyo.
+- Música Digibonk Intro en el menú y Digibonk Mapa 1 en la isla principal.
+- Las torres de los portales pierden vida al derrotar enemigos y se destruyen al completar la tercera oleada.
+- Galería de técnicas para revisión visual y mejoras de rendimiento de efectos.
+
 ## 1.22.2 · Información agrupada
 
 Técnicas y objetos y Cómo jugar se agrupan en Información. Retirado el acceso Récords del menú principal. Incluye el inicio centrado y la clasificación visible de 1.22.1.

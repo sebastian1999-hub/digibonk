@@ -408,10 +408,37 @@
       }
       return false;
     };
+    proto.updateWaveTower = function () {
+      const r = this.s.realm;
+      if (!r || r.phase !== 'waves' || !r.wave) return;
+      const tower = this.s.enemies.find((e) => e.id === r.towerId);
+      if (!tower) return;
+      const alive = this.s.enemies.filter((e) => e.hp > 0 && e.waveToken === r.waveToken).length;
+      const remaining = alive + (r.pendingSpawns || 0);
+      r.waveTotal ??= Math.max(1, remaining);
+      const progress = (r.wave - 1 + Math.max(0, 1 - remaining / r.waveTotal)) / r.maxWaves;
+      const hp = Math.min(tower.hp, Math.max(1, tower.maxHp * (1 - progress)));
+      if (hp < tower.hp) tower.hit = 0.12;
+      tower.hp = hp;
+      if (r.wave === r.maxWaves && remaining === 0) {
+        tower.shielded = false;
+        tower.hp = 0;
+        this.onTowerDestroyed(tower);
+      }
+    };
+    const waveHurt = proto.hurt;
+    proto.hurt = function (enemy, ...args) {
+      const alive = enemy.hp > 0;
+      const result = waveHurt.call(this, enemy, ...args);
+      if (alive && enemy.hp <= 0 && enemy.realmMob) this.updateWaveTower();
+      return result;
+    };
     proto.updateRealmWaves = function (dt) {
       const s = this.s,
         r = s.realm;
       if (!r || r.phase === 'cleared') return;
+      this.updateWaveTower();
+      if (r.phase === 'cleared') return;
       if (r.phase === 'waves') {
         const remaining = s.enemies.filter((e) => e.hp > 0 && e.waveToken === r.waveToken).length;
         if (r.wave > 0 && !r.waiting && remaining === 0 && (r.pendingSpawns || 0) === 0) {
@@ -434,6 +461,7 @@
               r.waveToken = r.portalId + ':' + r.wave;
               r.waiting = false;
               r.pendingSpawns = B.realm(r.pressure, r.wave).count;
+              r.waveTotal = r.pendingSpawns;
               r.spawnTimer = 0.25;
               this.emit('realm-wave', { wave: r.wave });
             } else {

@@ -54,7 +54,7 @@ test('portal waves contain crowds with mostly melee enemies and remain completab
     r.updateRealmWaves(0.01);
     r.updateRealmWaves(5);
   }
-  assert.equal(r.s.realm.phase, 'tower');
+  assert.equal(r.s.realm.phase, 'cleared');
   assert.equal(r.s.enemies.find((e) => e.tower).shielded, false);
   assert.ok(B.realm(B.pressure({ level: 99, time: 900, stage: 4, cleansed: 5 }), 3).count <= 145);
 });

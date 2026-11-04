@@ -1,6 +1,6 @@
-import { cinematicAttack } from './cinematic-attacks.js';
+import { drawAttack } from './attack-choreography.js';
+import { attackTexture } from './attack-textures.js';
 import { warmStatusVisuals } from './status-visuals.js';
-import { drawNextOrderVFX } from './next-order-visuals.js';
 import * as THREE from './vendor/three.module.js';
 const TAU = Math.PI * 2,
   rand = (n) => {
@@ -46,6 +46,11 @@ export class AttackVisuals {
   }
   texture(kind) {
     if (this.textures.has(kind)) return this.textures.get(kind);
+    if (kind.startsWith('fx-')) {
+      const texture = attackTexture(kind);
+      this.textures.set(kind, texture);
+      return texture;
+    }
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = kind.includes('flame') ? 256 : 128;
@@ -351,8 +356,8 @@ export class AttackVisuals {
       ),
       Material = solid ? THREE.MeshPhongMaterial : THREE.MeshBasicMaterial,
       m = new Material({
-        ...(solid ? { shininess: 65, specular: '#b9dcf2', flatShading: true } : {}),
-        color: '#ffffff',
+        ...(solid ? { shininess: 45, specular: '#56758a', flatShading: true } : {}),
+        color: solid ? '#929292' : '#ffffff',
         map: texture ? this.texture(texture) : null,
         vertexColors: geometry === 'wave',
         transparent: true,
@@ -427,7 +432,19 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
     const mesh = new THREE.InstancedMesh(g, m, capacity);
     mesh.frustumCulled = false;
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    mesh.renderOrder = texture ? 6 : 5;
+    // Instanced batches share an origin, so distance sorting cannot order their layers.
+    // Ground marks → opaque silhouettes → smoke → flame → sharp light accents.
+    mesh.renderOrder = name.endsWith('-ground')
+      ? 3
+      : texture === 'fx-smoke'
+        ? 4
+        : additive
+          ? 9
+          : texture?.includes('flame')
+            ? 8
+            : texture
+              ? 7
+              : 5;
     this.group.add(mesh);
     b = { mesh, alpha, capacity, count: 0 };
     this.batches.set(name, b);
@@ -522,43 +539,8 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
   }
   wave(x, y, z, width, angle, time, owner, alpha = 1, height = 1) {
     const q = this.yaw(angle),
-      ux0 = Math.sin(angle),
-      uz0 = Math.cos(angle),
-      floor = q
-        .clone()
-        .multiply(
-          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2),
-        );
-    this.emit(
-      'wave-wake',
-      'quad',
-      'foam',
-      x - ux0 * 0.6,
-      y + 0.025,
-      z - uz0 * 0.6,
-      width * 2.1,
-      3.5,
-      1,
-      '#a3edff',
-      alpha * 0.6,
-      floor,
-      owner,
-    );
-    this.emit(
-      'water-wave',
-      'wave',
-      'water',
-      x - ux0 * 1.1,
-      y - 0.15,
-      z - uz0 * 1.1,
-      width * 0.9,
-      0.55 * height,
-      0.65,
-      '#c5f9ff',
-      0.25 * alpha,
-      q,
-      owner,
-    );
+      ux = Math.sin(angle),
+      uz = Math.cos(angle);
     this.emit(
       'water-wave',
       'wave',
@@ -569,8 +551,8 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
       width,
       height,
       1,
-      '#ffffff',
-      0.76 * alpha,
+      '#72dfff',
+      0.9 * alpha,
       q,
       owner,
     );
@@ -584,70 +566,43 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
       width,
       height,
       1,
-      '#efffff',
-      0.95 * alpha,
+      '#eaffff',
+      alpha,
       q,
       owner,
     );
-    for (let i = 0; i < 5; i++) {
-      const k = ((i / 4) * 2 - 1) * width;
+    // A clean curling crest and a few falling drops replace the noisy foam stamps.
+    for (let i = 0; i < 7; i++) {
+      const side = ((i / 6) * 2 - 1) * width,
+        phase = (time * 1.7 + i * 0.17) % 1;
+      const xx = x + uz * side + ux * 0.63,
+        zz = z - ux * side + uz * 0.63;
       this.emit(
-        'foam-lace',
+        'wave-drops',
         'quad',
-        'foam',
-        x + uz0 * k + ux0 * 0.65,
-        y + 2.58 * height * (1 - 0.12 * (k / width) ** 2),
-        z - ux0 * k + uz0 * 0.65,
-        0.7,
-        0.38 * height,
+        'fx-droplet',
+        xx + ux * phase * 0.4,
+        y + (2.55 - phase * 0.75) * height,
+        zz + uz * phase * 0.4,
+        0.26,
+        0.13,
         1,
-        '#efffff',
-        alpha * 0.65,
-        this.r.camera.quaternion,
-        owner,
-      );
-    }
-    const ux = Math.sin(angle),
-      uz = Math.cos(angle),
-      rx = uz,
-      rz = -ux;
-    for (let i = 0; i < 15; i++) {
-      const k = ((i / 14) * 2 - 1) * width;
-      this.emit(
-        'foam-caps',
-        'sphere',
-        null,
-        x + rx * k + ux * 0.63,
-        y + 2.66 * height * (1 - 0.12 * (k / width) ** 2) + Math.sin(time * 5 + i) * 0.04,
-        z + rz * k + uz * 0.63,
-        0.1,
-        0.07,
-        0.1,
-        '#efffff',
-        alpha * 0.85,
-        null,
-        owner,
-      );
-    }
-    for (let i = 0; i < 11; i++) {
-      const k = ((i / 10) * 2 - 1) * width,
-        phase = (time * 2 + rand(i + width * 17)) % 1;
-      this.emit(
-        'spray',
-        'shard',
-        null,
-        x + rx * k + ux * 0.6,
-        y + (2.5 + phase * 0.7) * height,
-        z + rz * k + uz * 0.6,
-        0.045,
-        0.1 + phase * 0.18,
-        0.045,
-        i % 2 ? '#eeffff' : '#80e8ff',
+        '#d9ffff',
         (1 - phase) * alpha,
-        null,
+        this.face(-Math.PI / 2),
         owner,
       );
     }
+    this.decal(
+      'wave-wake',
+      x - ux * 0.5,
+      y + 0.05,
+      z - uz * 0.5,
+      width * 2.2,
+      '#88e9ef',
+      alpha * 0.32,
+      owner,
+    );
   }
   ribbon(name, a, b, width, color, alpha, owner) {
     const d = new THREE.Vector3().subVectors(b, a),
@@ -739,165 +694,16 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
               : '#fff0b0';
     for (let i = 1; i < points.length; i++) {
       const age = Math.max(0, 1 - (time - points[i].time) / 0.32),
-        width = (fire ? 0.55 : water ? 0.25 : 0.2) * power * age;
+        width = (fire ? 0.2 : water ? 0.14 : 0.1) * power * age;
       this.ribbon(
         'motion-trails',
         new THREE.Vector3(points[i - 1].x, points[i - 1].y, points[i - 1].z),
         new THREE.Vector3(points[i].x, points[i].y, points[i].z),
         width,
         color,
-        age * 0.6,
+        age * 0.35,
         owner,
       );
-    }
-  }
-  accent(effect, s, time, type, owner) {
-    const life = Math.max(0, effect.life / effect.maxLife),
-      t = 1 - life,
-      x = effect.x,
-      z = effect.z,
-      y = window.DigibonkCore.heightAt(x, z, s.mapSeed),
-      size = Math.min(2, effect.size || 1),
-      fire = ['flame', 'inferno', 'sun', 'missile', 'phoenix', 'blue-flame'].includes(type),
-      water = ['wave', 'jet', 'torpedo', 'bubble'].includes(type),
-      ice = ['ice', 'frost'].includes(type),
-      holy = ['stars', 'holy-beam', 'holy-fist', 'arrow'].includes(type),
-      dark = ['dark-orb', 'bats', 'dark-claw'].includes(type),
-      color = fire
-        ? type === 'blue-flame'
-          ? '#83d6ff'
-          : '#ffc76b'
-        : water
-          ? '#b5f9ff'
-          : ice
-            ? '#d1f8ff'
-            : holy
-              ? '#ffe9a0'
-              : dark
-                ? '#c189ec'
-                : '#c0f5ff';
-    if (effect.kind === 'cast') {
-      if (holy || dark || type === 'sun')
-        this.decal('cast-sigil', x, y + 0.1, z, 2.5 * (0.6 + t), color, life * 0.45, owner, true);
-      return;
-    }
-    if (effect.kind === 'slash') return;
-    if (fire) {
-      const flash = Math.max(0, 1 - t * 4.5);
-      if (flash > 0)
-        this.emit(
-          'blast-heart',
-          'sphere',
-          null,
-          x,
-          y + 0.8,
-          z,
-          (0.4 + t * 3) * size,
-          (0.4 + t * 3) * size,
-          (0.4 + t * 3) * size,
-          '#fff3c5',
-          flash * 0.8,
-          null,
-          owner,
-        );
-    }
-    this.decal(
-      'impact-pressure',
-      x,
-      y + 0.12,
-      z,
-      (1 + t * 5) * size,
-      color,
-      life * 0.5,
-      owner,
-      holy || dark,
-    );
-    if (water) {
-      for (let i = 0; i < 3; i++)
-        this.decal(
-          'water-ripples',
-          x,
-          y + 0.13 + i * 0.008,
-          z,
-          (1 + t * (4 + i)) * size,
-          '#c9ffff',
-          life * (0.5 - i * 0.1),
-          owner,
-        );
-      for (let i = 0; i < 8; i++) {
-        const a = (i * TAU) / 8 + effect.id,
-          rx = Math.cos(a),
-          rz = Math.sin(a),
-          r = (0.25 + t * 2) * size,
-          height = Math.sin(t * Math.PI) * (1.2 + (i % 3) * 0.4) * size;
-        this.ribbon(
-          'splash-crown',
-          new THREE.Vector3(x + rx * r * 0.8, y + 0.2, z + rz * r * 0.8),
-          new THREE.Vector3(x + rx * r, y + 0.3 + height, z + rz * r),
-          0.25 * life,
-          '#dbffff',
-          life * 0.75,
-          owner,
-        );
-      }
-    } else if (fire || ice || type === 'lightning') {
-      for (let i = 0; i < 9; i++) {
-        const a = i * 2.3999 + effect.id,
-          r = t * (2 + rand(i + effect.id)) * size,
-          h = Math.sin(t * Math.PI) * (1 + rand(i + 22) * 2),
-          head = new THREE.Vector3(x + Math.cos(a) * r, y + 0.3 + h, z + Math.sin(a) * r),
-          tail = new THREE.Vector3(
-            x + Math.cos(a) * r * 0.75,
-            y + 0.3 + h * 0.7,
-            z + Math.sin(a) * r * 0.75,
-          );
-        this.ribbon('impact-sparks', tail, head, (ice ? 0.09 : 0.04) * life, color, life, owner);
-      }
-      if (fire)
-        this.emit(
-          'heat-haze',
-          'quad',
-          'smoke',
-          x,
-          y + 1 + t * 2,
-          z,
-          2 + t * 3,
-          2 + t * 3,
-          1,
-          '#635757',
-          life * 0.2,
-          null,
-          owner,
-        );
-    } else if (holy) {
-      this.ribbon(
-        'holy-flare',
-        new THREE.Vector3(x - 1.8 * life, y + 1, z),
-        new THREE.Vector3(x + 1.8 * life, y + 1, z),
-        0.18 * life,
-        '#fff4bf',
-        life * 0.6,
-        owner,
-      );
-    } else if (dark) {
-      for (let i = 0; i < 3; i++) {
-        const a = time * 3 + (i * TAU) / 3;
-        this.emit(
-          'shadow-vortex',
-          'quad',
-          'smoke',
-          x + Math.cos(a) * t,
-          y + 0.5 + t,
-          z + Math.sin(a) * t,
-          1 + t * 2,
-          1 + t * 2,
-          1,
-          '#6d3a9f',
-          life * 0.45,
-          this.face(a),
-          owner,
-        );
-      }
     }
   }
   warmup(state = { mapSeed: 83461 }) {
@@ -913,7 +719,6 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
     try {
       let id = -100;
       for (const skill of Object.values(window.SkillSystem.skills)) {
-        if (skill.kind !== 'damage') continue;
         this.begin();
         const shot = {
           id: id--,
@@ -926,12 +731,13 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
           prevZ: 0,
         };
         this.projectile(shot, state, 0);
-        for (const kind of ['cast', 'burst', 'slash'])
-          this.impact(
-            { id: id--, skillId: skill.id, kind, x: 0, z: 0, life: 0.6, maxLife: 1, size: 1.2 },
-            state,
-            0,
-          );
+        for (const life of [0.95, 0.5, 0.15])
+          for (const kind of ['cast', 'burst', 'slash', 'heal'])
+            this.impact(
+              { id: id--, skillId: skill.id, kind, x: 0, z: 0, life, maxLife: 1, size: 1.2 },
+              state,
+              0,
+            );
         this.finish();
         yield;
       }
@@ -949,993 +755,42 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
   projectile(shot, s, time, owner = 'player') {
     this.shaderTime.value = time;
     const skill =
-        window.SkillSystem.skills[shot.skillId] ||
-        window.SkillSystem.skills[shot.dark ? 'dark-pulse' : 'bubble'],
-      type = skill.visual,
-      x = shot.x,
-      z = shot.z,
-      y = window.DigibonkCore.heightAt(x, z, s.mapSeed) + (shot.height || 1.2),
-      seed = shot.id * 3.7,
-      power = 1 + Math.max(0, skill.stage) * 0.18;
-    let dx = owner === 'enemy' ? shot.dx : x - (shot.prevX ?? shot.ox ?? x - 1),
-      dz = owner === 'enemy' ? shot.dz : z - (shot.prevZ ?? shot.oz ?? z);
-    if (Math.hypot(dx, dz) < 0.001) {
-      dx = x - (shot.ox ?? x - 1);
-      dz = z - (shot.oz ?? z);
-    }
-    const length = Math.hypot(dx, dz) || 1,
-      ux = dx / length,
-      uz = dz / length,
-      rx = uz,
-      rz = -ux,
-      angle = Math.atan2(ux, uz),
-      q = new THREE.Quaternion().setFromUnitVectors(this.up, new THREE.Vector3(ux, 0, uz));
-    this.trail(shot, s, time, owner, type, x, y, z, power);
-    cinematicAttack(this, skill, shot, s, time, owner, 'flight');
-    if (this.count < this.budget * 0.78) {
-      const color = skill.color || '#c5f4ff';
-      for (let i = 0; i < 2; i++) {
-        const phase = (time * 3 + i * 0.5 + seed) % 1,
-          back = 0.2 + phase * 1.5;
-        this.emit(
-          'flight-sparks',
-          'shard',
-          null,
-          x - ux * back + rx * 0.13 * Math.sin(seed + i * 3),
-          y + 0.1 * Math.cos(seed + i),
-          z - uz * back + rz * 0.13 * Math.sin(seed + i * 3),
-          0.035,
-          0.09 * (1 - phase),
-          0.035,
-          color,
-          (1 - phase) * 0.6,
-          this.face(angle),
-          owner,
-        );
-      }
-    }
-    if (skill.nextOrder) {
-      drawNextOrderVFX(this, skill, shot, s, time, owner, 'projectile');
-      return;
-    }
-    if (['flame', 'blue-flame', 'inferno'].includes(type)) {
-      const cold = type === 'blue-flame',
-        size = type === 'inferno' ? 1.5 : 1;
-      this.emit(
-        'burning-body',
-        'sphere',
-        'sun',
-        x,
-        y,
-        z,
-        0.5 * power * size,
-        0.48 * power * size,
-        0.5 * power * size,
-        cold ? '#8cddff' : '#fff0c5',
-        0.94,
-        this.yaw(time * 2),
-        owner,
-      );
-      this.emit(
-        'flame-heart',
-        'sphere',
-        null,
-        x + ux * 0.2,
-        y,
-        z + uz * 0.2,
-        0.24 * power,
-        0.24 * power,
-        0.24 * power,
-        cold ? '#d6faff' : '#fff2ba',
-        0.9,
-        null,
-        owner,
-      );
-      this.glow(x, y, z, power * 2, cold ? '#489fff' : '#ff9b2f', 0.45, owner);
-      const view = new THREE.Vector3(ux, 0, uz).applyQuaternion(
-          this.r.camera.quaternion.clone().invert(),
-        ),
-        roll = Math.atan2(view.y, view.x) + Math.PI / 2;
-      this.emit(
-        cold ? 'cold-fire-streak' : 'fire-streak',
-        'quad',
-        cold ? 'blue-flame' : 'flame',
-        x - ux * 1.4,
-        y + 0.1,
-        z - uz * 1.4,
-        1.25 * power * size,
-        4.1 * power * size,
-        1,
-        '#ffffff',
-        0.9,
-        this.face(roll),
-        owner,
-      );
-      for (let i = 0; i < 5; i++) {
-        const t = i * 0.48,
-          fade = 1 - i * 0.14;
-        this.flame(
-          x - ux * t,
-          y + 0.1 + Math.sin(time * 14 + seed + i) * 0.08,
-          z - uz * t,
-          power * size * fade,
-          time,
-          seed + i,
-          cold,
-          owner,
-          fade,
-        );
-      }
-      for (let i = 0; i < 5; i++) {
-        const a = seed + i * 2.4,
-          d = (time * 2 + rand(i + seed)) % 1;
-        this.emit(
-          'embers',
-          'shard',
-          null,
-          x - ux * d * 3 + Math.cos(a) * d * 0.5,
-          y + d * 1.5,
-          z - uz * d * 3 + Math.sin(a) * d * 0.5,
-          0.04,
-          0.1,
-          0.04,
-          cold ? '#c3faff' : '#ffe392',
-          1 - d,
-          null,
-          owner,
-        );
-      }
-    } else if (type === 'wave') {
-      this.wave(x, y - 1, z, 2.1 * power, angle, time, owner);
-    } else if (type === 'jet') {
-      const head = new THREE.Vector3(x, y, z),
-        tail = new THREE.Vector3(x - ux * 4, y - 0.18, z - uz * 4);
-      this.beam('water-stream', head, tail, 0.18 * power, '#40c9ed', 0.8, owner);
-      this.beam('water-stream-core', head, tail, 0.055 * power, '#e4ffff', 0.9, owner);
-      for (let i = 0; i < 8; i++) {
-        const t = i * 0.48;
-        this.emit(
-          'water-bubbles',
-          'quad',
-          'bubble',
-          x - ux * t + rx * Math.sin(time * 18 + i) * 0.12,
-          y + Math.cos(time * 14 + i) * 0.12,
-          z - uz * t + rz * Math.sin(time * 18 + i) * 0.12,
-          0.3,
-          0.3,
-          1,
-          '#b2faff',
-          0.8,
-          null,
-          owner,
-        );
-      }
-      for (let i = 0; i < 4; i++)
-        this.emit(
-          'spray',
-          'shard',
-          null,
-          x + rx * (rand(i + seed) - 0.5),
-          y + rand(i + seed + 3) * 0.6,
-          z + rz * (rand(i + seed) - 0.5),
-          0.06,
-          0.22,
-          0.06,
-          '#dcffff',
-          0.9,
-          q,
-          owner,
-        );
-    } else if (type === 'bubble') {
-      for (let i = 0; i < 4; i++) {
-        const a = seed + i * 2.3;
-        this.emit(
-          'bubbles',
-          'quad',
-          'bubble',
-          x + Math.cos(a) * 0.35,
-          y + Math.sin(time * 4 + a) * 0.3,
-          z + Math.sin(a) * 0.35,
-          (0.6 + i * 0.13) * power,
-          (0.6 + i * 0.13) * power,
-          1,
-          '#d4ffff',
-          0.9,
-          null,
-          owner,
-        );
-      }
-    } else if (['ice', 'frost'].includes(type)) {
-      for (let i = 0; i < (type === 'frost' ? 9 : 5); i++) {
-        const t = i * 0.38,
-          offset = Math.sin(seed + i * 2) * (0.1 + t * 0.1);
-        this.emit(
-          'ice-crystal',
-          'shard',
-          null,
-          x - ux * t + rx * offset,
-          y + Math.cos(seed + i) * 0.15,
-          z - uz * t + rz * offset,
-          0.18 * power,
-          0.7 * power,
-          0.2 * power,
-          i % 2 ? '#eaffff' : '#63bce8',
-          0.92,
-          q,
-          owner,
-        );
-      }
-      this.emit(
-        'ice-spine',
-        'shard',
-        null,
-        x,
-        y,
-        z,
-        0.075 * power,
-        0.8 * power,
-        0.075 * power,
-        '#efffff',
-        0.8,
-        q,
-        owner,
-      );
-      this.emit(
-        'frost-cloud',
-        'quad',
-        'smoke',
-        x - ux,
-        y + 0.3,
-        z - uz,
-        3 * power,
-        2 * power,
-        1,
-        '#c9f8ff',
-        0.75,
-        null,
-        owner,
-      );
-      this.glow(x, y, z, 2.1 * power, '#87ceff', 0.4, owner);
-    } else if (['lightning', 'laser', 'holy-beam'].includes(type)) {
-      const travelled = Math.hypot(x - (shot.ox ?? x - ux * 5), z - (shot.oz ?? z - uz * 5)),
-        distance = Math.min(type === 'lightning' ? 7 : 18, Math.max(1, travelled)),
-        color = type === 'lightning' ? '#6de8ff' : type === 'laser' ? '#f2a9ff' : '#ffdc65';
-      let last = new THREE.Vector3(x - ux * distance, y, z - uz * distance);
-      for (let i = 1; i <= 9; i++) {
-        const t = i / 9,
-          jitter = type === 'lightning' ? Math.sin(i * 7 + Math.floor(time * 13) + seed) * 0.33 : 0,
-          point = new THREE.Vector3(
-            x - ux * distance * (1 - t) + rx * jitter,
-            y + jitter * 0.6,
-            z - uz * distance * (1 - t) + rz * jitter,
-          );
-        this.beam(
-          'beam-glow',
-          last,
-          point,
-          type === 'lightning' ? 0.11 : 0.23 * power,
-          color,
-          0.4,
-          owner,
-        );
-        this.beam(
-          'beam-core',
-          last,
-          point,
-          type === 'lightning' ? 0.035 : 0.065 * power,
-          '#fffde9',
-          1,
-          owner,
-        );
-        if (type === 'lightning' && (i === 3 || i === 6)) {
-          const a = new THREE.Vector3(point.x + rx * 0.7, point.y + 0.4, point.z + rz * 0.7),
-            b = new THREE.Vector3(a.x + ux * 0.6, a.y - 0.25, a.z + uz * 0.6);
-          this.beam('electric-forks', point, a, 0.025, '#b6f5ff', 0.8, owner);
-          this.beam('electric-forks', a, b, 0.018, '#dfffff', 0.65, owner);
-        }
-        last = point;
-      }
-      if (type !== 'lightning')
-        this.ribbon(
-          'light-lance',
-          new THREE.Vector3(x - ux * distance, y, z - uz * distance),
-          new THREE.Vector3(x, y, z),
-          0.75 * power,
-          color,
-          0.55,
-          owner,
-        );
-      this.glow(x, y, z, 2.2 * power, color, 0.7, owner);
-      for (let i = 0; i < 3; i++) {
-        const ring = this.yaw(angle).multiply(
-          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2),
-        );
-        this.emit(
-          'beam-ring',
-          'ring',
-          null,
-          x - ux * i * 0.8,
-          y,
-          z - uz * i * 0.8,
-          0.48 * power,
-          0.48 * power,
-          0.48 * power,
-          color,
-          0.8,
-          ring,
-          owner,
-        );
-      }
-    } else if (type === 'missile' || type === 'torpedo') {
-      for (const side of type === 'missile' ? [-1, 1] : [0]) {
-        const xx = x + rx * side * 0.55,
-          zz = z + rz * side * 0.55;
-        this.emit('missile-body', 'beam', null, xx, y, zz, 0.21, 1.6, 0.21, '#dce5df', 1, q, owner);
-        this.emit(
-          'missile-nose',
-          'cone',
-          null,
-          xx + ux * 0.95,
-          y,
-          zz + uz * 0.95,
-          0.23,
-          0.55,
-          0.23,
-          type === 'missile' ? '#ed7447' : '#bdcbe0',
-          1,
-          q,
-          owner,
-        );
-        for (let i = 0; i < 3; i++) {
-          const a = (i * TAU) / 3;
-          this.emit(
-            'missile-fin',
-            'shard',
-            null,
-            xx - ux * 0.55 + rx * Math.cos(a) * 0.24,
-            y + Math.sin(a) * 0.24,
-            zz - uz * 0.55 + rz * Math.cos(a) * 0.24,
-            0.24,
-            0.18,
-            0.24,
-            '#526675',
-            1,
-            q,
-            owner,
-          );
-        }
-        if (type === 'missile') {
-          this.flame(xx - ux * 1, y - 0.2, zz - uz * 1, 0.9, time, seed, true, owner);
-          for (let i = 0; i < 4; i++)
-            this.emit(
-              'missile-smoke',
-              'quad',
-              'smoke',
-              xx - ux * (1 + i * 0.55),
-              y + i * 0.08,
-              zz - uz * (1 + i * 0.55),
-              0.6 + i * 0.28,
-              0.6 + i * 0.28,
-              1,
-              '#adb6bb',
-              0.45 - i * 0.08,
-              null,
-              owner,
-            );
-        } else
-          for (let i = 0; i < 5; i++)
-            this.emit(
-              'bubbles',
-              'quad',
-              'bubble',
-              xx - ux * (0.6 + i * 0.45),
-              y,
-              zz - uz * (0.6 + i * 0.45),
-              0.25 + i * 0.05,
-              0.25 + i * 0.05,
-              1,
-              '#bffaff',
-              0.7,
-              null,
-              owner,
-            );
-      }
-    } else if (type === 'dark-claw' || type === 'claw') {
-      for (let i = 0; i < 3; i++)
-        this.emit(
-          'flying-claw',
-          'slash',
-          null,
-          x + rx * (i - 1) * 0.22,
-          y + (i - 1) * 0.12,
-          z + rz * (i - 1) * 0.22,
-          1.8,
-          1.1,
-          1,
-          type === 'dark-claw' ? '#ce90ff' : '#ffe6b8',
-          0.9,
-          this.face(time * 2 - 0.6),
-          owner,
-        );
-      this.glow(x, y, z, 2, type === 'dark-claw' ? '#8644cc' : '#ffd68a', 0.4, owner);
-    } else if (type === 'arrow') {
-      this.beam(
-        'arrow-shaft',
-        new THREE.Vector3(x - ux * 1.5, y, z - uz * 1.5),
-        new THREE.Vector3(x, y, z),
-        0.045,
-        '#fff3b6',
-        1,
-        owner,
-      );
-      this.emit(
-        'arrow-tip',
-        'cone',
-        null,
-        x + ux * 0.18,
-        y,
-        z + uz * 0.18,
-        0.2,
-        0.55,
-        0.2,
-        '#fff8cf',
-        1,
-        q,
-        owner,
-      );
-      this.glow(x, y, z, 1.8, '#ffe09d', 0.5, owner);
-      for (let i = 0; i < 2; i++)
-        this.emit(
-          'arrow-feather',
-          'leaf',
-          null,
-          x - ux * 1.2 + rx * (i ? -0.13 : 0.13),
-          y,
-          z - uz * 1.2 + rz * (i ? -0.13 : 0.13),
-          0.2,
-          0.4,
-          1,
-          '#f6edcf',
-          1,
-          this.face(angle + (i ? -0.5 : 0.5)),
-          owner,
-        );
-    } else if (type === 'tornado' || type === 'air') {
-      const vertical = type === 'tornado',
-        rotation = vertical ? this.yaw(time * 5) : q.clone().multiply(this.yaw(time * 6));
-      for (let i = 0; i < 2; i++)
-        this.emit(
-          'wind-helix',
-          'helix',
-          null,
-          x,
-          y - (vertical ? 1 : 0),
-          z,
-          power * (vertical ? 1 : 0.6),
-          power * (vertical ? 1 : 0.6),
-          power * (vertical ? 1 : 0.6),
-          i ? '#eefad6' : '#9fded8',
-          i ? 0.8 : 0.4,
-          rotation.clone().multiply(this.yaw(i * Math.PI)),
-          owner,
-        );
-      for (let i = 0; i < 5; i++) {
-        const a = time * 7 + i * 1.5;
-        this.emit(
-          'wind-leaf',
-          'leaf',
-          null,
-          x + Math.cos(a) * 0.7,
-          y + Math.sin(a) * 0.6,
-          z + Math.sin(a) * 0.7,
-          0.1,
-          0.25,
-          1,
-          '#f4f4d7',
-          0.7,
-          this.face(a),
-          owner,
-        );
-      }
-    } else if (type === 'phoenix' || type === 'bats') {
-      const bat = type === 'bats';
-      for (let i = 0; i < (bat ? 5 : 1); i++) {
-        const phase = time * 18 + i,
-          xx = x - ux * i * 0.35 + rx * Math.sin(i * 2) * 0.6,
-          zz = z - uz * i * 0.35 + rz * Math.sin(i * 2) * 0.6;
-        this.emit(
-          bat ? 'bats' : 'phoenix',
-          '' + (bat ? 'bat' : 'wing'),
-          null,
-          xx,
-          y + Math.cos(phase) * 0.15,
-          zz,
-          (bat ? 0.45 : 0.95) * power,
-          (0.3 + Math.abs(Math.sin(phase)) * 0.45) * power,
-          1,
-          bat ? '#341b56' : '#ffd68a',
-          1,
-          this.face(-angle * 0.4),
-          owner,
-        );
-        if (bat) this.glow(xx, y, zz, 1.1, '#ab55e8', 0.35, owner);
-        else {
-          this.flame(xx - ux * 0.8, y - 0.3, zz - uz * 0.8, 1.3, time, seed, false, owner);
-          this.glow(xx, y, zz, 4, '#ff882b', 0.35, owner);
-        }
-      }
-    } else if (type === 'leaf' || type === 'flower' || type === 'spores') {
-      const flower = type === 'flower';
-      if (type === 'spores') {
-        this.emit(
-          'spore-cloud',
-          'quad',
-          'smoke',
-          x,
-          y,
-          z,
-          2.4 * power,
-          2 * power,
-          1,
-          '#b8c963',
-          0.7,
-          null,
-          owner,
-        );
-        for (let i = 0; i < 8; i++) {
-          const a = time + i * 2.4;
-          this.emit(
-            'spores',
-            'sphere',
-            null,
-            x + Math.cos(a) * 0.7,
-            y + Math.sin(a * 2) * 0.5,
-            z + Math.sin(a) * 0.7,
-            0.08,
-            0.08,
-            0.08,
-            i % 2 ? '#e6eab3' : '#b4c65a',
-            0.8,
-            null,
-            owner,
-          );
-        }
-      } else
-        for (let i = 0; i < (flower ? 6 : 2); i++) {
-          const a = time * 8 + (i * TAU) / 6,
-            xx = x + Math.cos(a) * 0.25,
-            yy = y + Math.sin(a) * 0.25;
-          this.emit(
-            'petals',
-            'leaf',
-            null,
-            xx,
-            yy,
-            z,
-            flower ? 0.35 : 0.23,
-            flower ? 0.65 : 1.2,
-            1,
-            flower ? (i % 2 ? '#ffa1dc' : '#ee64a9') : '#a8e868',
-            0.95,
-            this.face(a),
-            owner,
-          );
-        }
-      this.glow(x, y, z, 1.8, flower ? '#fa7bd3' : '#a7e878', 0.3, owner);
-    } else if (type === 'sun' || type === 'stars' || type === 'dark-orb' || type.includes('fist')) {
-      const dark = type === 'dark-orb',
-        sun = type === 'sun',
-        color = dark ? '#a259e6' : sun ? '#ff8f25' : type === 'beast-fist' ? '#ffc06a' : '#ffeb9a',
-        size = (sun ? 1.05 : dark ? 0.45 : 0.55) * power;
-      this.emit(
-        type.includes('fist') ? 'fists' : sun ? 'solar-body' : 'energy-body',
-        type.includes('fist') ? 'fist' : 'sphere',
-        sun ? 'sun' : null,
-        x,
-        y,
-        z,
-        size,
-        size,
-        size,
-        dark ? '#1b1233' : sun ? '#ffffff' : '#fff6c9',
-        1,
-        this.yaw(time),
-        owner,
-      );
-      this.glow(x, y, z, size * 5, color, 0.55, owner);
-      if (sun || dark) {
-        for (let arc = 0; arc < 3; arc++) {
-          const tilt = arc * 1.1 + time * (dark ? -1 : 1),
-            radius = size * (1.35 + arc * 0.12);
-          let previous = null;
-          for (let j = 0; j <= 8; j++) {
-            const a = tilt + (j / 8) * Math.PI * 1.25,
-              point = new THREE.Vector3(
-                x + Math.cos(a) * radius,
-                y + Math.sin(a) * radius * Math.sin(tilt),
-                z + Math.sin(a) * radius * Math.cos(tilt),
-              );
-            if (previous)
-              this.beam(
-                'orb-filaments',
-                previous,
-                point,
-                sun ? 0.022 : 0.015,
-                sun ? '#ffe3a1' : '#bc6fff',
-                0.65,
-                owner,
-              );
-            previous = point;
-          }
-        }
-      }
-      for (let i = 0; i < (type === 'stars' ? 7 : 5); i++) {
-        const a = time * (dark ? -4 : 3) + (i * TAU) / (type === 'stars' ? 7 : 5),
-          xx = x + Math.cos(a) * size * 1.35,
-          zz = z + Math.sin(a) * size * 1.35;
-        if (sun) this.flame(xx, y - size * 0.5, zz, 0.7, time, seed + i, false, owner, 0.75);
-        else
-          this.emit(
-            'energy-orbit',
-            'shard',
-            null,
-            xx,
-            y + Math.sin(a * 2) * 0.3,
-            zz,
-            0.1,
-            0.27,
-            0.1,
-            dark ? '#d49dff' : '#fff7c6',
-            0.9,
-            this.face(a),
-            owner,
-          );
-      }
-    }
+      window.SkillSystem.skills[shot.skillId] ||
+      window.SkillSystem.skills[shot.dark ? 'dark-pulse' : 'bubble'];
+    if (skill.kind !== 'damage') return;
+    const y = window.DigibonkCore.heightAt(shot.x, shot.z, s.mapSeed) + (shot.height ?? 1.2);
+    this.trail(
+      shot,
+      s,
+      time,
+      owner,
+      skill.visual,
+      shot.x,
+      y,
+      shot.z,
+      1 + Math.max(0, skill.stage) * 0.14,
+    );
+    drawAttack(this, skill, shot, s, time, owner, 'flight');
   }
   impact(effect, s, time) {
     this.shaderTime.value = time;
-    const skill = window.SkillSystem.skills[effect.skillId],
-      type = skill?.visual || (effect.kind === 'slash' ? 'claw' : null);
-    if (!type || type === 'support') return false;
-    if (!['burst', 'slash', 'cast'].includes(effect.kind)) return false;
-    const owner = effect.enemy ? 'enemy' : 'player',
-      life = Math.max(0, effect.life / effect.maxLife),
-      t = 1 - life,
-      x = effect.x,
-      z = effect.z,
-      ground = window.DigibonkCore.heightAt(x, z, s.mapSeed),
-      y = ground + 1,
-      seed = effect.id * 7,
-      size = effect.size || 1,
-      dx = effect.dx || 1,
-      dz = effect.dz || 0,
-      angle = Math.atan2(dx, dz);
-    cinematicAttack(
+    const skill =
+      window.SkillSystem.skills[effect.skillId] ||
+      (effect.kind === 'slash' ? window.SkillSystem.skills.claw : null);
+    if (!skill) return false;
+    if (!['cast', 'burst', 'slash', 'heal'].includes(effect.kind)) {
+      // Damage text still renders, but its old seven-orb burst duplicated every hit.
+      return effect.kind === 'hit';
+    }
+    return drawAttack(
       this,
       skill,
       effect,
       s,
       time,
-      owner,
+      effect.enemy ? 'enemy' : 'player',
       effect.kind === 'cast' ? 'cast' : 'impact',
     );
-    if (skill?.nextOrder)
-      return drawNextOrderVFX(
-        this,
-        skill,
-        effect,
-        s,
-        time,
-        owner,
-        effect.kind === 'cast' ? 'cast' : 'impact',
-      );
-    if (type === 'lightning' && Number.isFinite(effect.fromX))
-      this.beam(
-        'chain-conduction',
-        new THREE.Vector3(effect.fromX, ground + 1, effect.fromZ),
-        new THREE.Vector3(x, y, z),
-        0.045,
-        '#b6f8ff',
-        life,
-        owner,
-      );
-    this.accent(effect, s, time, type, owner);
-    if (effect.kind === 'cast') {
-      const color = skill.color || '#fff2ba';
-      this.glow(x, y + 0.4, z, 0.5 + t * 1.3, color, life * 0.65, owner);
-      if (type === 'sun' || type === 'stars')
-        for (let i = 0; i < 6; i++) {
-          const a = (i * TAU) / 6 + time * 3,
-            r = 1.5 * life;
-          this.emit(
-            'charge',
-            'shard',
-            null,
-            x + Math.cos(a) * r,
-            y + t,
-            z + Math.sin(a) * r,
-            0.07,
-            0.17,
-            0.07,
-            '#fff3b9',
-            life,
-            null,
-            owner,
-          );
-        }
-      return true;
-    }
-    if (type === 'wave') {
-      const radius = effect.radius || Math.max(1.8, size),
-        n = effect.radius ? 9 : 6;
-      for (let i = 0; i < n; i++) {
-        const a = (i * TAU) / n,
-          r = 0.25 + t * radius * 0.8;
-        this.wave(
-          x + Math.sin(a) * r,
-          ground + 0.08,
-          z + Math.cos(a) * r,
-          (effect.radius ? 1.1 : 0.55) + size * 0.12,
-          a,
-          time,
-          owner,
-          life,
-          0.35 + Math.min(3, size) * 0.15,
-        );
-      }
-      return true;
-    }
-    if (['flame', 'blue-flame', 'inferno', 'sun', 'phoenix', 'missile'].includes(type)) {
-      const cold = type === 'blue-flame',
-        sun = type === 'sun',
-        radius = (sun ? 3 : 1.8) * (0.3 + t) * Math.min(1.5, size);
-      this.glow(x, y, z, radius * 4, cold ? '#58aeff' : '#ff9636', life * 0.65, owner);
-      for (let i = 0; i < (sun ? 14 : 9); i++) {
-        const a = i * 2.3999 + seed,
-          r = radius * Math.sqrt(rand(i + seed)),
-          xx = x + Math.cos(a) * r,
-          zz = z + Math.sin(a) * r;
-        this.flame(
-          xx,
-          ground + Math.sin(t * Math.PI) * (1 + rand(i + seed + 2)),
-          zz,
-          (0.7 + life) * Math.min(1.5, size),
-          time,
-          seed + i,
-          cold,
-          owner,
-          life,
-        );
-        if (i < 5)
-          this.emit(
-            'explosion-cells',
-            'sphere',
-            'sun',
-            xx,
-            ground + 0.5 + Math.sin(t * Math.PI) * 1.3,
-            zz,
-            (0.3 + life * 0.7) * size,
-            (0.3 + life * 0.7) * size,
-            (0.3 + life * 0.7) * size,
-            cold ? '#a7ddff' : '#ffe1a0',
-            life * 0.65,
-            this.yaw(time + i),
-            owner,
-          );
-        this.emit(
-          'blast-smoke',
-          'quad',
-          'smoke',
-          xx,
-          ground + 1 + t * 2,
-          zz,
-          0.5 + t * 2,
-          0.5 + t * 2,
-          1,
-          '#606277',
-          life * 0.45,
-          null,
-          owner,
-        );
-      }
-      for (let i = 0; i < 12; i++) {
-        const a = (i * TAU) / 12;
-        this.emit(
-          'embers',
-          'shard',
-          null,
-          x + Math.cos(a) * t * 4,
-          y + Math.sin(t * Math.PI) * (1 + rand(i + seed) * 2),
-          z + Math.sin(a) * t * 4,
-          0.045,
-          0.12,
-          0.045,
-          cold ? '#aeedff' : '#ffdf82',
-          life,
-          null,
-          owner,
-        );
-      }
-      return true;
-    }
-    if (['jet', 'torpedo', 'bubble'].includes(type)) {
-      for (let i = 0; i < 12; i++) {
-        const a = i * 2.4 + seed,
-          r = t * (1.3 + rand(i + seed) * 2);
-        this.emit(
-          'water-splash',
-          'shard',
-          null,
-          x + Math.cos(a) * r,
-          ground + 0.3 + Math.sin(t * Math.PI) * (1 + rand(i + seed + 2) * 2),
-          z + Math.sin(a) * r,
-          0.08,
-          0.3 * life,
-          0.08,
-          '#beffff',
-          life,
-          null,
-          owner,
-        );
-        if (i % 3 === 0)
-          this.emit(
-            'bubbles',
-            'quad',
-            'bubble',
-            x + Math.cos(a) * r,
-            y + t,
-            z + Math.sin(a) * r,
-            0.4 * life,
-            0.4 * life,
-            1,
-            '#c3ffff',
-            life,
-            null,
-            owner,
-          );
-      }
-      return true;
-    }
-    if (type === 'claw' || type === 'dark-claw') {
-      const dark = type === 'dark-claw';
-      for (let i = 0; i < 3; i++) {
-        const offset = (i - 1) * 0.32;
-        this.emit(
-          'claw-slash',
-          'slash',
-          null,
-          x + offset,
-          y + offset * 0.6,
-          z,
-          2.6 * (0.6 + t),
-          1.8,
-          1,
-          dark ? '#ca8aff' : '#ffeac1',
-          life,
-          this.face(-0.65 + t * 1.2),
-          owner,
-        );
-      }
-      this.glow(x, y, z, 1.8, dark ? '#9c43e6' : '#ffe0a1', life * 0.3, owner);
-      return true;
-    }
-    if (type === 'ice' || type === 'frost') {
-      for (let i = 0; i < 9; i++) {
-        const a = i * 2.4 + seed,
-          r = t * 2.4;
-        this.emit(
-          'ice-crystal',
-          'shard',
-          null,
-          x + Math.cos(a) * r,
-          ground + 0.5 + Math.sin(t * Math.PI) * (1 + rand(i + seed) * 2),
-          z + Math.sin(a) * r,
-          0.15 * life,
-          (0.6 + rand(i + seed)) * life,
-          0.15 * life,
-          i % 2 ? '#dcffff' : '#77c4ef',
-          life,
-          this.face(a + t * 3),
-          owner,
-        );
-      }
-      this.emit(
-        'frost-cloud',
-        'quad',
-        'smoke',
-        x,
-        y + t,
-        z,
-        3 + t * 2,
-        2 + t,
-        1,
-        '#b4eaff',
-        life * 0.65,
-        null,
-        owner,
-      );
-      return true;
-    }
-    if (type === 'lightning') {
-      for (let i = 0; i < 7; i++) {
-        const a = (i * TAU) / 7 + seed,
-          r = 2 * (0.3 + t);
-        let from = new THREE.Vector3(x, y, z);
-        for (let j = 1; j <= 3; j++) {
-          const point = new THREE.Vector3(
-            x + (Math.cos(a) * r * j) / 3,
-            ground + 0.2 + Math.sin(j * 3 + time * 20) * 0.25,
-            z + (Math.sin(a) * r * j) / 3,
-          );
-          this.beam('electric-impact', from, point, 0.035, '#b6f8ff', life, owner);
-          from = point;
-        }
-      }
-      this.glow(x, y, z, 4, '#72dfff', life * 0.65, owner);
-      return true;
-    }
-    if (type === 'flower' || type === 'leaf' || type === 'spores') {
-      for (let i = 0; i < 13; i++) {
-        const a = i * 2.4 + seed,
-          r = t * 3;
-        this.emit(
-          'petals',
-          'leaf',
-          null,
-          x + Math.cos(a) * r,
-          y + Math.sin(t * Math.PI) * (1 + rand(i + seed)),
-          z + Math.sin(a) * r,
-          0.22 * life,
-          0.5 * life,
-          1,
-          type === 'flower' ? (i % 2 ? '#ffaddf' : '#e562b2') : '#b7dc75',
-          life,
-          this.face(a + time * 2),
-          owner,
-        );
-      }
-      return true;
-    }
-    if (['dark-orb', 'bats'].includes(type)) {
-      this.glow(x, y, z, 5 * t + 1, '#a75de0', life * 0.65, owner);
-      for (let i = 0; i < 6; i++) {
-        const a = (i * TAU) / 6;
-        this.emit(
-          'bats',
-          'bat',
-          null,
-          x + Math.cos(a) * t * 3,
-          y + t,
-          z + Math.sin(a) * t * 3,
-          0.35 * life,
-          0.3 * life,
-          1,
-          '#552a73',
-          life,
-          this.face(a),
-          owner,
-        );
-      }
-      return true;
-    }
-    // Holy light and mechanical beams leave short directional rays, not generic explosions.
-    for (let i = 0; i < 6; i++) {
-      const a = (i * TAU) / 6,
-        r = (0.4 + t * 2) * Math.min(size, 1.6),
-        end = new THREE.Vector3(x + Math.cos(a) * r, y + Math.sin(a) * r, z);
-      this.beam(
-        'radiant-impact',
-        new THREE.Vector3(x, y, z),
-        end,
-        0.045,
-        skill.color || '#fff4c1',
-        life,
-        owner,
-      );
-    }
-    this.glow(x, y, z, 3 * (0.3 + t), skill.color || '#fff4c1', life * 0.6, owner);
-    return true;
   }
   finish() {
     for (const key of this.trails.keys()) if (!this.trailKeys.has(key)) this.trails.delete(key);

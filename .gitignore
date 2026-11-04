@@ -5,6 +5,8 @@
 !/game/
 !/desktop/
 !/tests/
+!/docs/
+!/preview-server.cjs
 !/supabase/
 !/README.md
 !/ACTUALIZACIONES.md

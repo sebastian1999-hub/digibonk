@@ -189,7 +189,7 @@ function finishWaves(r) {
     r.updateRealmWaves(0.01);
   }
   r.updateRealmWaves(5);
-  assert.equal(r.s.realm.phase, 'tower');
+  assert.equal(r.s.realm.phase, 'cleared');
 }
 test('six independent themed portals start on a stable main map and restore on save', () => {
   const r = fresh();
@@ -238,24 +238,25 @@ test('scene snapshots isolate enemies and loot while preserving earned stats and
   assert.ok(r.s.enemies.some((e) => e.tower));
   assert.doesNotThrow(() => JSON.stringify(r.snapshot()));
 });
-test('three finite waves expose an immovable tower, reward once and defer safe return', () => {
+test('three finite waves destroy the tower, reward once and defer safe return', () => {
   const r = fresh();
   r.enterPortal(r.s.world.portals[0].id);
   const t = r.s.enemies.find((e) => e.tower);
   finishWaves(r);
   assert.equal(t.shielded, false);
   r.s.realm.focusTower = true;
-  assert.equal(r.combatTargets([mob(), t])[0], t);
+  assert.equal(t.hp, 0);
+  assert.equal(r.s.world.cleansed, 1);
   const coins = r.s.coins,
     xp = r.s.totalXp,
     score = r.s.score;
   r.hurt(t, 1e8);
   assert.equal(r.s.realm.phase, 'cleared');
-  assert.equal(r.s.coins - coins, 100);
-  assert.equal(r.s.totalXp - xp, 60);
-  assert.equal(r.s.score - score, 1000);
+  assert.equal(r.s.coins - coins, 0);
+  assert.equal(r.s.totalXp - xp, 0);
+  assert.equal(r.s.score - score, 0);
   r.hurt(t, 1e8);
-  assert.equal(r.s.coins - coins, 100);
+  assert.equal(r.s.coins - coins, 0);
   const copy = new C.Run(null, { saved: r.snapshot() });
   assert.equal(copy.s.world.cleansed, 1);
   assert.ok(copy.s.realm);
@@ -307,14 +308,14 @@ test('realm waves suppress ambient spawning and tower collision is navigable', (
   assert.ok(Math.hypot(unit.x - target.x, unit.z - target.z) < 1.2);
 });
 
-test('automatic melee destroys an exposed tower and scene return never reuses realm actors', () => {
+test('cleared portal returns safely without reusing realm actors', () => {
   const r = fresh();
   r.enterPortal(r.s.world.portals[2].id);
   finishWaves(r);
   const t = r.s.enemies.find((e) => e.tower);
   Object.assign(r.s.player, { x: t.x + 2.5, z: t.z, invulnerable: 100 });
   r.s.realm.focusTower = true;
-  t.hp = 1;
+  assert.equal(t.hp, 0);
   r.s.gems = [];
   r.s.xp = 0;
   r.s.player.basicClock = 0;
@@ -331,4 +332,24 @@ test('automatic melee destroys an exposed tower and scene return never reuses re
   assert.equal(r.s.realm, null);
   assert.equal(r.s.world.cleansed, 1);
   assert.ok(!r.s.enemies.some((e) => e.tower));
+});
+
+test('wave kills damage the tower proportionally and saving preserves the damage', () => {
+  const r = fresh();
+  r.enterPortal(r.s.world.portals[0].id);
+  r.updateRealmWaves(3);
+  for (let i = 0; i < 1000 && r.s.realm.pendingSpawns; i++) r.updateRealmWaves(0.1);
+  const tower = r.s.enemies.find((e) => e.tower),
+    enemies = r.s.enemies.filter((e) => e.realmMob),
+    before = tower.hp;
+  r.hurt(enemies[0], 1e8);
+  assert.ok(tower.hp < before && tower.hp > (before * 2) / 3);
+  const hp = tower.hp;
+  r.hurt(enemies[0], 1e8);
+  assert.equal(tower.hp, hp);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(copy.s.enemies.find((e) => e.tower).hp, hp);
+  for (const e of enemies.slice(1)) r.hurt(e, 1e8);
+  assert.ok(Math.abs(tower.hp / tower.maxHp - 2 / 3) < 1e-8);
+  assert.equal(r.s.realm.phase, 'waves');
 });

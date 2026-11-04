@@ -918,7 +918,7 @@ function refreshHud() {
     $('#boss-name').textContent = boss.species;
     $('#boss-type').textContent = boss.tower
       ? boss.shielded
-        ? 'PROTEGIDA · 3 OLEADAS'
+        ? 'VINCULADA A LAS OLEADAS'
         : 'VULNERABLE'
       : boss.finalBoss
         ? 'JEFE FINAL'
@@ -966,7 +966,7 @@ function refreshPortalTimer() {
           : clock(Math.ceil(info.remaining));
   $('#portal-timer-detail').textContent =
     info.phase === 'inside'
-      ? 'Cierra la torre para renovar el plazo. La presión sigue subiendo.'
+      ? 'Derrota las tres oleadas para destruir la torre.'
       : info.phase === 'complete'
         ? 'La dificultad sigue aumentando cada vez más rápido.'
         : info.phase === 'overdue'
@@ -1354,7 +1354,7 @@ function interact() {
     sceneTransition();
     toast(
       run.s.realm
-        ? 'MAPA CORROMPIDO · Completa tres oleadas y destruye la Torre Negra.'
+        ? 'MAPA CORROMPIDO · Derrota tres oleadas para destruir la Torre Negra.'
         : 'Has vuelto al mapa principal.',
     );
   }
@@ -1565,7 +1565,7 @@ function loop(now) {
             event.name +
             ' · Presión de nivel ' +
             event.level +
-            ' · Completa tres oleadas y destruye la torre',
+            ' · Derrota tres oleadas para destruir la torre',
         );
       if (event.type === 'portal-deadline')
         toast('TIEMPO AGOTADO · La corrupción potencia a los enemigos. Entra en un portal');
@@ -1628,6 +1628,8 @@ function loop(now) {
   }
   music.tick(
     active && !paused && !document.hidden && !window.DigibonkDesktopHidden && !run?.s.done,
+    !active && !document.hidden && !window.DigibonkDesktopHidden && !loading,
+    !run?.s.realm,
   );
   if (!loading) renderer.render(active ? run : null, dt, { menu: !active });
   drawPortraits(now / 1000);
