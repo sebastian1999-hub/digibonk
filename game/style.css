@@ -2826,3 +2826,46 @@ body[data-screen='home'] #home-content {
   font-size: 17px;
   text-align: center;
 }
+
+/* User-supplied pixel-art banner, shared by the main menu choices. */
+body[data-screen='home'] #main-menu button,
+body[data-screen='home'] #continue-run {
+  min-height: 82px;
+  padding: 22px 40px;
+  border: 0;
+  border-radius: 0;
+  background: transparent url('assets/menu-banner.png') center / 100% 100% no-repeat;
+  color: #e8fcff;
+  font-size: 19px;
+  font-weight: 750;
+  text-align: center;
+  text-shadow: 0 2px 3px #00152f;
+  box-shadow: none;
+  transition:
+    filter 150ms ease,
+    transform 150ms ease;
+}
+body[data-screen='home'] #main-menu {
+  gap: 2px;
+}
+body[data-screen='home'] #main-menu button.primary {
+  color: #fff1b2;
+  font-size: 22px;
+}
+body[data-screen='home'] #main-menu button:hover,
+body[data-screen='home'] #continue-run:hover {
+  filter: brightness(1.25) drop-shadow(0 0 5px #00caff80);
+  transform: translateY(-1px);
+}
+body[data-screen='home'] #main-menu button:focus-visible,
+body[data-screen='home'] #continue-run:focus-visible {
+  outline: 2px solid #fff1b2;
+  outline-offset: 2px;
+}
+@media (max-width: 540px) {
+  body[data-screen='home'] #main-menu button,
+  body[data-screen='home'] #continue-run {
+    min-height: 74px;
+    padding: 20px 32px;
+  }
+}

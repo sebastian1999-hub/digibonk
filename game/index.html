@@ -59,7 +59,7 @@
             fetchpriority="high"
           />
         </h1>
-        <span id="build-version" class="build-version">Versión 1.23.0</span>
+        <span id="build-version" class="build-version">Versión 1.23.1</span>
         <p class="tagline">Sobrevive. Digievoluciona. Rompe tu récord.</p>
         <div id="home-records"></div>
         <button id="continue-run" class="primary" hidden>Continuar partida</button>
@@ -319,8 +319,7 @@
         <p>Tu run permanece guardada. Al volver puedes seguir desde aquí.</p>
         <button id="resume-run" class="primary">Continuar</button
         ><button id="save-menu">Guardar y volver al menú</button
-        ><button id="pause-settings">Ajustes de controles</button
-        ><button id="pause-help">Ver controles</button>
+        ><button id="pause-settings">Ajustes</button><button id="pause-help">Ver controles</button>
       </div>
     </section>
     <section id="result-overlay" class="overlay" hidden>
@@ -351,7 +350,26 @@
     <dialog id="settings-dialog" aria-labelledby="settings-title">
       <form method="dialog"><button class="close" aria-label="Cerrar ajustes">×</button></form>
       <div class="eyebrow">A TU MANERA</div>
-      <h2 id="settings-title">Ajustes de controles</h2>
+      <h2 id="settings-title">Ajustes</h2>
+      <fieldset class="music-settings">
+        <legend>Música de fondo</legend>
+        <p>
+          Ajusta la música del menú, la isla y los portales. Puedes elegir un archivo de tu PC para
+          esta sesión.
+        </p>
+        <label
+          >Volumen
+          <input
+            id="music-volume"
+            type="range"
+            min="0"
+            max="100"
+            value="30"
+            aria-label="Volumen de la música"
+          /><output id="music-volume-value">30 %</output></label
+        ><label>Tu canción <input id="music-file" type="file" accept="audio/*" /></label
+        ><small id="music-track">Aventura digital · composición original</small>
+      </fieldset>
       <p>Haz clic en una tecla y pulsa la que prefieras. Puedes asignar dos teclas por acción.</p>
       <div class="settings-layout">
         <section class="keybind-settings">
@@ -494,16 +512,7 @@
         Los invasores llegan cada 90 segundos. Sus círculos rojos avisan de un ataque: sal de ellos
         o esquiva. Los santuarios exigen resistir dentro del círculo durante ocho segundos.
       </p>
-      <fieldset class="music-settings">
-        <legend>Música de fondo</legend>
-        <p>
-          Banda sonora original de aventura digital. Puedes elegir un archivo de música de tu PC
-          para esta sesión.
-        </p>
-        <label>Volumen <input id="music-volume" type="range" min="0" max="100" value="30" /></label
-        ><label>Tu canción <input id="music-file" type="file" accept="audio/*" /></label
-        ><small id="music-track">Aventura digital · composición original</small>
-      </fieldset>
+
       <p>
         <b>Esc / <span data-control="pause"></span>:</b> pausa. El juego se pausa al cambiar de
         ventana. <b>F11:</b> pantalla completa en Windows.

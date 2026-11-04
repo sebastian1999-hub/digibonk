@@ -1,3 +1,8 @@
+## 1.23.1 · Banners del menú y volumen de música
+
+- Opciones del menú principal con el banner digital proporcionado.
+- Control de volumen de música en Ajustes, con porcentaje y guardado entre sesiones.
+
 ## 1.23.0 · Técnicas renovadas y música original
 
 - Renovadas las 64 técnicas, sus proyectiles, impactos y efectos de apoyo.

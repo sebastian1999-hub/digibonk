@@ -156,6 +156,13 @@ const audio = new Audio();
 const cloud = new Cloud();
 
 const music = new Music();
+settings.musicVolume =
+  typeof settings.musicVolume === 'number' && Number.isFinite(settings.musicVolume)
+    ? Math.max(0, Math.min(1, settings.musicVolume))
+    : 0.3;
+music.setVolume(settings.musicVolume);
+$('#music-volume').value = String(Math.round(settings.musicVolume * 100));
+$('#music-volume-value').textContent = Math.round(settings.musicVolume * 100) + ' %';
 
 $('#music-toggle').onclick = () => {
   music.enabled = !music.enabled;
@@ -163,7 +170,12 @@ $('#music-toggle').onclick = () => {
   $('#music-toggle').textContent = music.enabled ? '♫ Música' : '♫ Música desactivada';
 };
 
-$('#music-volume').oninput = (e) => music.setVolume(Number(e.target.value) / 100);
+$('#music-volume').oninput = (e) => {
+  settings.musicVolume = Math.max(0, Math.min(1, Number(e.target.value) / 100));
+  music.setVolume(settings.musicVolume);
+  $('#music-volume-value').textContent = Math.round(settings.musicVolume * 100) + ' %';
+  store(SETTINGS_KEY, settings);
+};
 
 $('#music-file').onchange = (e) => {
   const file = e.target.files[0];
