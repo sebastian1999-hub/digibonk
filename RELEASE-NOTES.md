@@ -1,3 +1,10 @@
+## 1.26.0 · Nivel 400 y calidad de mejoras
+
+- Nivel máximo 400 y curva de experiencia más exigente.
+- Técnicas nuevas al subir de nivel solo si hay menos de cuatro equipadas. Wizardmon permite quitar una gratis.
+- Tarjetas de mejora comunes, raras, épicas y legendarias; predominan las pequeñas. Proyectiles extra es una mejora épica.
+- Nuevo Chip de selección: aumenta la probabilidad de mejores tarjetas de estadísticas según su rango.
+
 ## 1.25.0 · Técnicas claras y compras en Wizardmon
 
 - Wizardmon vende las técnicas nuevas y permite sustituir las equipadas. Los niveles mejoran atributos o técnicas actuales.

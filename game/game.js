@@ -891,9 +891,12 @@ function refreshHud() {
   $('#stage-name').textContent = stageNames[p.stage];
   $('#life-fill').style.width = Math.max(0, (p.hp / p.maxHp) * 100) + '%';
   $('#life-label').textContent = Math.ceil(p.hp) + ' / ' + Math.ceil(p.maxHp);
-  $('#xp-fill').style.width = Math.min(100, (s.xp / C.xpNeeded(s.level)) * 100) + '%';
+  $('#xp-fill').style.width =
+    (s.level >= 400 ? 100 : Math.min(100, (s.xp / C.xpNeeded(s.level)) * 100)) + '%';
   $('#level-label').textContent =
-    'NIVEL ' + s.level + ' · ' + Math.floor(s.xp) + ' / ' + C.xpNeeded(s.level) + ' EXP';
+    s.level >= 400
+      ? 'NIVEL 400 · MÁXIMO'
+      : 'NIVEL ' + s.level + ' · ' + Math.floor(s.xp) + ' / ' + C.xpNeeded(s.level) + ' EXP';
   $('#run-clock').textContent = clock(s.time);
   $('#run-wave').textContent = s.realm
     ? s.realm.phase === 'waves'
@@ -1138,22 +1141,25 @@ function showChoice() {
   $('#choice-subtitle').textContent =
     choice.kind === 'evolution'
       ? 'Elige tu rama. La nueva forma aporta vida, daño y una técnica característica.'
-      : choice.kind === 'replace'
-        ? 'Selecciona una de tus cuatro técnicas para reemplazarla, o conserva tu equipo actual.'
-        : choice.kind === 'shop'
-          ? 'Compra una técnica nueva. Si llevas cuatro, elige cuál sustituir. Al subir de nivel mejoras las que ya tienes. Próxima compra: ' +
-            run.shopPrice() +
-            ' bits.'
-          : choice.kind === 'chest'
-            ? 'Reliquias sin límite de cantidad, de rango 1–3 y 3 compañeros distintos. Los compañeros se suman a tu grupo. Puedes cerrar sin elegir; el cofre queda consumido.'
-            : 'Combina técnicas y mejoras. Todo el poder de esta build dura esta partida.';
+      : choice.kind === 'remove'
+        ? 'Quitar una técnica es gratis. Perderás su rango y liberarás un hueco para aprender otra al subir de nivel.'
+        : choice.kind === 'replace'
+          ? 'Selecciona una de tus cuatro técnicas para reemplazarla, o conserva tu equipo actual.'
+          : choice.kind === 'shop'
+            ? 'Compra una técnica nueva. Si llevas cuatro, elige cuál sustituir. Quitar una técnica es gratis. Con menos de cuatro, puedes encontrar técnicas nuevas al subir de nivel. Precio de compra: ' +
+              run.shopPrice() +
+              ' bits.'
+            : choice.kind === 'chest'
+              ? 'Reliquias sin límite de cantidad, de rango 1–3 y 3 compañeros distintos. Los compañeros se suman a tu grupo. Puedes cerrar sin elegir; el cofre queda consumido.'
+              : 'Combina técnicas y mejoras. Todo el poder de esta build dura esta partida.';
   $('#choice-cards').replaceChildren(
     ...choice.cards.map((card, i) => {
       const button = document.createElement('button');
       button.className =
         'choice-card' +
         (card.type === 'evolution' ? ' evolution' : '') +
-        (card.rare ? ' rare' : '');
+        (card.rare ? ' rare' : '') +
+        (card.quality ? ' quality-' + card.quality : '');
       const kicker = document.createElement('span');
       kicker.className = 'card-kicker';
       kicker.textContent = card.rarity || 'MEJORA';

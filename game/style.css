@@ -2875,3 +2875,30 @@ body[data-screen='home'] #continue-run:focus-visible {
   white-space: pre-line;
   line-height: 1.55;
 }
+
+.choice-card.quality-1 {
+  border-color: #98aaa8;
+}
+.choice-card.quality-2 {
+  border-color: #63caff;
+  box-shadow: inset 0 0 28px #2a98df16;
+}
+.choice-card.quality-3 {
+  border-color: #cf8cff;
+  box-shadow: inset 0 0 28px #ab56ef24;
+}
+.choice-card.quality-4 {
+  border: 2px solid #ffda71;
+  box-shadow:
+    0 0 18px #f7bb3833,
+    inset 0 0 32px #f4b64424;
+}
+.choice-card.quality-2 .card-kicker {
+  color: #9bdfff;
+}
+.choice-card.quality-3 .card-kicker {
+  color: #e2b1ff;
+}
+.choice-card.quality-4 .card-kicker {
+  color: #ffe29a;
+}

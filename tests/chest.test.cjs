@@ -75,7 +75,6 @@ test('quality improves damage, area, health and projectile amount while respecti
     { id: 'power', stat: 'damage', factor: 1.1 },
     { id: 'area', stat: 'area', factor: 1.15 },
     { id: 'heart', stat: 'maxHp', amount: 20 },
-    { id: 'projectile', stat: 'projectileBonus', amount: 1 },
   ]) {
     const pool = r.shopQualityPool({ ...base, type: 'stat' });
     assert.equal(pool.length, 3);

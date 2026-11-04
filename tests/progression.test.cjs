@@ -54,7 +54,7 @@ test('training affects new runs once and starts with one full evolution line', (
 test('new objects appear in every chest quality and apply real stats', () => {
   const L = require('../game/loot'),
     r = new C.Run('Botamon');
-  assert.equal(L.relics.length, 45);
+  assert.equal(L.relics.length, 46);
   for (const q of [1, 2, 3, 4])
     assert.ok(
       r.chestPool().some((c) => c.quality === q && L.relics.find((d) => d.id === c.item)?.stat),

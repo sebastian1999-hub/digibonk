@@ -78,18 +78,27 @@ test('area increases projectile visuals, melee size and area spell reach', () =>
   }
 });
 
-test('levels never offer unknown attacks and Wizardmon offers only unowned techniques', () => {
+test('new techniques appear only with a free slot and Wizardmon can free one without payment', () => {
   const r = fresh();
   r.s.player.species = 'WarGreymon';
   r.s.player.stage = 4;
+  r.s.player.weapons = [
+    { id: 'bubble', rank: 1 },
+    { id: 'claw', rank: 1 },
+    { id: 'heal', rank: 1 },
+    { id: 'guard', rank: 1 },
+  ];
   for (let i = 0; i < 100; i++) assert.ok(r.choices().cards.every((c) => c.type !== 'weapon'));
-  const shop = r.choices('shop');
-  assert.ok(shop.cards.length > 0);
-  assert.ok(
-    shop.cards.every(
-      (c) => c.type === 'weapon' && !r.s.player.weapons.some((w) => w.id === c.weapon),
-    ),
-  );
+  r.s.coins = 0;
+  const shop = r.map.pois.find((p) => p.type === 'merchant');
+  Object.assign(r.s.player, { x: shop.x, z: shop.z });
+  assert.ok(r.interact().ok);
+  assert.equal(r.s.coins, 0);
+  assert.ok(r.choose('remove-technique-menu'));
+  assert.ok(r.choose('remove-bubble'));
+  assert.equal(r.s.player.weapons.length, 3);
+  assert.equal(r.s.coins, 0);
+  assert.ok(r.choices().cards.some((c) => c.type === 'weapon'));
 });
 test('Wizardmon without new compatible techniques does not charge', () => {
   const r = fresh();
@@ -97,6 +106,33 @@ test('Wizardmon without new compatible techniques does not charge', () => {
   const shop = r.map.pois.find((p) => p.type === 'merchant');
   Object.assign(r.s.player, { x: shop.x, z: shop.z });
   const before = r.s.coins;
-  assert.equal(r.interact().ok, false);
+  assert.equal(r.interact().ok, true);
+  assert.ok(r.s.choice.cards.some((c) => c.type === 'weapon-remove-menu'));
   assert.equal(r.s.coins, before);
+});
+
+test('experience curve grows faster late and level 400 is a hard saved cap', () => {
+  const api = require('../game/run-core');
+  for (let level = 1; level < 399; level++)
+    assert.ok(api.xpNeeded(level + 1) > api.xpNeeded(level));
+  assert.equal(api.xpNeeded(1), 9);
+  assert.ok(api.xpNeeded(200) > 10000);
+  const r = fresh();
+  r.s.player.stage = 4;
+  r.s.level = 399;
+  r.s.xp = api.xpNeeded(399);
+  r.maybeLevel();
+  assert.equal(r.s.level, 400);
+  assert.equal(r.s.xp, 0);
+  r.s.choice = null;
+  r.s.xp = 1e12;
+  r.maybeLevel();
+  assert.equal(r.s.level, 400);
+  assert.equal(r.s.xp, 0);
+  const saved = r.snapshot();
+  saved.level = 450;
+  saved.xp = 1000;
+  const restored = new C.Run(null, { saved });
+  assert.equal(restored.s.level, 400);
+  assert.equal(restored.s.xp, 0);
 });

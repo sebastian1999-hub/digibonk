@@ -266,7 +266,12 @@
     return best ? { x: best.x - unit.x, z: best.z - unit.z } : { x: 0, z: 0 };
   }
   function xpNeeded(level) {
-    return 6 + level * 3 + Math.floor(Math.pow(level, 1.3) * 0.4);
+    if (level >= 400) return Infinity;
+    return (
+      6 +
+      level * 3 +
+      Math.floor(Math.pow(level, 1.3) * 0.4 + 0.35 * Math.pow(Math.max(0, level - 12), 2.2))
+    );
   }
   const upgrades = [
     { id: 'power', title: 'Instinto feroz', text: '+10 % de daño', stat: 'damage', factor: 1.1 },
@@ -582,6 +587,8 @@
         this.map = mapFor(this.s.mapSeed);
         this.events = [];
         this.initializeWorld();
+        this.s.level = Math.min(400, Math.max(1, this.s.level));
+        if (this.s.level === 400) this.s.xp = 0;
         if (this.s.techniqueRevision !== 1) {
           const p = this.s.player,
             id = skills.signatureIds[p.species];
@@ -748,24 +755,31 @@
         const p = this.s.player,
           pool = upgrades
             .filter((u) => this.upgradeAvailable(u))
-            .map((u) => ({ ...u, type: 'stat', rarity: u.rare ? 'ÉPICA' : 'MEJORA' }));
-        for (const w of p.weapons)
-          if (kind !== 'shop' && w.rank < 9)
-            pool.push({
-              id: 'rank-' + w.id,
-              type: 'weapon-rank',
-              weapon: w.id,
-              title: skills.skills[w.id].name + ' · Rango ' + (w.rank + 1),
-              text:
-                (skills.skills[w.id].kind === 'damage'
-                  ? 'Mejora: más daño y menor recarga.' +
-                    ((w.rank + 1) % 4 === 0 ? ' Añade un golpe por activación.' : '') +
-                    ' '
-                  : '') + describeTechnique(w.id, w.rank + 1, p),
-              rarity: 'TÉCNICA',
-            });
-        if (kind === 'shop') {
-          pool.length = 0;
+            .map((u) => this.levelUpgradeCard(u))
+            .filter(Boolean);
+        for (const w of p.weapons) {
+          if (kind === 'shop' || w.rank >= 9) continue;
+          const quality = this.rollUpgradeQuality(),
+            ranks = Math.min(quality, 9 - w.rank),
+            target = w.rank + ranks;
+          pool.push({
+            id: 'rank-' + w.id,
+            type: 'weapon-rank',
+            weapon: w.id,
+            quality,
+            ranks,
+            title: skills.skills[w.id].name + ' · Rango ' + w.rank + ' → ' + target,
+            text:
+              'Sube ' +
+              ranks +
+              (ranks === 1 ? ' rango.\n' : ' rangos.\n') +
+              describeTechnique(w.id, target, p),
+            rarity: ['', 'Común', 'Raro', 'Épico', 'Legendario'][quality],
+            rare: quality >= 3,
+          });
+        }
+        if (kind === 'shop' || (kind === 'level' && p.weapons.length < 4)) {
+          if (kind === 'shop') pool.length = 0;
           const known = new Set(p.weapons.map((w) => w.id));
           for (const skill of skills
             .available({ isEgg: false, species: p.species, stage: p.stage })
@@ -801,7 +815,19 @@
               : kind === 'relic'
                 ? 'Un regalo de los datos'
                 : 'Nivel ' + this.s.level + ' · Elige tu mejora',
-          cards: selected,
+          cards:
+            kind === 'shop'
+              ? [
+                  ...selected,
+                  {
+                    id: 'remove-technique-menu',
+                    type: 'weapon-remove-menu',
+                    title: 'Liberar un hueco',
+                    text: 'Quita una técnica equipada gratis para volver a encontrar ataques nuevos al subir de nivel.',
+                    rarity: 'GESTIONAR TÉCNICAS',
+                  },
+                ]
+              : selected,
         };
       }
       relicRank(id) {
@@ -916,9 +942,15 @@
       }
       maybeLevel() {
         const s = this.s;
+        if (s.level >= 400) {
+          s.level = 400;
+          s.xp = 0;
+          return;
+        }
         if (s.choice || s.evolution || s.hatch > 0 || s.done || s.xp < xpNeeded(s.level)) return;
         s.xp -= xpNeeded(s.level);
         s.level++;
+        if (s.level === 400) s.xp = 0;
         s.score += 40;
         const p = s.player,
           target = p.stage + 1,
@@ -984,7 +1016,40 @@
           return true;
         }
         const p = s.player;
-        if (card.type === 'artifact') {
+        if (choice.kind === 'shop' && card.type === 'weapon') {
+          const price = this.shopPrice();
+          if (s.coins < price) return false;
+          s.coins -= price;
+          s.shopPurchases++;
+        }
+        if (card.type === 'weapon-remove-menu') {
+          s.choice = {
+            kind: 'remove',
+            title: '¿Qué técnica quieres quitar?',
+            cards: [
+              ...p.weapons.map((w) => ({
+                id: 'remove-' + w.id,
+                type: 'weapon-remove',
+                weapon: w.id,
+                title: skills.skills[w.id].name,
+                text: 'Quitar esta técnica y liberar su hueco. Perderás su rango actual.',
+                rarity: 'QUITAR TÉCNICA',
+              })),
+              {
+                id: 'cancel-remove',
+                type: 'weapon-decline',
+                title: 'Cancelar',
+                text: 'Conservar mis técnicas.',
+                rarity: 'VOLVER',
+              },
+            ],
+          };
+          return true;
+        }
+        if (card.type === 'weapon-remove') {
+          p.weapons = p.weapons.filter((w) => w.id !== card.weapon);
+          s.techniqueEchoes = (s.techniqueEchoes || []).filter((e) => e.skillId !== card.weapon);
+        } else if (card.type === 'artifact') {
           const def = LOOT.relics.find((r) => r.id === card.item);
           if (!def) return false;
           const owned = s.relics.find((r) => r.id === def.id);
@@ -1067,7 +1132,7 @@
         } else if (card.type === 'weapon-decline') {
         } else if (card.type === 'weapon-rank') {
           const w = p.weapons.find((w) => w.id === card.weapon);
-          if (w) w.rank = Math.min(9, w.rank + 1);
+          if (w) w.rank = Math.min(9, w.rank + (card.ranks || 1));
         } else {
           if (card.factor) p[card.stat] *= card.factor;
           else p[card.stat] += card.amount;
@@ -1232,6 +1297,10 @@
           poi = this.nearestPoi();
         if (!poi || s.choice || s.evolution || s.done || s.hatch > 0) return { ok: false };
         const cost = this.poiCost(poi);
+        if (poi.type === 'merchant') {
+          s.choice = this.choices('shop');
+          return { ok: true };
+        }
         if (s.coins < cost) return { ok: false, message: 'Necesitas ' + cost + ' bits.' };
         if (poi.type === 'fire') {
           if (p.hp >= p.maxHp) return { ok: false, message: 'Ya tienes toda la vida.' };
@@ -1629,6 +1698,7 @@
     heightAt,
     mapFor,
     walkable,
+    MAX_LEVEL: 400,
     xpNeeded,
     ponds,
     hash,

@@ -141,6 +141,7 @@ test('new ranged and melee techniques really damage targets and keep projectiles
 });
 test('full builds can learn a replacement technique without a fifth slot or replacing support', () => {
   const r = fresh();
+  r.s.coins = 200;
   Object.assign(r.s.player, {
     species: 'WarGreymon',
     stage: 4,

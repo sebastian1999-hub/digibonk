@@ -9,7 +9,7 @@
     riskSuccess = 0.2;
   function install(C, L) {
     const p = C.Run.prototype;
-    p.shopQualityPool = function (base) {
+    p.shopQualityPool = function (base, maxQuality = 3) {
       const labels = {
           damage: 'daño',
           haste: 'velocidad de ataque',
@@ -41,7 +41,11 @@
         caps = { speed: 15, crit: 0.85, magnet: 24, projectileBonus: 5, orbits: 6 },
         cards = [];
       let last = -1;
-      for (let q = 1; q <= 3; q++) {
+      for (
+        let q = base.stat === 'projectileBonus' ? 3 : 1;
+        q <= (base.stat === 'projectileBonus' ? 3 : maxQuality);
+        q++
+      ) {
         const card = {
             ...base,
             id: base.id + '-q' + q,
@@ -57,7 +61,10 @@
           card.factor = Math.min(1 + (base.factor - 1) * q, cap / current);
           delta = card.factor - 1;
         } else {
-          card.amount = Math.min(base.amount * q, cap - current);
+          card.amount = Math.min(
+            base.amount * (base.stat === 'projectileBonus' ? 1 : q),
+            cap - current,
+          );
           delta = card.amount;
         }
         if (delta <= 0 || Math.abs(delta - last) < 1e-9) continue;
@@ -78,6 +85,35 @@
         cards.push(card);
       }
       return cards;
+    };
+    p.statUpgradeOdds = function () {
+      const rank = Math.min(3, Math.max(0, this.relicRank('selection-chip')));
+      return [0.7 - rank * 0.05, 0.23 + rank * 0.03, 0.06 + rank * 0.015, 0.01 + rank * 0.005];
+    };
+    p.rollUpgradeQuality = function (stats = false) {
+      const odds = stats ? this.statUpgradeOdds() : [0.7, 0.23, 0.06, 0.01];
+      const n = this.random();
+      let total = 0;
+      for (let i = 0; i < odds.length; i++) {
+        total += odds[i];
+        if (n < total) return i + 1;
+      }
+      return 4;
+    };
+    p.levelUpgradeCard = function (base) {
+      const quality = this.rollUpgradeQuality(true);
+      if (base.stat === 'projectileBonus' && quality !== 3) return null;
+      const card = this.shopQualityPool(base, 4)
+        .filter((c) => c.quality <= quality)
+        .at(-1);
+      if (!card) return null;
+      card.id = base.id;
+      card.baseId = base.id;
+      card.type = 'stat';
+      card.rare = card.quality >= 3;
+      if (base.stat === 'projectileBonus')
+        card.text = '+1 golpe o proyectil en todas las técnicas ofensivas.';
+      return card;
     };
     p.shopRoll = function (base) {
       const pool = this.shopQualityPool(base),

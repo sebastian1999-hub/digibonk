@@ -237,6 +237,23 @@
       r * 2 +
       ' puntos porcentuales la probabilidad de obtener legendarios en los próximos cofres, si quedan legendarios disponibles. No cambia las recompensas ya sorteadas.',
   });
+  relics.push({
+    id: 'selection-chip',
+    name: 'Chip de selección',
+    icon: '✧',
+    art: 'battery',
+    theme: 'ice',
+    description: (r) =>
+      'Mejora las futuras tarjetas de estadísticas: común ' +
+      (70 - r * 5) +
+      ' %, rara ' +
+      (23 + r * 3) +
+      ' %, épica ' +
+      (6 + r * 1.5) +
+      ' % y legendaria ' +
+      (1 + r * 0.5) +
+      ' %. No afecta a técnicas ni a los objetos de cofres.',
+  });
   const extra = [
     ['training-band', 'Banda de entrenamiento', 'damage', 0.04, 'daño', 'power-chip'],
     ['combat-gloves', 'Guantes de combate', 'damage', 0.06, 'daño', 'power-chip'],

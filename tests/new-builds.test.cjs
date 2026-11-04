@@ -39,9 +39,9 @@ function enemy(id = 99, x = 2, z = 0) {
     ranged: false,
   };
 }
-test('45 distinct relics include nine legendary unique drops with real PNG icons', () => {
-  assert.equal(loot.relics.length, 45);
-  assert.equal(new Set(loot.relics.map((r) => r.id)).size, 45);
+test('46 distinct relics include nine legendary unique drops with real PNG icons', () => {
+  assert.equal(loot.relics.length, 46);
+  assert.equal(new Set(loot.relics.map((r) => r.id)).size, 46);
   assert.equal(loot.relics.filter((r) => r.legendary).length, 9);
   const r = fresh(),
     pool = r.chestPool();
