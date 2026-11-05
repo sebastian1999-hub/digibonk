@@ -2987,3 +2987,125 @@ body[data-screen='home'] #continue-run:focus-visible {
   margin-top: 8px;
   line-height: 1.5;
 }
+
+/* Supplied digital frame: keep the bars inside the blue central area. */
+.player-panel {
+  width: 390px;
+  height: 202px;
+  padding: 48px 34px 48px 30px;
+  gap: 10px;
+  background: url('assets/hud-player-panel.png') center / 100% 100% no-repeat;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: #f3fbff;
+  filter: drop-shadow(0 4px 8px #00102080);
+}
+.player-panel > div {
+  min-width: 0;
+}
+.player-panel canvas {
+  flex: 0 0 68px;
+  width: 68px;
+  height: 68px;
+}
+.player-name {
+  gap: 5px;
+  flex-wrap: nowrap;
+  margin-bottom: 3px;
+}
+.player-name strong {
+  font-size: 14px;
+  line-height: 1.2;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-name > span,
+.player-panel small {
+  color: #beefff;
+}
+.player-panel .vital-caption {
+  margin: 2px 0;
+  font-size: 8px;
+  color: #d7faff;
+}
+.player-panel .xp-caption {
+  margin-top: 3px;
+}
+.player-panel .life {
+  height: 17px;
+  background: #001b3b;
+  border: 1px solid #7ee9ff80;
+}
+.player-panel .life > div {
+  background: linear-gradient(90deg, #e04b70, #ff8b9c);
+}
+.player-panel .life span {
+  line-height: 15px;
+  color: #fff;
+  text-shadow: 0 1px 3px #001026;
+}
+.player-panel .xp {
+  background: #001b3b;
+  border-color: #67dfff80;
+}
+.player-panel .xp > div {
+  background: linear-gradient(90deg, #039cdd, #48f3ff);
+}
+.player-panel small {
+  margin-top: 2px;
+  font-size: 9px;
+  line-height: 1.2;
+}
+.player-panel .vital-caption .hud-icon {
+  width: 12px;
+  height: 12px;
+}
+.player-panel .player-name > span {
+  flex: none;
+}
+#equipment-strip {
+  bottom: 238px;
+}
+@media (max-width: 1050px) {
+  .player-panel {
+    width: 350px;
+    height: 190px;
+    padding: 44px 30px 42px 26px;
+  }
+  .player-panel canvas {
+    flex-basis: 58px;
+    width: 58px;
+    height: 58px;
+  }
+  #equipment-strip {
+    bottom: 222px;
+  }
+}
+@media (max-width: 760px) {
+  .player-panel {
+    width: min(310px, calc(100vw - 20px));
+    height: 184px;
+    padding: 42px 25px 40px 24px;
+    gap: 8px;
+  }
+  .player-panel canvas {
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+  }
+  .player-name strong {
+    font-size: 12px;
+  }
+  .player-name > span {
+    font-size: 8px;
+  }
+  .player-panel small {
+    font-size: 8px;
+  }
+  #equipment-strip {
+    bottom: 212px;
+  }
+}

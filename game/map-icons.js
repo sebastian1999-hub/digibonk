@@ -12,6 +12,18 @@
     boss: 'Devimon',
     player: 'Tú',
   };
+  const colors = {
+    chest: '#ffd35a',
+    shop: '#69d8ff',
+    fire: '#ff9854',
+    shrine: '#9aff83',
+    portal: '#c48aff',
+    closed: '#94a3b8',
+    exit: '#50ffe0',
+    tower: '#ff6685',
+    boss: '#ff4545',
+    player: '#fffdf3',
+  };
   function markers(s, map) {
     const list = [];
     for (const p of map.pois) {
@@ -44,8 +56,9 @@
     c.translate(x, y);
     c.scale(size / 24, size / 24);
     c.lineWidth = 2;
-    c.strokeStyle = '#f3efe1';
-    c.fillStyle = '#17272b';
+    const color = colors[type] || '#f3efe1';
+    c.strokeStyle = color;
+    c.fillStyle = color + '66';
     c.lineCap = 'round';
     c.lineJoin = 'round';
     const line = (points) => {
@@ -241,7 +254,7 @@
     }
     if (type === 'player') {
       c.rotate(angle);
-      c.fillStyle = '#fffdf3';
+      c.fillStyle = colors.player;
       c.strokeStyle = '#0d1b20';
       c.lineWidth = 3;
       c.beginPath();
@@ -319,7 +332,7 @@
     c.fillText('N', w / 2, large ? 13 : 9);
     return list;
   }
-  const api = { names, markers, symbol, draw };
+  const api = { names, colors, markers, symbol, draw };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DigibonkMap = api;
 })(typeof window !== 'undefined' ? window : globalThis);

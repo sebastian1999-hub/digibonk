@@ -1,3 +1,9 @@
+## 1.28.0 · Mapa a color y panel digital del personaje
+
+- Iconos de colores en el minimapa, el mapa ampliado y sus leyendas para reconocer cofres, tiendas, descansos, santuarios, portales y enemigos de un vistazo.
+- Nuevo fondo digital azul proporcionado para el panel del personaje durante la partida, con vida y experiencia de alto contraste.
+- Ajustados los márgenes del panel y la posición del equipo para mantener la información dentro del marco y evitar solapamientos.
+
 ## 1.27.0 · Línea evolutiva e iconos en la incubadora
 
 - Elige tu línea hasta Mega antes de jugar, con una fila horizontal de iconos animados y opciones por etapa.
