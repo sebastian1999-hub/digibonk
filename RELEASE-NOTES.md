@@ -1,3 +1,9 @@
+## 1.28.1 · Marco digital para el minimapa
+
+- El minimapa utiliza el dispositivo proporcionado como marco, con el mapa en su pantalla transparente.
+- Conserva los iconos de colores y la leyenda; el botón azul permite abrir el mapa ampliado.
+- Tamaño adaptado a ventanas pequeñas y rótulo de mapa durante el combate.
+
 ## 1.28.0 · Mapa a color y panel digital del personaje
 
 - Iconos de colores en el minimapa, el mapa ampliado y sus leyendas para reconocer cofres, tiendas, descansos, santuarios, portales y enemigos de un vistazo.

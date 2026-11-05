@@ -3109,3 +3109,104 @@ body[data-screen='home'] #continue-run:focus-visible {
     bottom: 212px;
   }
 }
+
+/* Transparent device artwork sits over the live map screen. */
+#map-panel {
+  width: 340px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+#map-panel > .minimap-device {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1358 / 1159;
+  padding: 0;
+  filter: drop-shadow(0 3px 5px #00131b80);
+}
+.minimap-device::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('assets/minimap-device.png') center / 100% 100% no-repeat;
+  pointer-events: none;
+  z-index: 1;
+}
+#map-panel .minimap-device canvas#minimap {
+  position: absolute;
+  left: 18.3%;
+  top: 16.2%;
+  width: 62.7%;
+  height: 63.7%;
+  border-radius: 0;
+  clip-path: polygon(9% 0, 91% 0, 100% 12%, 100% 88%, 91% 100%, 9% 100%, 0 88%, 0 12%);
+}
+#map-panel .minimap-device .map-title {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  display: block;
+  pointer-events: none;
+  z-index: 2;
+}
+#map-panel .map-title > span {
+  position: absolute;
+  left: 35%;
+  top: 10.6%;
+  width: 31%;
+  height: 3.2%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #83c0c2;
+  color: #18444b;
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+#map-panel #map-toggle {
+  position: absolute;
+  left: 83.2%;
+  top: 32.5%;
+  width: 9%;
+  height: 10%;
+  padding: 0;
+  border-radius: 50%;
+  color: #e7ffff;
+  background: transparent;
+  font-size: 14px;
+  pointer-events: auto;
+}
+#map-panel #map-toggle:hover {
+  background: #6ce9ff33;
+}
+#map-panel > .map-mini-legend {
+  margin: 4px 14% 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #102b38e8;
+  letter-spacing: 0;
+  color: #e7faff;
+}
+@media (max-width: 1050px) {
+  #map-panel {
+    width: 290px;
+  }
+  #map-panel #map-toggle {
+    font-size: 12px;
+  }
+}
+@media (max-width: 760px) {
+  #map-panel {
+    width: 220px;
+  }
+  #map-panel .map-title > span {
+    font-size: 4px;
+    letter-spacing: 0;
+  }
+  #map-panel #map-toggle {
+    font-size: 10px;
+  }
+}

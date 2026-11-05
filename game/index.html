@@ -59,7 +59,7 @@
             fetchpriority="high"
           />
         </h1>
-        <span id="build-version" class="build-version">Versión 1.28.0</span>
+        <span id="build-version" class="build-version">Versión 1.28.1</span>
         <p class="tagline">Sobrevive. Digievoluciona. Rompe tu récord.</p>
         <div id="home-records"></div>
         <button id="continue-run" class="primary" hidden>Continuar partida</button>
@@ -253,16 +253,18 @@
       <div class="boss-track"><i id="boss-fill"></i></div>
     </section>
     <aside id="map-panel" hidden>
-      <div class="map-title">
-        <span>MAPA DE LA ISLA</span
-        ><button id="map-toggle" title="Ampliar mapa" aria-label="Ampliar mapa">⛶</button>
+      <div class="minimap-device">
+        <div class="map-title">
+          <span>MAPA DE LA ISLA</span>
+          <button id="map-toggle" title="Ampliar mapa" aria-label="Ampliar mapa">⛶</button>
+        </div>
+        <canvas
+          id="minimap"
+          width="220"
+          height="220"
+          aria-label="Mapa con iconos de cofres, tiendas, descansos, portales y torres"
+        ></canvas>
       </div>
-      <canvas
-        id="minimap"
-        width="220"
-        height="220"
-        aria-label="Mapa con iconos de cofres, tiendas, descansos, portales y torres"
-      ></canvas>
       <div class="map-mini-legend">
         <span><canvas data-map-icon="chest"></canvas>Cofre</span
         ><span><canvas data-map-icon="shop"></canvas>Tienda</span
