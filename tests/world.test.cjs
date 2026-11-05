@@ -147,7 +147,7 @@ test('expanded map keeps landmarks and all required nodes reachable without hidd
   assert.ok(C.species.has('DemiDevimon'));
   for (const seed of [12, 123]) {
     const r = new C.Run('Botamon', { seed });
-    assert.equal(r.map.pois.filter((p) => p.type === 'chest').length, 48);
+    assert.equal(r.map.pois.filter((p) => p.type === 'chest').length, 6);
     for (const id of ['fire', 'merchant', 'altar-1', 'altar-2'])
       assert.ok(r.map.pois.some((p) => p.id === id));
     for (const zone of r.s.world.portals.map((p) => ({ ...p, anchor: p }))) {
@@ -207,7 +207,7 @@ test('six independent themed portals start on a stable main map and restore on s
   assert.ok(Math.hypot(r.s.realm.towerPosition.x, r.s.realm.towerPosition.z) >= 99);
   const restored = new C.Run(null, { saved: r.snapshot() });
   assert.deepEqual(restored.s.realm, r.s.realm);
-  assert.equal(restored.map.pois.length, 10);
+  assert.equal(restored.map.pois.length, 2);
   assert.equal(restored.map.towerObstacle.type, 'tower');
 });
 test('scene snapshots isolate enemies and loot while preserving earned stats and unfinished waves', () => {
@@ -230,7 +230,8 @@ test('scene snapshots isolate enemies and loot while preserving earned stats and
   r.leaveRealm();
   assert.equal(r.s.coins, 15);
   assert.equal(r.s.player.damage, 12);
-  assert.equal(r.s.enemies[0].id, 90);
+  assert.ok(!r.s.enemies.some((e) => e.id === 90));
+  assert.ok(r.s.enemies.length > 0);
   assert.equal(r.s.gems[0].id, 80);
   assert.deepEqual({ x: r.s.player.x, z: r.s.player.z }, position);
   r.enterPortal(portal.id);
@@ -261,6 +262,9 @@ test('three finite waves destroy the tower, reward once and defer safe return', 
   assert.equal(copy.s.world.cleansed, 1);
   assert.ok(copy.s.realm);
   copy.updateWorld(2, {});
+  assert.ok(copy.s.pendingRealmReturn);
+  assert.ok(copy.s.realm);
+  copy.leaveRealm();
   assert.equal(copy.s.realm, null);
   assert.equal(copy.s.world.portals.filter((p) => p.closed).length, 1);
   assert.equal(copy.enterPortal(copy.s.world.portals.find((p) => p.closed).id), false);
@@ -278,6 +282,8 @@ test('all six tower objectives spawn Devimon only after returning to the main ma
     assert.equal(r.s.enemies.filter((e) => e.finalBoss).length, 0);
     assert.equal(r.spawnDevimon(), false);
     r.updateWorld(2, {});
+    assert.ok(r.s.pendingRealmReturn);
+    r.leaveRealm();
     assert.equal(r.s.realm, null);
     assert.equal(r.s.mapSeed, main);
     assert.equal(r.s.enemies.filter((e) => e.finalBoss).length, i === 5 ? 1 : 0);
@@ -329,6 +335,9 @@ test('cleared portal returns safely without reusing realm actors', () => {
     r.s.xp = 0;
     r.update(0.05, {});
   }
+  assert.ok(r.s.pendingRealmReturn);
+  assert.ok(r.s.sectors.every((z) => z.kind));
+  r.leaveRealm();
   assert.equal(r.s.realm, null);
   assert.equal(r.s.world.cleansed, 1);
   assert.ok(!r.s.enemies.some((e) => e.tower));

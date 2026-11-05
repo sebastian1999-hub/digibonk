@@ -290,6 +290,30 @@
         label +
         '. Activo durante esta run.',
     });
+  relics.push(
+    {
+      id: 'treasure-radar',
+      name: 'Radar de tesoros',
+      art: 'magnet-chip',
+      icon: '⌖',
+      theme: 'gold',
+      description: (r) =>
+        '+' +
+        (r * 0.05).toFixed(2) +
+        ' puntos de probabilidad de cofre por enemigo normal. Base: 0,1 %. Élites: siempre. Los cofres caídos duran 60 s.',
+    },
+    {
+      id: 'loot-antenna',
+      name: 'Antena de botín',
+      art: 'boss-hunter',
+      icon: '◇',
+      theme: 'mint',
+      description: (r) =>
+        '+' +
+        (r * 0.025).toFixed(3) +
+        ' puntos de probabilidad de cofre por enemigo normal. Se suma al Radar de tesoros.',
+    },
+  );
   const companions = [
     {
       id: 'Terriermon',

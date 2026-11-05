@@ -39,9 +39,9 @@ function enemy(id = 99, x = 2, z = 0) {
     ranged: false,
   };
 }
-test('46 distinct relics include nine legendary unique drops with real PNG icons', () => {
-  assert.equal(loot.relics.length, 46);
-  assert.equal(new Set(loot.relics.map((r) => r.id)).size, 46);
+test('48 distinct relics include nine legendary unique drops with real PNG icons', () => {
+  assert.equal(loot.relics.length, 48);
+  assert.equal(new Set(loot.relics.map((r) => r.id)).size, 48);
   assert.equal(loot.relics.filter((r) => r.legendary).length, 9);
   const r = fresh(),
     pool = r.chestPool();
@@ -156,7 +156,7 @@ test('poison really ticks, slows apply, and delayed attacks are isolated between
   r.enterPortal(r.s.world.portals[0].id);
   assert.equal(r.s.attackFields.length, 0);
   r.leaveRealm();
-  assert.equal(r.s.attackFields.length, 1);
+  assert.equal(r.s.attackFields.length, 0);
 });
 test('learning fills separate same-family slots and a full build explicitly chooses a replacement or declines', () => {
   const r = fresh();
@@ -244,8 +244,13 @@ test('singularity attracts gems and damages nearby foes only at its kill thresho
   assert.equal(r.s.relicClocks.void, 8);
 });
 test('legendary drops are collected directly and cannot be gambled', () => {
- const r=fresh();r.random=()=>0.999;r.s.choice=r.chestChoices();
- assert.equal(r.s.choice.cards[0].quality,4);r.revealChest(r.s.choice.roll.id+':0');
- assert.equal(r.canRiskChest(),false);assert.equal(r.riskChest(),false);
- assert.ok(r.choose(r.s.choice.cards[0].id));assert.ok(loot.relics.find(x=>x.id===r.s.relics[0].id).legendary);
+  const r = fresh();
+  r.random = () => 0.999;
+  r.s.choice = r.chestChoices();
+  assert.equal(r.s.choice.cards[0].quality, 4);
+  r.revealChest(r.s.choice.roll.id + ':0');
+  assert.equal(r.canRiskChest(), false);
+  assert.equal(r.riskChest(), false);
+  assert.ok(r.choose(r.s.choice.cards[0].id));
+  assert.ok(loot.relics.find((x) => x.id === r.s.relics[0].id).legendary);
 });

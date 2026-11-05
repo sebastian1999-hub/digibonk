@@ -4,7 +4,7 @@ export function renderBook(host, run, mode = 'techniques', family = 'all') {
     C = window.DigibonkCore,
     p = run?.s.player,
     stageNames = {
-      [-1]: 'Bebé',
+      [-1]: 'Bebé I',
       0: 'Bebé II',
       1: 'Rookie',
       2: 'Champion',
@@ -71,7 +71,7 @@ export function renderBook(host, run, mode = 'techniques', family = 'all') {
     state.textContent = weapon
       ? 'EQUIPADA · RANGO ' + weapon.rank + '/9'
       : !p
-        ? 'Se compra a Wizardmon'
+        ? 'Se aprende al subir de nivel'
         : skills.compatible({ ...p, isEgg: p.stage === -2 }, skill)
           ? 'PUEDE APARECER AL SUBIR DE NIVEL'
           : 'Requiere una forma compatible de ' + stageNames[skill.stage] + ' o superior';

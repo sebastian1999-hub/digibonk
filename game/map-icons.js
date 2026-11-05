@@ -26,7 +26,7 @@
   };
   function markers(s, map) {
     const list = [];
-    for (const p of map.pois) {
+    for (const p of [...map.pois, ...(s.droppedChests || []).filter((c) => c.expires > s.time)]) {
       if (s.usedPois.includes(p.id)) continue;
       list.push({
         x: p.x,

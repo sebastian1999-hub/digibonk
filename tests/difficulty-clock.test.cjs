@@ -133,7 +133,7 @@ test('global growth accelerates instead of settling, even after all portals; spe
   for (const time of [0, 180, 600, 1800, 36000]) {
     const stats = B.main(time, 4);
     for (const value of Object.values(stats)) assert.ok(Number.isFinite(value));
-    assert.ok(stats.speed <= 12);
+    assert.ok(stats.speed <= 24);
     assert.ok(stats.batch <= 6);
     assert.ok(stats.interval >= 0.18);
   }
@@ -171,10 +171,15 @@ test('time keeps scaling a portal while entry level and enemy stages remain fixe
   r.enterPortal(r.s.world.portals[0].id);
   assert.equal(r.s.realm.pressure.level, 30);
 });
-test('saved revealed chests cannot be gambled and preserve coins and reward',()=>{
- const r=fresh();r.s.choice=r.chestChoices();r.revealChest(r.s.choice.roll.id+':0');
- const before=JSON.stringify(r.s.choice),coins=r.s.coins;
- assert.equal(r.riskChest(),false);assert.equal(JSON.stringify(r.s.choice),before);assert.equal(r.s.coins,coins);
+test('saved revealed chests cannot be gambled and preserve coins and reward', () => {
+  const r = fresh();
+  r.s.choice = r.chestChoices();
+  r.revealChest(r.s.choice.roll.id + ':0');
+  const before = JSON.stringify(r.s.choice),
+    coins = r.s.coins;
+  assert.equal(r.riskChest(), false);
+  assert.equal(JSON.stringify(r.s.choice), before);
+  assert.equal(r.s.coins, coins);
 });
 
 test('old ambient mobs catch up to current base strength rather than retaining their weak starting stats', () => {
@@ -188,4 +193,26 @@ test('old ambient mobs catch up to current base strength rather than retaining t
   assert.ok(Math.abs(e.maxHp - expected) < 1e-8);
   assert.ok(Math.abs(e.hp / e.maxHp - 0.25) < 1e-8);
   assert.ok(e.contactDamage >= B.main(r.s.time, e.stage).contact);
+});
+
+test('late survival withstands million-damage hits and enemies can close the distance', () => {
+  const early = B.main(900, 4),
+    late = B.main(3600, 4);
+  assert.ok(late.hp > 5e7);
+  assert.ok(late.hp / early.hp > 1e6);
+  assert.ok(late.speed > 20 && late.speed <= 24);
+  assert.ok(late.projectileSpeed > 30);
+  assert.ok(B.timeFactors(3600).cadence >= 4);
+  const r = fresh();
+  r.s.time = 3600;
+  r.s.world.cleansed = 6;
+  r.spawn();
+  const enemy = r.s.enemies[0],
+    hp = enemy.hp;
+  r.hurt(enemy, 5e6);
+  assert.ok(enemy.hp > hp * 0.99);
+  const loaded = new C.Run(null, { saved: r.snapshot() });
+  loaded.s.pressureRefresh = 0;
+  loaded.updateWorld(0, {});
+  assert.ok(loaded.s.enemies[0].speed > 20);
 });

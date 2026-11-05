@@ -94,7 +94,8 @@ test('new techniques appear only with a free slot and Wizardmon can free one wit
   Object.assign(r.s.player, { x: shop.x, z: shop.z });
   assert.ok(r.interact().ok);
   assert.equal(r.s.coins, 0);
-  assert.ok(r.choose('remove-technique-menu'));
+  assert.equal(r.s.choice.kind, 'remove');
+  assert.ok(r.s.choice.cards.every((c) => ['weapon-remove', 'weapon-decline'].includes(c.type)));
   assert.ok(r.choose('remove-bubble'));
   assert.equal(r.s.player.weapons.length, 3);
   assert.equal(r.s.coins, 0);
@@ -107,7 +108,7 @@ test('Wizardmon without new compatible techniques does not charge', () => {
   Object.assign(r.s.player, { x: shop.x, z: shop.z });
   const before = r.s.coins;
   assert.equal(r.interact().ok, true);
-  assert.ok(r.s.choice.cards.some((c) => c.type === 'weapon-remove-menu'));
+  assert.ok(r.s.choice.cards.every((c) => ['weapon-remove', 'weapon-decline'].includes(c.type)));
   assert.equal(r.s.coins, before);
 });
 

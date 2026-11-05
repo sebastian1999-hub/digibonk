@@ -3,17 +3,19 @@
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
   function timeGrowth(time) {
     const m = clamp((time - 180) / 60, 0, 1440);
-    return 1 + 0.05 * m + 0.018 * m * m + 0.001 * m * m * m;
+    const late = clamp((time - 900) / 120, 0, 32);
+    return (1 + 0.05 * m + 0.018 * m * m + 0.001 * m * m * m) * Math.pow(2, late);
   }
   function timeFactors(time) {
     const m = clamp((time - 180) / 60, 0, 1440),
-      g = timeGrowth(time);
+      g = timeGrowth(time),
+      late = Math.max(0, (time - 900) / 60);
     return {
       hp: g,
       damage: Math.sqrt(g),
-      speed: 1 + Math.min(0.3, 0.025 * m + 0.002 * m * m),
-      projectile: 1 + Math.min(0.3, 0.02 * m),
-      cadence: 1 + Math.min(0.7, 0.025 * m + 0.002 * m * m),
+      speed: 1 + Math.min(1.6, Math.min(0.3, 0.025 * m + 0.002 * m * m) + late * 0.05),
+      projectile: 1 + Math.min(2.6, Math.min(0.3, 0.02 * m) + late * 0.08),
+      cadence: 1 + Math.min(4, Math.min(0.7, 0.025 * m + 0.002 * m * m) + late * 0.12),
     };
   }
   function deadline(seconds = 0) {
@@ -54,11 +56,11 @@
         (boss ? 1 : (0.7 + 0.3 * intro) * 0.6) *
         f.hp,
       speed: Math.min(
-        12,
+        24,
         (boss ? 4 + stage * 0.3 : (3.2 + Math.min(5.6, t * 0.014)) * (0.85 + 0.15 * intro)) *
           f.speed,
       ),
-      projectileSpeed: 10 * f.projectile,
+      projectileSpeed: Math.min(36, 10 * f.projectile),
       contact: (9 + t * 0.045 + adult * 2) * (0.72 + 0.28 * intro) * (boss ? 1 : 0.8) * f.damage,
       shot: (10 + adult * 3 + t * 0.025) * (boss ? 1 : 0.85) * f.damage,
       batch: Math.min(6, 3 + Math.floor(t / 120)),
@@ -105,7 +107,7 @@
           late.hp,
       ),
       speed: Math.min(
-        12,
+        24,
         (Math.max(3.1 + Math.max(0, stage) * 0.2, outside.speed * (0.94 + progress * 0.035)) +
           (wave - 1) * 0.1) *
           late.speed,
@@ -117,13 +119,13 @@
         late.damage,
       shot: Math.max(outside.shot, 7 + profile.level * 0.3) * (0.8 + progress * 0.12) * late.damage,
       projectileSpeed: Math.min(
-        18,
+        36,
         (7.5 + wave * 0.3 + profile.level * 0.02 + progress * 0.45) *
           growth.projectile *
           late.projectile,
       ),
       shotInterval: Math.max(
-        1.2,
+        0.45,
         (4.8 - wave * 0.2 - profile.level * 0.008 - progress * 0.22) /
           (growth.cadence * late.cadence),
       ),

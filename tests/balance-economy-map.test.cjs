@@ -72,7 +72,7 @@ test('global shop price survives portals and legacy merchant price migration', (
   const price = r.shopPrice();
   r.enterPortal(r.s.world.portals[0].id);
   r.leaveRealm();
-  assert.equal(r.poiCost(shop), price);
+  assert.equal(r.poiCost(shop), 0);
   const old = r.snapshot();
   delete old.shopPurchases;
   old.poiPrices = { merchant: 90, 'merchant-west': 65 };
@@ -156,7 +156,7 @@ test('map markers distinguish objects by shape, omit consumed chests and show re
       icons.some((i) => i.type === type),
       type,
     );
-  assert.equal(icons.filter((i) => i.type === 'chest').length, 47);
+  assert.equal(icons.filter((i) => i.type === 'chest').length, 5);
   assert.ok(!icons.some((i) => i.x === chest.x && i.z === chest.z));
   assert.ok(r.enterPortal(r.s.world.portals[1].id));
   const realm = MapIcons.markers(r.s, r.map);

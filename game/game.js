@@ -386,64 +386,114 @@ function openHelp() {
 $('#help-toggle').onclick = openHelp;
 $('#pause-help').onclick = openHelp;
 
+let gearWasPaused = false;
 function openGear() {
+  if (!run || loading) return;
+  gearWasPaused = paused;
+  paused = true;
+  keys.clear();
+  moveTarget = null;
   specialQueued = false;
-  if (active && !run.s.done) {
-    paused = true;
-    save();
-  }
+  save();
+  const s = run.s,
+    p = s.player;
   const list = $('#gear-list');
   list.replaceChildren();
-  const s = run?.s;
-  if (run?.style()) {
-    const role = run.style(),
-      article = document.createElement('article'),
-      title = document.createElement('strong'),
+  const article = (host, title, description, icon) => {
+    const card = document.createElement('article');
+    if (icon) {
+      const img = document.createElement('img');
+      img.src = icon;
+      img.alt = '';
+      card.append(img);
+    }
+    const body = document.createElement('div'),
+      heading = document.createElement('strong'),
       text = document.createElement('p');
-    title.textContent = role.name + ' · ' + role.ability;
-    text.textContent = role.passive + ' ' + role.description;
-    article.append(title, text);
-    list.append(article);
-  }
-  for (const w of s?.player?.weapons || []) {
-    const article = document.createElement('article'),
-      title = document.createElement('strong'),
-      text = document.createElement('p');
-    title.textContent = SkillSystem.skills[w.id].name + ' · técnica ' + w.rank + '/9';
-    text.textContent = C.describeTechnique(w.id, w.rank, s.player);
-    article.append(title, text);
-    list.append(article);
-  }
-  if (!s?.player?.weapons?.length && !s?.relics?.length && !s?.buddies?.length) {
-    const p = document.createElement('p');
-    p.textContent =
-      'Abre cofres para formar tu equipo. Las reliquias y compañeros no ocupan huecos de técnica.';
-    list.append(p);
-  }
-  for (const relic of s?.relics || []) {
+    heading.textContent = title;
+    text.textContent = description;
+    body.append(heading, text);
+    card.append(body);
+    host.append(card);
+  };
+  for (const relic of s.relics) {
     const def = DigibonkLoot.relics.find((d) => d.id === relic.id);
     if (!def) continue;
-    const article = document.createElement('article'),
-      title = document.createElement('strong'),
-      text = document.createElement('p');
-    title.textContent =
-      def.icon + ' ' + def.name + ' · ' + (def.legendary ? 'Legendario único' : relic.rank + '/3');
-    text.textContent = def.description(relic.rank);
-    article.append(title, text);
-    list.append(article);
+    article(
+      list,
+      def.name + ' · ' + (def.legendary ? 'Legendario' : relic.rank + '/3'),
+      def.description(relic.rank),
+      DigibonkLoot.icon(def.id),
+    );
   }
-  for (const buddy of s?.buddies || []) {
-    const def = DigibonkLoot.companions.find((d) => d.id === buddy.species),
-      article = document.createElement('article'),
-      title = document.createElement('strong'),
-      text = document.createElement('p');
-    title.textContent = def.name + ' · ' + def.role;
-    text.textContent = def.description;
-    article.append(title, text);
-    list.append(article);
+  if (!list.children.length) list.textContent = 'Aún no llevas objetos.';
+  const companions = $('#gear-companions');
+  companions.replaceChildren();
+  for (const buddy of s.buddies) {
+    const def = DigibonkLoot.companions.find((d) => d.id === buddy.species);
+    if (def) article(companions, def.name, def.description);
+  }
+  if (!companions.children.length) companions.textContent = 'Sin compañeros.';
+  $('#gear-species').textContent = p.species;
+  $('#gear-stage').textContent = stageNames[p.stage] + ' · NIVEL ' + s.level;
+  $('#gear-passive').textContent = run.style()?.passive || '';
+  const techniques = $('#gear-techniques');
+  techniques.replaceChildren();
+  for (const w of p.weapons)
+    article(
+      techniques,
+      SkillSystem.skills[w.id].name + ' · ' + SkillSystem.stageName(w.id) + ' · ' + w.rank + '/9',
+      C.describeTechnique(w.id, w.rank, p),
+    );
+  const numberStat = (v) => Number(v.toFixed(2)).toLocaleString('es-ES');
+  const stats = [
+    ['Vida', numberStat(p.hp) + ' / ' + numberStat(p.maxHp)],
+    ['Daño', numberStat(p.damage * (p.rallyLeft > 0 ? 1.25 : 1))],
+    [
+      'Probabilidad de crítico',
+      numberStat(Math.min(0.85, p.crit + (p.focusLeft > 0 ? 0.15 : 0)) * 100) + ' %',
+    ],
+    ['Daño crítico', numberStat((1.8 + run.relicRank('critical-lens') * 0.15) * 100) + ' %'],
+    ['Armadura', numberStat(p.armor)],
+    ['Velocidad de movimiento', numberStat(p.speed * run.playerWorldSpeed())],
+    [
+      'Velocidad de ataque',
+      '×' +
+        numberStat(
+          p.haste *
+            (p.hasteLeft > 0 ? 1.2 : 1) *
+            (p.relicHasteLeft > 0 ? 1 + run.relicRank('dash-drive') * 0.1 : 1),
+        ),
+    ],
+    [
+      'Regeneración',
+      numberStat(p.regen + (run.style()?.id === 'guardian' ? p.maxHp * 0.01 : 0)) + ' / s',
+    ],
+    ['Área de técnicas', numberStat(p.area * 100) + ' %'],
+    ['Experiencia', '×' + numberStat(p.xpMult)],
+    ['Radio de recogida', numberStat(p.magnet) + ' m'],
+    ['Proyectiles extra', String(p.projectileBonus)],
+    ['Cofre de enemigo normal', numberStat(run.chestDropChance({}) * 100) + ' %'],
+    ['Precio del próximo cofre', numberStat(run.chestPrice()) + ' bits'],
+  ];
+  const attributes = $('#gear-stats');
+  attributes.replaceChildren();
+  for (const [name, value] of stats) {
+    const label = document.createElement('dt'),
+      val = document.createElement('dd');
+    label.textContent = name;
+    val.textContent = value;
+    attributes.append(label, val);
   }
   $('#gear-dialog').showModal();
 }
+$('#gear-dialog').addEventListener('close', () => {
+  paused = gearWasPaused;
+  keys.clear();
+  moveTarget = null;
+  specialQueued = false;
+  if (active) $('#world').focus({ preventScroll: true });
+});
 
 $('#gear-toggle').onclick = openGear;
 let bookMode = 'techniques',
@@ -496,38 +546,7 @@ $('#book-dialog').addEventListener('close', () => {
 });
 
 function refreshEquipment() {
-  if (!run) return;
-  const s = run.s,
-    strip = $('#equipment-strip');
-  strip.hidden = !active || s.done;
-  const signature = JSON.stringify([s.relics, s.buddies.map((b) => b.species)]);
-  if (strip.dataset.signature === signature) return;
-  strip.dataset.signature = signature;
-  strip.replaceChildren();
-  for (const relic of s.relics) {
-    const def = DigibonkLoot.relics.find((d) => d.id === relic.id);
-    if (!def) continue;
-    const b = document.createElement('button');
-    b.className = 'relic-chip ' + def.theme;
-    const img = document.createElement('img');
-    img.src = DigibonkLoot.icon(def.id);
-    img.alt = '';
-    b.append(
-      img,
-      document.createTextNode(def.name + ' ' + (def.legendary ? 'Legendario' : relic.rank + '/3')),
-    );
-    b.title = def.description(relic.rank);
-    b.onclick = openGear;
-    strip.append(b);
-  }
-  for (const buddy of s.buddies) {
-    const b = document.createElement('button');
-    b.className = 'relic-chip buddy-chip';
-    b.textContent = '◆ ' + buddy.species;
-    b.title = 'Ver tu compañero y sus efectos';
-    b.onclick = openGear;
-    strip.append(b);
-  }
+  $('#equipment-strip').hidden = true;
 }
 
 function openRecords() {
@@ -1016,7 +1035,7 @@ function refreshHud() {
         div.className = 'weapon';
         div.title = C.describeTechnique(w.id, w.rank, p);
         div.append(document.createTextNode(SkillSystem.skills[w.id].name));
-        small.textContent = 'RANGO ' + w.rank + ' / 9';
+        small.textContent = SkillSystem.stageName(w.id) + ' · RANGO ' + w.rank + ' / 9';
         div.append(small);
         return div;
       }),
@@ -1231,7 +1250,7 @@ function showChoice() {
     choice.kind === 'evolution'
       ? 'LA SIGUIENTE FORMA DE TU LEYENDA'
       : choice.kind === 'shop'
-        ? 'WIZARDMON · NUEVAS TÉCNICAS'
+        ? 'WIZARDMON · QUITAR TÉCNICAS'
         : choice.kind === 'chest'
           ? 'TESORO DIGITAL · ELIGE UNA RECOMPENSA'
           : 'CONSTRUYE TU PROPIA RUN';
@@ -1260,7 +1279,8 @@ function showChoice() {
         (card.quality ? ' quality-' + card.quality : '');
       const kicker = document.createElement('span');
       kicker.className = 'card-kicker';
-      kicker.textContent = card.rarity || 'MEJORA';
+      kicker.textContent =
+        (card.weapon ? SkillSystem.stageName(card.weapon) + ' · ' : '') + (card.rarity || 'MEJORA');
       button.append(kicker);
       if (card.species) {
         const canvas = document.createElement('canvas');
@@ -1420,6 +1440,7 @@ async function sceneTransition(
   try {
     await frame();
     await frame();
+    await new Promise((resolve) => setTimeout(resolve, 300));
     action();
     await renderer.prepare(active ? run : null, progress);
     await new Promise((resolve) => setTimeout(resolve, 160));
@@ -1518,6 +1539,25 @@ document.addEventListener('keydown', (event) => {
     return;
   }
   if (event.target.matches('input,textarea,select')) return;
+  if (
+    event.key === 'Tab' &&
+    !event.shiftKey &&
+    !event.ctrlKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    active
+  ) {
+    if ($('#gear-dialog').open) {
+      event.preventDefault();
+      if (!event.repeat) $('#gear-dialog').close();
+      return;
+    }
+    if (!document.querySelector('dialog[open]')) {
+      event.preventDefault();
+      if (!event.repeat) openGear();
+      return;
+    }
+  }
   const key = event.key.toLowerCase(),
     action = keys.actionFor(event);
   if (action === 'map' && $('#map-dialog').open) {
@@ -1642,6 +1682,13 @@ function drawPortraits(time) {
       DigiSprites.drawGrounded(ctx, p.species, 'ko', 90, 140, 132, time);
     }
   }
+  if ($('#gear-dialog').open && run) {
+    const canvas = $('#gear-portrait'),
+      ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (run.s.hatch > 0) drawDigiEgg(ctx, 140, 140, 140, time, run.s.skin);
+    else DigiSprites.drawGrounded(ctx, run.s.player.species, 'idle', 140, 240, 210, time);
+  }
   for (const { canvas, species } of choiceCanvases) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1667,7 +1714,13 @@ function loop(now) {
   ) {
     const scene = run.s.sceneSerial;
     run.update(dt, controls(dt));
-    if (scene !== run.s.sceneSerial) {
+    if (run.s.pendingRealmReturn) {
+      sceneTransition(() => {
+        run.leaveRealm();
+        refreshHud();
+        save();
+      }, 'Portal cerrado · Volviendo a la isla');
+    } else if (scene !== run.s.sceneSerial) {
       moveTarget = null;
       specialQueued = false;
       sceneTransition();

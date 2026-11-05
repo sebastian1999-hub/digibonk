@@ -139,33 +139,24 @@ test('new ranged and melee techniques really damage targets and keep projectiles
     assert.ok(r.s.fx.length <= 100);
   }
 });
-test('full builds can learn a replacement technique without a fifth slot or replacing support', () => {
+test('Wizardmon only removes equipped techniques even in a full Mega build', () => {
   const r = fresh();
-  r.s.coins = 200;
-  Object.assign(r.s.player, {
-    species: 'WarGreymon',
-    stage: 4,
-    weapons: [
-      { id: 'inferno', rank: 4, clock: 0 },
-      { id: 'heal', rank: 3, clock: 0 },
-      { id: 'guard', rank: 3, clock: 0 },
-      { id: 'haste', rank: 3, clock: 0 },
-    ],
-  });
-  let card;
-  for (let i = 0; i < 300 && !card; i++) {
-    r.s.choice = r.choices('shop');
-    card = r.s.choice.cards.find((c) => c.weapon === 'terra-force');
-  }
-  assert.ok(card);
-  assert.ok(card.text.includes('Sustituye'));
-  r.choose(card.id);
-  assert.equal(r.s.choice.kind, 'replace');
-  r.choose('replace-inferno');
-  assert.equal(r.s.player.weapons.length, 4);
-  assert.ok(r.s.player.weapons.some((w) => w.id === 'terra-force' && w.rank === 5));
+  r.s.player.species = 'WarGreymon';
+  r.s.player.stage = 4;
+  r.s.player.weapons = [
+    { id: 'inferno', rank: 4, clock: 0 },
+    { id: 'heal', rank: 3, clock: 0 },
+    { id: 'guard', rank: 3, clock: 0 },
+    { id: 'haste', rank: 3, clock: 0 },
+  ];
+  r.s.choice = r.choices('shop');
+  assert.ok(r.s.choice.cards.every((c) => ['weapon-remove', 'weapon-decline'].includes(c.type)));
+  assert.ok(r.choose('remove-inferno'));
+  assert.equal(r.s.player.weapons.length, 3);
   assert.ok(r.s.player.weapons.some((w) => w.id === 'heal'));
+  assert.ok(r.choices().cards.some((c) => c.type === 'weapon'));
 });
+
 test('all attack geometry, instances and alpha remain finite; opacity and effect budgets apply', async () => {
   const context = new Proxy(
     {

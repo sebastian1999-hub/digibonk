@@ -381,6 +381,10 @@
   }
   const api = {
     skills,
+    stageName: (id) =>
+      ({ '-1': 'Bebé I', 0: 'Bebé II', 1: 'Rookie', 2: 'Champion', 3: 'Ultimate', 4: 'Mega' })[
+        skills[id]?.stage
+      ] || 'Bebé I',
     statusText: STATUS_RULES.describe,
     statusSummary: (skill) =>
       STATUS_RULES.forSkill(skill)

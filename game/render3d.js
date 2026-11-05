@@ -787,12 +787,31 @@ export class Renderer3D {
     this.fxCtx.clearRect(0, 0, this.width, this.height);
     this.attackEffects.begin();
     this.worldEffects.render(s, time);
+    const liveDrops = (s?.droppedChests || []).filter(
+      (c) => c.expires > s.time && !s.usedPois.includes(c.id),
+    );
+    const liveDropIds = new Set(liveDrops.map((c) => c.id));
+    for (const [id, mesh] of this.poiMeshes) {
+      if (id.startsWith('drop-chest-') && !liveDropIds.has(id)) {
+        this.world.remove(mesh);
+        this.poiMeshes.delete(id);
+      }
+    }
+    for (const chest of liveDrops) {
+      if (this.poiMeshes.has(chest.id)) continue;
+      const template = [...this.poiMeshes].find(([id]) => id.startsWith('chest-'))?.[1];
+      if (!template) continue;
+      const mesh = template.clone(true);
+      mesh.position.set(chest.x, C.heightAt(chest.x, chest.z, s.mapSeed), chest.z);
+      this.world.add(mesh);
+      this.poiMeshes.set(chest.id, mesh);
+    }
     for (const [id, group] of this.poiMeshes) {
       group.visible = !(s?.usedPois || []).includes(id);
       const ring = group.children[0];
       if (ring) ring.rotation.z = time * 0.2;
-      const poi = this.map.pois.find((p) => p.id === id);
-      if (group.visible && poi.species)
+      const poi = this.map.pois.find((p) => p.id === id) || liveDrops.find((p) => p.id === id);
+      if (group.visible && poi?.species)
         this.unit(
           'npc-' + id,
           poi.species,

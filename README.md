@@ -22,7 +22,13 @@ Las pasivas funcionan sin tener que detenerte: Vanguardia reduce el daño, Cazad
 
 El catálogo **Técnicas y objetos** muestra las 64 técnicas por familia y etapa y las 28 reliquias, incluidos cinco legendarios únicos. Las técnicas se eligen al subir de nivel, según la forma actual. Puedes llevar cuatro y elegir qué sustituir al aprender una nueva; también puedes conservar las actuales. Las técnicas heredadas siguen funcionando al digievolucionar.
 
-Los cofres cuestan 15 bits y revelan una recompensa mediante un carrusel. Su calidad puede ser común, rara, épica o legendaria. Puedes recogerla o arriesgarla una vez: 20 % de cambiarla por otra de mayor calidad y 80 % de perderla. Las probabilidades disponibles se muestran en pantalla. Los legendarios ocupan un hueco de reliquia y no se duplican; se mantienen cuatro huecos y tres compañeros. Las mejoras pagadas en la tienda usan el mismo carrusel, mantienen el atributo elegido y tienen tres calidades; no se devuelven los bits al perderlas.
+Hay 6 cofres en la isla y 2 por portal. El primero cuesta 100 bits y los siguientes 190, 310, 460… El precio aumenta con cada apertura y se conserva al guardar y cruzar portales. Los enemigos normales tienen un 0,1 % de probabilidad de soltar un cofre; los élites, un 100 %. Los cofres caídos duran 60 segundos y usan el mismo precio. Radar de tesoros y Antena de botín aumentan ligeramente la probabilidad normal, hasta un 0,325 % al combinar ambos en rango 3.
+
+Wizardmon solo permite quitar técnicas gratis. Las técnicas nuevas aparecen al subir de nivel si hay un hueco libre. Las tarjetas, el equipo y la barra de técnicas indican su fase evolutiva y una descripción breve del tipo de ataque.
+
+Desde el minuto 15, la dificultad recibe un multiplicador adicional que se duplica cada 2 minutos. Aumentan también la velocidad de los enemigos, sus proyectiles y su cadencia. El límite de enemigos simultáneos se mantiene para conservar el rendimiento.
+
+Al completar un portal, su corrupción permanece visible durante la caída de la torre. El regreso espera a que la transición cubra la pantalla y genera enemigos nuevos en la isla; un Devimon activo conserva su vida.
 
 ## Estados elementales
 
@@ -47,7 +53,7 @@ La dificultad general acelera con los minutos transcurridos, también dentro de 
 
 Hay 40 técnicas, con efectos propios de agua, fuego, hielo, electricidad, luz, oscuridad, naturaleza y armas mecánicas. Algunas formas, como WarGreymon y MetalGreymon, tienen técnicas características distintas.
 
-En **Ajustes** puedes cambiar dos teclas por acción y regular la opacidad de ataques, experiencia y proyectiles enemigos. La barra bajo el personaje muestra cuándo vuelve a estar disponible la habilidad. Cofres: una recompensa o cerrar sin elegir. Hasta tres compañeros distintos activos. El minimapa utiliza iconos: amplíalo con ⛶ para consultar toda la leyenda. La tienda siempre ofrece tres mejoras de atributos y encarece todos sus puestos con cada compra. Los portales ajustan su presión al nivel y tiempo acumulado al entrar; entrar tarde no congela enemigos débiles.
+En **Ajustes** puedes cambiar dos teclas por acción y regular la opacidad de ataques, experiencia y proyectiles enemigos. La barra bajo el personaje muestra cuándo vuelve a estar disponible la habilidad. Cofres: una recompensa o cerrar sin elegir. Hasta tres compañeros distintos activos. El minimapa utiliza iconos: amplíalo con ⛶ para consultar toda la leyenda. Wizardmon permite quitar técnicas gratis. Los portales ajustan su presión al nivel y tiempo acumulado al entrar; entrar tarde no congela enemigos débiles.
 
 ## Desarrollo y publicación
 
@@ -58,3 +64,5 @@ Lee [ACTUALIZACIONES.md](ACTUALIZACIONES.md) para publicar una nueva versión. `
 Este repositorio no contiene cuentas, contraseñas ni claves administrativas. La configuración del cliente contiene únicamente la URL y clave pública de Supabase; el acceso a datos depende de Auth y las reglas del servidor.
 
 Proyecto fan sin finalidad comercial. Los personajes y recursos mantienen sus derechos originales. Consulta [los créditos](CREDITOS-SPRITES.md).
+
+Durante la partida, Tabulador abre o cierra el menú de equipo y pausa la acción: objetos y compañeros a la izquierda, sprite y técnicas del Digimon en el centro, y estadísticas a la derecha. Los objetos ya no se acumulan en el lateral de la pantalla.

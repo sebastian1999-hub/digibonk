@@ -50,9 +50,9 @@
         e.hp = e.maxHp * health;
         e.contactDamage = stats.contact * late.damage;
         e.shotDamage = stats.shot * late.damage;
-        e.speed = Math.min(12, stats.speed * late.speed);
-        e.projectileSpeed = Math.min(18, stats.projectileSpeed * late.projectile);
-        e.shotInterval = Math.max(1.2, (e.boss ? 1.8 : 4) / target.cadence);
+        e.speed = Math.min(24, stats.speed * late.speed);
+        e.projectileSpeed = Math.min(36, stats.projectileSpeed * late.projectile);
+        e.shotInterval = Math.max(0.45, (e.boss ? 1.8 : 4) / target.cadence);
         e.pressureFactors = target;
         return;
       }
@@ -69,10 +69,10 @@
       e.hp = e.maxHp * health;
       e.contactDamage *= target.damage / old.damage;
       e.shotDamage *= target.damage / old.damage;
-      e.speed = Math.min(12, (e.speed * target.speed) / old.speed);
-      e.projectileSpeed = Math.min(18, (e.projectileSpeed * target.projectile) / old.projectile);
+      e.speed = Math.min(24, (e.speed * target.speed) / old.speed);
+      e.projectileSpeed = Math.min(36, (e.projectileSpeed * target.projectile) / old.projectile);
       e.shotInterval = Math.max(
-        1.2,
+        0.45,
         ((e.shotInterval || (e.boss ? 1.8 : 4)) * old.cadence) / target.cadence,
       );
       e.pressureFactors = target;

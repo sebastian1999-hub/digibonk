@@ -3210,3 +3210,121 @@ body[data-screen='home'] #continue-run:focus-visible {
     font-size: 10px;
   }
 }
+
+#equipment-strip {
+  display: none !important;
+}
+#gear-dialog {
+  width: min(1100px, 96vw);
+  max-height: 92vh;
+  padding: 26px;
+}
+#gear-title {
+  margin: 10px 0 22px;
+}
+.gear-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.gear-layout h3 {
+  color: #a6edf1;
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+.gear-items {
+  max-height: 64vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+.gear-items h3:not(:first-child) {
+  margin-top: 24px;
+}
+#gear-list article,
+#gear-companions article,
+#gear-techniques article {
+  display: flex;
+  gap: 10px;
+  border-bottom: 1px solid #8abbb433;
+  padding: 12px 0;
+  font-size: 12px;
+}
+#gear-list article img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+#gear-list article strong,
+#gear-techniques strong {
+  color: #ffe1a1;
+}
+#gear-list article p,
+#gear-companions p,
+#gear-techniques p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #c2d9d2;
+  margin: 5px 0 0;
+}
+.gear-character {
+  text-align: center;
+}
+#gear-species {
+  margin-bottom: 5px;
+  font-size: 22px;
+  color: #fff4d2;
+}
+#gear-stage {
+  font-size: 10px;
+  color: #a6ded2;
+}
+#gear-portrait {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  margin: 0 auto;
+  image-rendering: pixelated;
+  background: radial-gradient(ellipse at 50% 75%, #65e1e522, transparent 65%);
+}
+#gear-passive {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #b5e2d1;
+}
+#gear-techniques {
+  text-align: left;
+}
+#gear-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 14px;
+  margin: 0;
+}
+#gear-stats dt,
+#gear-stats dd {
+  padding: 10px 0;
+  border-bottom: 1px solid #8abbb433;
+  font-size: 12px;
+  line-height: 1.4;
+}
+#gear-stats dt {
+  color: #b9d3ca;
+}
+#gear-stats dd {
+  margin: 0;
+  text-align: right;
+  color: #fff4d2;
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  .gear-layout {
+    grid-template-columns: minmax(150px, 1fr) minmax(160px, 1fr) minmax(170px, 1fr);
+    gap: 16px;
+  }
+  #gear-dialog {
+    overflow-x: auto;
+    padding: 20px;
+  }
+}

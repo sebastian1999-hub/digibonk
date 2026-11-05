@@ -59,7 +59,7 @@
             fetchpriority="high"
           />
         </h1>
-        <span id="build-version" class="build-version">Versión 1.28.1</span>
+        <span id="build-version" class="build-version">Versión 1.29.0</span>
         <p class="tagline">Sobrevive. Digievoluciona. Rompe tu récord.</p>
         <div id="home-records"></div>
         <button id="continue-run" class="primary" hidden>Continuar partida</button>
@@ -466,9 +466,9 @@
       </p>
       <p>
         En los niveles <b>3, 6, 12, 20 y 30</b> digievolucionas automáticamente siguiendo la línea
-        que hayas elegido en la incubadora. Wizardmon vende técnicas nuevas para esta partida. Si ya
-        llevas cuatro, eliges cuál sustituir. Cada compra encarece sus precios. Al subir de nivel
-        mejoras tus atributos o las técnicas que ya llevas.
+        que hayas elegido en la incubadora. Wizardmon permite quitar técnicas gratis. Las técnicas
+        nuevas aparecen al subir de nivel. Si ya llevas cuatro, eliges cuál sustituir. Al subir de
+        nivel mejoras tus atributos o las técnicas que ya llevas.
       </p>
       <p>
         Las tarjetas de mejora pueden ser comunes (70 %), raras (23 %), épicas (6 %) o legendarias
@@ -504,11 +504,15 @@
         250 bits y experiencia. La partida continúa para hacer récord.
       </p>
       <p>
-        <b>Cofres:</b> cuestan 15 bits y muestran una recompensa mediante un carrusel. Puedes
-        recogerla o cerrar sin recogerla. Puedes llevar reliquias sin límite de cantidad, de rango
-        1–3 y hasta tres compañeros distintos. Un duplicado mejora su rango; los legendarios tienen
-        un efecto único y no se duplican; Los compañeros se suman al grupo. Abre <b>Equipo</b> para
-        consultar los efectos.
+        <b>Tabulador:</b> abre o cierra tu equipo y estadísticas. La partida se pausa mientras lo
+        consultas.
+      </p>
+      <p>
+        <b>Cofres:</b> empiezan en 100 bits y cada apertura encarece todos los siguientes. Muestran
+        una recompensa mediante un carrusel. Puedes recogerla o cerrar sin recogerla. Puedes llevar
+        reliquias sin límite de cantidad, de rango 1–3 y hasta tres compañeros distintos. Un
+        duplicado mejora su rango; los legendarios tienen un efecto único y no se duplican; Los
+        compañeros se suman al grupo. Abre <b>Equipo</b> para consultar los efectos.
       </p>
       <p>
         Los invasores llegan cada 90 segundos. Sus círculos rojos avisan de un ataque: sal de ellos
@@ -525,14 +529,14 @@
       <div class="eyebrow">ELIGE TU ESTILO DE COMBATE</div>
       <h2 id="book-title">Técnicas y objetos</h2>
       <p>
-        Las técnicas nuevas se compran a Wizardmon según tu Digimon. Al subir de nivel puedes
+        Las técnicas nuevas aparecen al subir de nivel según tu Digimon. Al subir de nivel puedes
         aprender técnicas si tienes un hueco libre, o mejorar las que ya llevas. Wizardmon permite
         quitar una técnica gratis. Puedes llevar cuatro; si están ocupadas, eliges cuál sustituir.
         Los objetos se obtienen en cofres: reliquias sin límite y hasta tres compañeros.
       </p>
       <div class="book-controls">
         <button id="book-techniques" class="primary">64 técnicas</button
-        ><button id="book-relics">46 objetos · 9 legendarios</button
+        ><button id="book-relics">48 objetos · 9 legendarios</button
         ><button id="book-states">Estados</button
         ><label id="book-family-label"
           >Familia
@@ -543,16 +547,30 @@
       </div>
       <div id="book-grid"></div>
     </dialog>
-    <dialog id="gear-dialog">
+    <dialog id="gear-dialog" aria-labelledby="gear-title">
       <form method="dialog"><button class="close" aria-label="Cerrar equipo">×</button></form>
-      <div class="eyebrow">TU ESTILO DE JUEGO</div>
-      <h2>Técnicas y equipo</h2>
-      <p>
-        Los cofres contienen reliquias y compañeros: recoge el resultado del carrusel o arriésgalo
-        por calidad superior. Reliquias sin límite de cantidad, de rango 1–3 o legendarias únicas, y
-        hasta tres compañeros distintos. Los objetos duran esta partida.
-      </p>
-      <div id="gear-list"></div>
+      <div class="eyebrow">PARTIDA EN PAUSA · TAB PARA CERRAR</div>
+      <h2 id="gear-title">Tu Digimon</h2>
+      <div class="gear-layout">
+        <section class="gear-items">
+          <h3>Objetos</h3>
+          <div id="gear-list"></div>
+          <h3>Compañeros</h3>
+          <div id="gear-companions"></div>
+        </section>
+        <section class="gear-character">
+          <h3 id="gear-species"></h3>
+          <span id="gear-stage"></span
+          ><canvas id="gear-portrait" width="280" height="260" aria-label="Tu Digimon"></canvas>
+          <p id="gear-passive"></p>
+          <h3>Técnicas</h3>
+          <div id="gear-techniques"></div>
+        </section>
+        <section class="gear-attributes">
+          <h3>Estadísticas</h3>
+          <dl id="gear-stats"></dl>
+        </section>
+      </div>
     </dialog>
     <dialog id="records-dialog">
       <form method="dialog"><button class="close" aria-label="Cerrar récords">×</button></form>

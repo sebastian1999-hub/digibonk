@@ -1,3 +1,14 @@
+## 1.29.0 · Supervivencia, cofres y menú de equipo
+
+- Tabulador abre y cierra el menú de equipo: objetos y compañeros a la izquierda, sprite del Digimon en el centro y estadísticas a la derecha. La partida se pausa y desaparece la lista lateral de objetos.
+- Desde el minuto 15, la dificultad recibe un multiplicador adicional que se duplica cada 2 minutos. Vida, daño, velocidad y cadencia siguen aumentando en supervivencia.
+- Solo 6 cofres en la isla y 2 por portal. Cada apertura sube el precio global: 100, 190, 310, 460… Se conserva entre mapas y partidas guardadas.
+- Cofre por enemigo normal: 0,1 %; por élite: 100 %. Los cofres caídos duran 60 segundos de partida. Radar de tesoros y Antena de botín elevan ligeramente la probabilidad normal, hasta 0,325 % combinados en rango 3.
+- Wizardmon solo permite quitar técnicas gratis. Las técnicas se aprenden al subir de nivel con huecos libres.
+- Fase evolutiva visible en las técnicas y descripciones breves del tipo de ataque.
+- La corrupción del portal se mantiene durante la caída de la torre; el regreso ocurre con la transición cubierta. La isla genera encuentros nuevos al volver, conservando un Devimon activo y su vida.
+- Compatibilidad con partidas anteriores y antiguos menús del vendedor.
+
 ## 1.28.1 · Marco digital para el minimapa
 
 - El minimapa utiliza el dispositivo proporcionado como marco, con el mapa en su pantalla transparente.

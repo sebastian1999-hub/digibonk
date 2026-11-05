@@ -48,7 +48,7 @@ test('chests offer dedicated relics and real companions, charge once and preserv
   const r = fresh(),
     chest = r.map.pois.find((p) => p.type === 'chest');
   Object.assign(r.s.player, { x: chest.x, z: chest.z });
-  r.s.coins = 35;
+  r.s.coins = 105;
   assert.ok(r.interact().ok);
   assert.equal(r.s.coins, 5);
   assert.equal(r.s.choice.kind, 'chest');
@@ -182,7 +182,7 @@ test('closing a chest keeps all companions and consumes the paid chest once', ()
   grant(r, 'Terriermon', 'companion');
   const chest = r.map.pois.find((p) => p.type === 'chest');
   Object.assign(r.s.player, chest);
-  r.s.coins = 35;
+  r.s.coins = 105;
   r.interact();
   assert.equal(r.s.coins, 5);
   assert.ok(r.skipChest());

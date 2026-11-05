@@ -50,21 +50,22 @@ test('epic outcome has maximum actual rank and no gamble; a fully maxed build re
   assert.equal(r.s.coins, before + 10);
 });
 
-test('Wizardmon sells a new technique once and saves the purchase', () => {
+test('Wizardmon removes a technique without charging and saves the result', () => {
   const r = fresh();
   r.s.choice = null;
   r.s.coins = 200;
+  r.s.player.weapons = [{ id: 'bubble', rank: 1, clock: 0 }];
   r.s.player.species = 'Agumon';
   r.s.player.stage = 1;
   const shop = r.map.pois.find((p) => p.type === 'merchant');
   Object.assign(r.s.player, { x: shop.x, z: shop.z });
   assert.ok(r.interact().ok);
   const card = r.s.choice.cards[0];
-  assert.equal(card.type, 'weapon');
+  assert.equal(card.type, 'weapon-remove');
   assert.ok(r.choose(card.id));
-  assert.equal(r.s.coins, 160);
-  assert.equal(r.s.shopPurchases, 1);
-  assert.ok(r.s.player.weapons.some((w) => w.id === card.weapon));
+  assert.equal(r.s.coins, 200);
+  assert.equal(r.s.shopPurchases, 0);
+  assert.ok(!r.s.player.weapons.some((w) => w.id === card.weapon));
   const copy = new C.Run(null, { saved: r.snapshot() });
   assert.deepEqual(copy.s.player.weapons, r.s.player.weapons);
 });
@@ -109,7 +110,7 @@ test('chests offer and award new relics beyond four and old chest prices rise to
   assert.equal(r.s.relics.length, 5);
   const chest = r.map.pois.find((p) => p.type === 'chest');
   r.s.poiPrices[chest.id] = 15;
-  assert.equal(r.poiCost(chest), 30);
+  assert.equal(r.poiCost(chest), 100);
 });
 
 test('gamble is disabled and the original reward remains collectible', () => {
@@ -136,4 +137,60 @@ test('fortune charm increases actual legendary odds by two points per rank', () 
   }
   const saved = new C.Run(null, { saved: r.snapshot() });
   assert.equal(saved.relicRank('fortune-charm'), 3);
+});
+
+test('scarce chests have a global escalating price across saves and portals', () => {
+  const r = fresh();
+  r.s.choice = null;
+  r.s.coins = 10000;
+  assert.equal(r.map.pois.filter((p) => p.type === 'chest').length, 6);
+  const chest = r.map.pois.find((p) => p.type === 'chest');
+  Object.assign(r.s.player, { x: chest.x, z: chest.z });
+  assert.equal(r.poiCost(chest), 100);
+  assert.ok(r.interact().ok);
+  assert.equal(r.s.coins, 9900);
+  assert.equal(r.chestPrice(), 190);
+  r.s.choice = null;
+  assert.ok(r.enterPortal(r.s.world.portals[0].id));
+  assert.equal(r.map.pois.filter((p) => p.type === 'chest').length, 2);
+  assert.equal(r.chestPrice(), 190);
+  r.leaveRealm();
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(copy.chestPrice(), 190);
+  copy.s.coins = 0;
+  const next = copy.map.pois.find((p) => p.type === 'chest' && p.id !== chest.id);
+  Object.assign(copy.s.player, { x: next.x, z: next.z });
+  assert.equal(copy.interact().ok, false);
+  assert.equal(copy.s.chestsOpened, 1);
+});
+
+test('normal drops are rare, elites guarantee exactly one chest, and relics improve the normal chance', () => {
+  const r = fresh();
+  r.s.choice = null;
+  r.s.player.crit = 0;
+  r.random = () => 0.999;
+  const normal = { id: 900, x: 1, z: 1, hp: 1, maxHp: 1, stage: 1 };
+  assert.equal(r.chestDropChance(normal), 0.001);
+  r.hurt(normal, 100);
+  assert.equal(r.s.droppedChests.length, 0);
+  const elite = { ...normal, id: 901, hp: 1, elite: true };
+  r.hurt(elite, 100);
+  assert.equal(r.s.droppedChests.length, 1);
+  r.hurt(elite, 100);
+  assert.equal(r.s.droppedChests.length, 1);
+  r.s.relics = [
+    { id: 'treasure-radar', rank: 3 },
+    { id: 'loot-antenna', rank: 3 },
+  ];
+  assert.ok(r.chestDropChance(normal) > 0.001 && r.chestDropChance(normal) < 0.004);
+  assert.equal(r.chestDropChance(elite), 1);
+  assert.equal(r.chestDropChance({ tower: true }), 0);
+  r.random = () => 0;
+  r.hurt({ ...normal, id: 902, hp: 1 }, 100);
+  assert.equal(r.s.droppedChests.length, 2);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(copy.s.droppedChests.length, 2);
+  copy.s.time += 61;
+  copy.update(0);
+  assert.equal(copy.s.droppedChests.length, 0);
 });

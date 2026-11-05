@@ -78,7 +78,7 @@
       {
         id: 'merchant',
         type: 'merchant',
-        name: 'Wizardmon · Técnicas nuevas',
+        name: 'Wizardmon · Quitar técnicas',
         species: 'Wizardmon',
         x: 23,
         z: 23,
@@ -130,7 +130,12 @@
       if (!grid.has(key)) grid.set(key, []);
       grid.get(key).push(o);
     }
-    const map = { seed, pois, obstacles, grid };
+    const map = {
+      seed,
+      pois: pois.filter((p) => p.type !== 'chest' || Number(p.id.slice(6)) < 6),
+      obstacles,
+      grid,
+    };
     maps.set(seed, map);
     if (maps.size > 5) maps.delete(maps.keys().next().value);
     return map;
@@ -455,42 +460,33 @@
     function describeTechnique(id, rank = 1, player = { haste: 1 }) {
       const skill = skills.skills[id];
       if (!skill) return '';
-      const format = (n) => Number(n.toFixed(1)).toLocaleString('es-ES'),
-        haste = player.haste || 1;
       if (skill.kind === 'damage') {
         const behavior =
           {
-            cone: 'Golpea a los enemigos que tienes delante.',
-            ring: 'Golpea alrededor de tu Digimon.',
-            pillar: 'Golpea una zona alrededor del enemigo.',
-            meteor: 'Lanza un meteorito sobre los enemigos.',
-            rain: 'Bombardea una zona con varios impactos.',
-            chain: 'Salta entre hasta 3 enemigos.',
-            volley: 'Dispara una ráfaga de proyectiles dirigidos.',
+            cone: 'Ataque en área en cono.',
+            ring: 'Ataque en área a tu alrededor.',
+            pillar: 'Ataque en área sobre un enemigo.',
+            meteor: 'Meteorito que explota en área.',
+            rain: 'Lluvia de ataques en área.',
+            chain: 'Ataque que salta entre enemigos.',
+            volley: 'Ráfaga de proyectiles a enemigos cercanos.',
           }[skill.pattern] ||
           (skill.mode === 'melee'
-            ? 'Golpea a los enemigos cercanos.'
-            : 'Dispara al enemigo más cercano.');
-        const cooldown = format(
-          Math.max(0.18, (skill.cooldown * 0.48) / (haste * (1 + (rank - 1) * 0.045))),
-        );
-        return behavior + ' ' + skills.statusSummary(skill) + '\nRecarga: ' + cooldown + ' s.';
+            ? 'Golpe cuerpo a cuerpo a enemigos cercanos.'
+            : 'Disparo de proyectiles a enemigos cercanos.');
+        return behavior;
       }
-      const e = supportEffect(skill, rank),
-        duration = format(e.duration),
-        cooldown = format(e.cooldown / haste),
-        tail = ' Recarga: ' + cooldown + ' s.';
-      if (skill.kind === 'heal')
-        return 'Recupera el ' + format(e.heal * 100) + ' % de vida cuando bajas al 80 %.' + tail;
-      if (skill.kind === 'shield')
-        return 'Reduce el daño recibido un 55 % durante ' + duration + ' s.' + tail;
-      if (skill.kind === 'buff') return '+25 % de daño durante ' + duration + ' s.' + tail;
-      if (skill.kind === 'restore')
-        return '+15 puntos de probabilidad crítica durante ' + duration + ' s.' + tail;
-      if (skill.kind === 'haste')
-        return 'Ataques y técnicas un 20 % más rápidos durante ' + duration + ' s.' + tail;
-      return '';
+      return (
+        {
+          heal: 'Recupera vida automáticamente cuando estás herido.',
+          shield: 'Reduce el daño recibido durante unos segundos.',
+          buff: 'Aumenta tu daño durante unos segundos.',
+          restore: 'Aumenta la probabilidad de golpe crítico.',
+          haste: 'Tus ataques se activan más rápido durante unos segundos.',
+        }[skill.kind] || ''
+      );
     }
+
     class Run {
       constructor(egg, { seed = Date.now() >>> 0, saved = null, id = null } = {}) {
         if (saved) {
@@ -565,6 +561,19 @@
           };
         }
         this.s.relics ??= [];
+        this.s.droppedChests ??= [];
+        this.s.chestsOpened ??= [
+          this.s,
+          this.s.mainScene,
+          ...Object.values(this.s.portalRuns || {}).map((r) => r.scene),
+        ].reduce(
+          (n, scene) =>
+            n +
+            (scene?.usedPois || []).filter(
+              (id) => id.startsWith('chest-') || id.startsWith('drop-chest-'),
+            ).length,
+          0,
+        );
         this.s.buddies ??= this.s.buddy ? [this.s.buddy] : [];
         delete this.s.buddy;
         this.s.relicClocks ??= {};
@@ -600,6 +609,8 @@
           }
           this.s.techniqueRevision = 1;
         }
+        if (this.s.choice?.kind === 'shop' && !this.s.choice.roll)
+          this.s.choice = this.removalChoices();
         if (this.s.choice?.kind === 'evolution') {
           const target = this.s.player.stage + 1;
           const options = evolutionOptions(this.s.player.species, this.s.eggTraining);
@@ -749,10 +760,34 @@
         return 40 + 25 * n + 5 * Math.floor(n / 5) ** 2;
       }
       poiCost(poi) {
-        if (poi.type === 'chest') return Math.max(30, this.s.poiPrices[poi.id] ?? poi.cost ?? 30);
-        return poi.type === 'merchant' ? this.shopPrice() : (this.s.poiPrices[poi.id] ?? poi.cost);
+        if (poi.type === 'chest') return this.chestPrice();
+        return poi.type === 'merchant' ? 0 : (this.s.poiPrices[poi.id] ?? poi.cost);
+      }
+      removalChoices() {
+        return {
+          kind: 'remove',
+          title: 'Wizardmon · Quitar una técnica',
+          cards: [
+            ...this.s.player.weapons.map((w) => ({
+              id: 'remove-' + w.id,
+              type: 'weapon-remove',
+              weapon: w.id,
+              title: skills.skills[w.id].name,
+              text: 'Quitar esta técnica y liberar su hueco.',
+              rarity: 'QUITAR TÉCNICA',
+            })),
+            {
+              id: 'cancel-remove',
+              type: 'weapon-decline',
+              title: 'Salir',
+              text: 'Conservar mis técnicas.',
+              rarity: 'VOLVER',
+            },
+          ],
+        };
       }
       choices(kind = 'level') {
+        if (kind === 'shop') return this.removalChoices();
         const p = this.s.player,
           pool = upgrades
             .filter((u) => this.upgradeAvailable(u))
@@ -779,8 +814,7 @@
             rare: quality >= 3,
           });
         }
-        if (kind === 'shop' || (kind === 'level' && p.weapons.length < 4)) {
-          if (kind === 'shop') pool.length = 0;
+        if (kind === 'level' && p.weapons.length < 4) {
           const known = new Set(p.weapons.map((w) => w.id));
           for (const skill of skills
             .available({ isEgg: false, species: p.species, stage: p.stage })
@@ -811,24 +845,10 @@
         return {
           kind,
           title:
-            kind === 'shop'
-              ? 'Wizardmon · Compra una técnica'
-              : kind === 'relic'
-                ? 'Un regalo de los datos'
-                : 'Nivel ' + this.s.level + ' · Elige tu mejora',
-          cards:
-            kind === 'shop'
-              ? [
-                  ...selected,
-                  {
-                    id: 'remove-technique-menu',
-                    type: 'weapon-remove-menu',
-                    title: 'Liberar un hueco',
-                    text: 'Quita una técnica equipada gratis para volver a encontrar ataques nuevos al subir de nivel.',
-                    rarity: 'GESTIONAR TÉCNICAS',
-                  },
-                ]
-              : selected,
+            kind === 'relic'
+              ? 'Un regalo de los datos'
+              : 'Nivel ' + this.s.level + ' · Elige tu mejora',
+          cards: selected,
         };
       }
       relicRank(id) {
@@ -948,7 +968,16 @@
           s.xp = 0;
           return;
         }
-        if (s.choice || s.evolution || s.hatch > 0 || s.done || s.xp < xpNeeded(s.level)) return;
+        if (
+          s.choice ||
+          s.evolution ||
+          s.hatch > 0 ||
+          s.done ||
+          s.realm?.phase === 'cleared' ||
+          s.pendingRealmReturn ||
+          s.xp < xpNeeded(s.level)
+        )
+          return;
         s.xp -= xpNeeded(s.level);
         s.level++;
         if (s.level === 400) s.xp = 0;
@@ -988,34 +1017,9 @@
           return true;
         }
         const p = s.player;
-        if (choice.kind === 'shop' && card.type === 'weapon') {
-          const price = this.shopPrice();
-          if (s.coins < price) return false;
-          s.coins -= price;
-          s.shopPurchases++;
-        }
+        if (choice.kind === 'shop' && card.type === 'weapon') return false;
         if (card.type === 'weapon-remove-menu') {
-          s.choice = {
-            kind: 'remove',
-            title: '¿Qué técnica quieres quitar?',
-            cards: [
-              ...p.weapons.map((w) => ({
-                id: 'remove-' + w.id,
-                type: 'weapon-remove',
-                weapon: w.id,
-                title: skills.skills[w.id].name,
-                text: 'Quitar esta técnica y liberar su hueco. Perderás su rango actual.',
-                rarity: 'QUITAR TÉCNICA',
-              })),
-              {
-                id: 'cancel-remove',
-                type: 'weapon-decline',
-                title: 'Cancelar',
-                text: 'Conservar mis técnicas.',
-                rarity: 'VOLVER',
-              },
-            ],
-          };
+          s.choice = this.removalChoices();
           return true;
         }
         if (card.type === 'weapon-remove') {
@@ -1152,6 +1156,7 @@
             return;
           }
           s.kills++;
+          this.dropEnemyChest(enemy);
           const battery = this.relicRank('battery');
           if (battery && s.kills % (24 - battery * 4) === 0 && (s.relicClocks.battery || 0) <= 0) {
             p.shieldLeft = Math.max(p.shieldLeft, 2);
@@ -1253,10 +1258,38 @@
           return;
         }
       }
+      chestPrice() {
+        const n = this.s.chestsOpened || 0;
+        return 100 + 75 * n + 15 * n * n;
+      }
+      chestDropChance(enemy) {
+        if (enemy.tower || enemy.structure) return 0;
+        if (enemy.elite) return 1;
+        return (
+          0.001 +
+          this.relicRank('treasure-radar') * 0.0005 +
+          this.relicRank('loot-antenna') * 0.00025
+        );
+      }
+      dropEnemyChest(enemy) {
+        const chance = this.chestDropChance(enemy);
+        if (!chance || (chance < 1 && this.random() >= chance)) return false;
+        const chest = {
+          id: 'drop-chest-' + this.s.nextId++,
+          type: 'chest',
+          name: 'Cofre de enemigo',
+          x: enemy.x,
+          z: enemy.z,
+          expires: this.s.time + 60,
+        };
+        this.placeSafely(chest);
+        this.s.droppedChests.push(chest);
+        return true;
+      }
       nearestPoi() {
         const s = this.s;
         return (
-          this.map.pois
+          [...this.map.pois, ...this.s.droppedChests]
             .filter((p) => !s.usedPois.includes(p.id) && distance(p, s.player) < 4.5)
             .sort((a, b) => distance(a, s.player) - distance(b, s.player))[0] || null
         );
@@ -1286,19 +1319,9 @@
           s.challenge = { id: poi.id, x: poi.x, z: poi.z, progress: 0 };
           return { ok: true, message: 'Resiste 8 segundos dentro del círculo del santuario.' };
         }
-        if (
-          poi.type === 'merchant' &&
-          !skills
-            .available({ isEgg: false, species: p.species, stage: p.stage })
-            .some((k) => !p.weapons.some((w) => w.id === k.id))
-        )
-          return {
-            ok: false,
-            message:
-              'Wizardmon no tiene técnicas nuevas para tu fase actual. Vuelve después de digievolucionar.',
-          };
         s.coins -= cost;
         if (poi.type === 'chest') {
+          s.chestsOpened++;
           s.usedPois.push(poi.id);
           p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.05 * this.relicRank('rations'));
           s.choice = this.chestChoices();
@@ -1313,8 +1336,17 @@
         const s = this.s,
           p = s.player;
         this.events = [];
+        s.droppedChests = s.droppedChests.filter(
+          (c) => c.expires > s.time && !s.usedPois.includes(c.id),
+        );
         dt = clamp(dt, 0, 0.05);
-        if (s.done || s.choice) return;
+        if (s.done || s.pendingRealmReturn) return;
+        if (s.realm?.phase === 'cleared') {
+          s.time += dt;
+          this.updateWorld(dt, input);
+          return;
+        }
+        if (s.choice) return;
         if (s.hatch > 0) {
           s.hatch = Math.max(0, s.hatch - dt);
           if (!s.hatch) {

@@ -18,6 +18,7 @@
     'spawnClock',
     'nextBoss',
     'attackFields',
+    'droppedChests',
   ];
   function install(C, base, original) {
     const proto = C.Run.prototype,
@@ -124,7 +125,8 @@
     };
     proto.applyScene = function (scene) {
       const s = this.s;
-      for (const key of sceneFields) s[key] = structuredClone(scene[key]);
+      for (const key of sceneFields)
+        s[key] = structuredClone(scene[key] ?? (key === 'droppedChests' ? [] : scene[key]));
       this.map = base.mapFor(s.mapSeed);
       s.player.x = scene.position.x;
       s.player.z = scene.position.z;
@@ -150,7 +152,7 @@
       const s = this.s,
         map = base.mapFor(s.mapSeed);
       map.isRealm = true;
-      map.pois = map.pois.filter((p) => p.type === 'chest').slice(0, 10);
+      map.pois = map.pois.filter((p) => p.type === 'chest').slice(0, 2);
       if (!realm.towerPosition) {
         for (let i = 0; i < 300; i++) {
           const a = (base.hash(realm.portalId, 7, s.mapSeed) % 6283) / 1000 + i * 2.399963,
@@ -232,6 +234,7 @@
       s.mainScene = this.captureScene();
       const cached = s.portalRuns[id];
       if (cached) {
+        s.droppedChests = [];
         s.attackFields = [];
         s.realm = structuredClone(cached.progress);
         this.applyScene(cached.scene);
@@ -328,7 +331,18 @@
       s.mainScene = null;
       this.applyScene(scene);
       s.nextBoss = Math.max(s.nextBoss, s.time + 45);
-      s.spawnClock = Math.max(0.3, s.spawnClock);
+      // Resume the island with fresh encounters, preserving an engaged final boss.
+      s.enemies = s.enemies.filter((e) => e.finalBoss && e.hp > 0);
+      s.hostile = [];
+      s.shots = [];
+      s.fx = [];
+      s.attackFields = [];
+      s.styleFields = [];
+      s.worldHazards = [];
+      s.pendingRealmReturn = false;
+      this.syncMainPressure?.();
+      for (let i = 0; i < 4; i++) this.spawn();
+      s.spawnClock = 0.15;
       this.emit('portal-returned');
       if (s.world.cleansed >= s.world.target) this.spawnDevimon();
       return true;
@@ -351,13 +365,6 @@
       r.returnDelay = 1.6;
       for (const enemy of s.enemies) enemy.hp = 0;
       s.hostile = [];
-      s.worldHazards = [];
-      s.styleFields = [];
-      for (const zone of s.sectors) {
-        zone.kind = null;
-        zone.purified = true;
-        zone.revision++;
-      }
       this.effect('heal', tower.x, tower.z, { size: 7, life: 1.5, maxLife: 1.5 });
       this.emit('tower-destroyed', { name: portal.name });
       return true;
@@ -493,7 +500,8 @@
       const s = this.s;
       if (s.realm?.phase === 'cleared') {
         s.realm.returnDelay -= dt;
-        if (s.realm.returnDelay <= 0) return this.leaveRealm();
+        if (s.realm.returnDelay <= 0) s.pendingRealmReturn = true;
+        return false;
       }
       oldUpdate.call(this, dt, input);
       if (!s.done && s.realm) this.updateRealmWaves(dt);
