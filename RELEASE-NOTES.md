@@ -1,3 +1,12 @@
+## 1.30.0 · Paisaje digital y viajes de datos
+
+- Paisaje con praderas de colores, senderos suaves, claros en los puntos de interés, árboles de dos formas, rocas con musgo, flores y grupos de cristales.
+- Piedras digitales y partículas ambientales discretas, con geometría instanciada para limitar el coste gráfico.
+- Al comenzar o continuar una partida, el Digimon se reconstruye a partir de fragmentos de su propio sprite.
+- Al entrar y salir de los portales, el Digimon se desmaterializa en datos y se materializa en el destino, con anillos y un barrido de luz.
+- Pantalla de carga con una cuadrícula digital animada. El combate y el reloj permanecen detenidos durante toda la transición.
+- Animación breve de fundido si el sistema tiene activada la reducción de movimiento.
+
 ## 1.29.0 · Supervivencia, cofres y menú de equipo
 
 - Tabulador abre y cierra el menú de equipo: objetos y compañeros a la izquierda, sprite del Digimon en el centro y estadísticas a la derecha. La partida se pausa y desaparece la lista lateral de objetos.

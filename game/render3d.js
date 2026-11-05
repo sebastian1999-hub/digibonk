@@ -2,6 +2,7 @@ import { evolutionHeight } from './evolution-scale.js';
 import { drawEnemyStatuses } from './status-visuals.js';
 import { AttackVisuals } from './attack-visuals.js';
 import { WorldVisuals } from './world-visuals.js';
+import { animateDataTravel } from './data-travel.js';
 import * as THREE from './vendor/three.module.js';
 const C = window.DigibonkCore;
 const COLORS = {
@@ -121,7 +122,7 @@ export class Renderer3D {
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.16;
+    this.renderer.toneMappingExposure = 1.04;
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color('#aec8bd');
     this.scene.fog = new THREE.FogExp2('#aec8bd', 0.0085);
@@ -185,6 +186,9 @@ export class Renderer3D {
     x.fillRect(0, 0, 64, 64);
     return new THREE.CanvasTexture(c);
   }
+  travel(run, arriving) {
+    return animateDataTravel(this, run, arriving);
+  }
   resize() {
     const r = this.canvas.getBoundingClientRect();
     this.width = Math.max(1, r.width);
@@ -234,18 +238,31 @@ export class Renderer3D {
     const vertices = terrain.attributes.position,
       colors = [],
       terrainColor = new THREE.Color(),
-      terrainCool = new THREE.Color('#547f77'),
-      terrainGold = new THREE.Color('#a7a26a');
+      terrainCool = new THREE.Color('#438c88'),
+      terrainGold = new THREE.Color('#b3a66b'),
+      trailColor = new THREE.Color('#b9ad83');
     for (let i = 0; i < vertices.count; i++) {
       const x = vertices.getX(i),
         z = vertices.getZ(i),
         h = C.heightAt(x, z, seed);
       vertices.setY(i, h);
-      const color = terrainColor.set('#779856'),
+      const color = terrainColor.set('#649456'),
         cool = terrainCool,
         gold = terrainGold;
       color.lerp(cool, Math.max(0, Math.min(1, (x - 12) / 85)));
       color.lerp(gold, Math.max(0, Math.min(1, (-z - 15) / 90)));
+      // Broad, irregular meadows and worn trails soften the old uniform ground.
+      const meadow = Math.sin(x * 0.055 + Math.sin(z * 0.07)) * Math.cos(z * 0.045);
+      color.multiplyScalar(0.94 + meadow * 0.13);
+      const trail = Math.min(
+        Math.abs(x - Math.sin(z * 0.035) * 13),
+        Math.abs(z - Math.sin(x * 0.028) * 17),
+      );
+      if (h > 0.15) color.lerp(trailColor, Math.max(0, 1 - trail / 3.6) * 0.64);
+      for (const poi of this.map.pois) {
+        const distance = Math.hypot(x - poi.x, z - poi.z);
+        if (distance < 5) color.lerp(trailColor, (1 - distance / 5) * 0.5);
+      }
       color.multiplyScalar(
         0.91 +
           Math.sin(x * 0.17 + Math.cos(z * 0.12)) * 0.035 +
@@ -280,7 +297,7 @@ export class Renderer3D {
     for (const pond of C.ponds) {
       const water = this.mesh(
         new THREE.CircleGeometry(pond.r, 48),
-        this.material('#72b6b7', { transparent: true, opacity: 0.85 }),
+        this.material('#399fac', { transparent: true, opacity: 0.88 }),
         pond.x,
         0.02,
         pond.z,
@@ -365,7 +382,7 @@ export class Renderer3D {
         place(dummy, list[i], i);
         dummy.updateMatrix();
         mesh.setMatrixAt(i, dummy.matrix);
-        const tint = new THREE.Color(color);
+        const tint = new THREE.Color('#ffffff');
         tint.multiplyScalar(0.85 + (C.hash(i, 7, seed) % 30) / 100);
         mesh.setColorAt(i, tint);
       }
@@ -378,23 +395,50 @@ export class Renderer3D {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 1.4 * o.size, o.z);
       d.scale.set(o.size, o.size, o.size);
     });
-    instance(crowns, crownGeo, '#567f65', (d, o) => {
+    const pines = crowns.filter((o, i) => i % 3 !== 0);
+    const leafy = crowns.filter((o, i) => i % 3 === 0);
+    instance(pines, crownGeo, '#567f65', (d, o) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 3.3 * o.size, o.z);
       d.scale.set(o.size, o.size, o.size);
     });
-    instance(crowns, crownGeo, '#74976e', (d, o) => {
+    instance(pines, crownGeo, '#74976e', (d, o) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 4.5 * o.size, o.z);
       d.scale.set(o.size * 0.76, o.size * 0.85, o.size * 0.76);
+    });
+    const leafGeo = new THREE.IcosahedronGeometry(1, 1);
+    instance(leafy, leafGeo, '#568b72', (d, o) => {
+      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 3.1 * o.size, o.z);
+      d.scale.set(o.size * 1.65, o.size * 1.65, o.size * 1.5);
+    });
+    instance(leafy, leafGeo, '#92b477', (d, o) => {
+      d.position.set(o.x - o.size * 0.25, C.heightAt(o.x, o.z, seed) + 4.1 * o.size, o.z);
+      d.scale.set(o.size * 1.25, o.size * 1.15, o.size * 1.2);
     });
     instance(rocks, rockGeo, '#a1af9e', (d, o, i) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + o.size * 0.6, o.z);
       d.rotation.set(0.2, i, 0.1);
       d.scale.set(o.size * 1.4, o.size, o.size);
     });
+    instance(rocks, rockGeo, '#839b68', (d, o, i) => {
+      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + o.size * 1.35, o.z);
+      d.rotation.y = i;
+      d.scale.set(o.size * 0.9, o.size * 0.16, o.size * 0.65);
+    });
     instance(crystals, crystalGeo, '#8fc8ca', (d, o) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 1.2 * o.size, o.z);
       d.scale.set(o.size, o.size, o.size);
     });
+    for (const side of [-1, 1]) {
+      instance(crystals, crystalGeo, side < 0 ? '#66bfc4' : '#b6e5d5', (d, o) => {
+        d.position.set(
+          o.x + side * o.size * 0.65,
+          C.heightAt(o.x, o.z, seed) + 0.55 * o.size,
+          o.z + 0.3 * o.size,
+        );
+        d.rotation.z = -side * 0.35;
+        d.scale.setScalar(o.size * 0.48);
+      });
+    }
 
     yield 0.52;
     this.poiMeshes = new Map();
@@ -642,6 +686,46 @@ export class Renderer3D {
     instance(borderFlowers, new THREE.IcosahedronGeometry(0.16, 0), '#d9bf81', (d, o) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.38, o.z);
     });
+    const blooms = patches.filter((o, i) => i % 8 === 0 && Math.hypot(o.x, o.z) > 7);
+    for (let color = 0; color < 3; color++) {
+      instance(
+        blooms.filter((o, i) => i % 3 === color),
+        new THREE.IcosahedronGeometry(0.22, 0),
+        ['#f0b5cf', '#aededd', '#e6d695'][color],
+        (d, o, i) => {
+          d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.32, o.z);
+          d.scale.set(1.3, 0.55, 1.3);
+          d.rotation.y = i;
+        },
+      );
+    }
+    // Low, engraved data stones: decorative silhouettes stay below the combat plane.
+    const chips = patches.filter((o, i) => i % 90 === 0);
+    instance(chips, this.geo.cube, '#657c80', (d, o, i) => {
+      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.12, o.z);
+      d.rotation.y = i * 1.7;
+      d.scale.set(1.1, 0.24, 0.75);
+    });
+    instance(chips, this.geo.cube, '#7cdbd0', (d, o, i) => {
+      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.25, o.z);
+      d.rotation.y = i * 1.7;
+      d.scale.set(0.65, 0.025, 0.08);
+    });
+    // One reusable draw call for sparse drifting motes, even in long sessions.
+    this.ambientMotes = new THREE.InstancedMesh(
+      this.geo.cube,
+      new THREE.MeshBasicMaterial({
+        color: '#b4f7e6',
+        transparent: true,
+        opacity: 0.48,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+      40,
+    );
+    this.ambientMotes.frustumCulled = false;
+    this.world.add(this.ambientMotes);
+    this.moteDummy = new THREE.Object3D();
     // Silhouettes beyond the fence give the island a horizon and distant depth.
     for (let i = 0; i < 22; i++) {
       const a = (i * Math.PI * 2) / 22,
@@ -781,6 +865,24 @@ export class Renderer3D {
     );
     this.camera.lookAt(this.follow.x, this.follow.y + 0.3, this.follow.z);
     this.pointLight.position.set(p.x, goal.y + 3, p.z);
+    if (this.ambientMotes) {
+      const visualTime = performance.now() / 1000;
+      for (let i = 0; i < 40; i++) {
+        const x = p.x + Math.sin(i * 71.3) * 31 + Math.sin(visualTime * 0.12 + i) * 2;
+        const z = p.z + Math.cos(i * 43.7) * 31;
+        this.moteDummy.position.set(
+          x,
+          C.heightAt(x, z, seed) + 0.6 + ((i * 0.73 + visualTime * 0.2) % 4),
+          z,
+        );
+        this.moteDummy.rotation.set(0, visualTime * 0.3 + i, Math.PI / 4);
+        this.moteDummy.scale.setScalar(0.045 + (i % 3) * 0.018);
+        this.moteDummy.updateMatrix();
+        this.ambientMotes.setMatrixAt(i, this.moteDummy.matrix);
+      }
+      this.ambientMotes.instanceMatrix.needsUpdate = true;
+      this.ambientMotes.material.color.set(s?.realm ? '#c8a3ee' : '#b4f7e6');
+    }
     for (const unit of this.units.values()) unit.keep = false;
     for (const v of this.visuals.values()) v.keep = false;
     this.opacityCategory = null;
@@ -875,7 +977,7 @@ export class Renderer3D {
       ring.scale.setScalar(0.7);
       ring.material.opacity = 0.65;
     }
-    if (s && !s.done && s.hatch <= 0 && !s.evolution) {
+    if (s && !this.travelHidden && !s.done && s.hatch <= 0 && !s.evolution) {
       const role = run.style();
       if (role) {
         const at = this.screen(p.x, C.heightAt(p.x, p.z, seed) + 0.55, p.z),
@@ -1138,6 +1240,13 @@ export class Renderer3D {
       if (item.keep && item.category)
         item.mesh.material.opacity *= this.visibility?.[item.category] ?? 1;
     this.attackEffects.finish();
+    if (this.travelHidden) {
+      const player = this.units.get('player');
+      if (player) player.mesh.visible = player.shadow.visible = false;
+    } else {
+      const player = this.units.get('player');
+      if (player) player.shadow.visible = true;
+    }
     if (submit) this.renderer.render(this.scene, this.camera);
   }
   pick(clientX, clientY) {

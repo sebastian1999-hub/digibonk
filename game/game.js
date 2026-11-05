@@ -1432,16 +1432,18 @@ async function sceneTransition(
       );
     };
   el.classList.remove('leaving');
-  el.classList.add('active');
-  el.setAttribute('aria-hidden', 'false');
   $('#loading-title').textContent = title;
   $('#loading-retry').hidden = true;
   progress(0, 'Preparando escenario');
   try {
+    if (active && run && !run.s.done) await renderer.travel(run, false);
+    el.classList.add('active');
+    el.setAttribute('aria-hidden', 'false');
     await frame();
     await frame();
     await new Promise((resolve) => setTimeout(resolve, 300));
     action();
+    renderer.travelHidden = active;
     await renderer.prepare(active ? run : null, progress);
     await new Promise((resolve) => setTimeout(resolve, 160));
     el.classList.add('leaving');
@@ -1449,6 +1451,7 @@ async function sceneTransition(
     await new Promise((resolve) => setTimeout(resolve, 300));
     el.classList.remove('leaving');
     el.setAttribute('aria-hidden', 'true');
+    if (active && run) await renderer.travel(run, true);
     last = performance.now();
     keys.clear();
     moveTarget = null;
@@ -1456,6 +1459,9 @@ async function sceneTransition(
     loading = false;
     if (active) $('#world').focus({ preventScroll: true });
   } catch (error) {
+    renderer.travelHidden = false;
+    el.classList.add('active');
+    el.setAttribute('aria-hidden', 'false');
     console.error(error);
     $('#loading-detail').textContent =
       'No se ha podido completar la carga. Puedes reintentarlo sin avanzar la partida.';
