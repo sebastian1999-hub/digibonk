@@ -1,3 +1,9 @@
+## 1.30.1 · Invasores y distancia de aparición
+
+- Solo los invasores garantizan un cofre. Los enemigos normales y élites comparten la probabilidad baja del 0,1 %, mejorable con objetos.
+- Enemigos e invasores aparecen a 38–50 unidades del jugador, tanto en la isla como en los portales.
+- Las posiciones fuera del mapa se descartan: acercarse al borde o a una esquina ya no permite apariciones demasiado cercanas.
+
 ## 1.30.0 · Paisaje digital y viajes de datos
 
 - Paisaje con praderas de colores, senderos suaves, claros en los puntos de interés, árboles de dos formas, rocas con musgo, flores y grupos de cristales.

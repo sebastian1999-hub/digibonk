@@ -164,7 +164,7 @@ test('scarce chests have a global escalating price across saves and portals', ()
   assert.equal(copy.s.chestsOpened, 1);
 });
 
-test('normal drops are rare, elites guarantee exactly one chest, and relics improve the normal chance', () => {
+test('only invaders guarantee one chest; normal and elite enemies share the rare chance', () => {
   const r = fresh();
   r.s.choice = null;
   r.s.player.crit = 0;
@@ -174,16 +174,22 @@ test('normal drops are rare, elites guarantee exactly one chest, and relics impr
   r.hurt(normal, 100);
   assert.equal(r.s.droppedChests.length, 0);
   const elite = { ...normal, id: 901, hp: 1, elite: true };
+  assert.equal(r.chestDropChance(elite), 0.001);
   r.hurt(elite, 100);
+  assert.equal(r.s.droppedChests.length, 0);
+  const invader = { ...normal, id: 903, hp: 1, boss: true };
+  r.hurt(invader, 100);
   assert.equal(r.s.droppedChests.length, 1);
-  r.hurt(elite, 100);
+  r.hurt(invader, 100);
   assert.equal(r.s.droppedChests.length, 1);
   r.s.relics = [
     { id: 'treasure-radar', rank: 3 },
     { id: 'loot-antenna', rank: 3 },
   ];
   assert.ok(r.chestDropChance(normal) > 0.001 && r.chestDropChance(normal) < 0.004);
-  assert.equal(r.chestDropChance(elite), 1);
+  assert.equal(r.chestDropChance(elite), r.chestDropChance(normal));
+  assert.equal(r.chestDropChance(invader), 1);
+  assert.equal(r.chestDropChance({ boss: true, finalBoss: true }), r.chestDropChance(normal));
   assert.equal(r.chestDropChance({ tower: true }), 0);
   r.random = () => 0;
   r.hurt({ ...normal, id: 902, hp: 1 }, 100);

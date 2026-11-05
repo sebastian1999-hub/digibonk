@@ -3,6 +3,7 @@ const { test } = require('node:test'),
   fs = require('node:fs'),
   vm = require('node:vm'),
   B = require('../game/balance'),
+  WORLD = require('../game/run-core').WORLD,
   MapIcons = require('../game/map-icons'),
   box = { window: {} };
 for (const name of ['species-catalog', 'evolution-routes'])
@@ -218,4 +219,37 @@ test('old active portal balance migrates while preserving damage and cleared pro
   assert.ok(Math.abs(m.hp / m.maxHp - 0.4) < 1e-9);
   assert.ok(Math.abs(t.hp / t.maxHp - 0.7) < 1e-9);
   assert.equal(restored.s.world.cleansed, 0);
+});
+
+test('island and portal enemies appear 38–50 units away, including at borders and corners', () => {
+  for (const realm of [false, true]) {
+    const r = fresh();
+    if (realm) assert.ok(r.enterPortal(r.s.world.portals[0].id));
+    for (const [x, z] of [
+      [0, 0],
+      [WORLD - 7, 0],
+      [-WORLD + 7, 0],
+      [0, WORLD - 7],
+      [0, -WORLD + 7],
+      [WORLD - 7, WORLD - 7],
+      [-WORLD + 7, -WORLD + 7],
+      [WORLD - 7, -WORLD + 7],
+      [-WORLD + 7, WORLD - 7],
+    ]) {
+      Object.assign(r.s.player, { x, z });
+      let spawned = 0;
+      for (let i = 0; i < 20; i++) {
+        r.s.enemies = [];
+        if (realm) r.spawnRealmMob(1, 'distance-test');
+        else r.spawn(i % 2 === 0);
+        for (const enemy of r.s.enemies) {
+          const distance = Math.hypot(enemy.x - x, enemy.z - z);
+          assert.ok(distance >= 38 - 1e-8 && distance <= 50 + 1e-8, `${realm}: ${distance}`);
+          assert.ok(Math.abs(enemy.x) <= WORLD - 6 && Math.abs(enemy.z) <= WORLD - 6);
+          spawned++;
+        }
+      }
+      assert.ok(spawned >= 15, `not enough valid spawns at ${x},${z}: ${spawned}`);
+    }
+  }
 });

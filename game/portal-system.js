@@ -377,11 +377,12 @@
         baseStage = B.realm(pressure, wave).stage,
         stage = baseStage,
         pool = [...C.species.values()].filter((c) => c.stage === stage && c.id !== 'Devimon');
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < 32; i++) {
         const a = this.random() * Math.PI * 2,
-          radius = 19 + this.random() * 7,
-          x = Math.max(-W.WORLD + 6, Math.min(W.WORLD - 6, s.player.x + Math.cos(a) * radius)),
-          z = Math.max(-W.WORLD + 6, Math.min(W.WORLD - 6, s.player.z + Math.sin(a) * radius));
+          radius = 38 + this.random() * 12,
+          x = s.player.x + Math.cos(a) * radius,
+          z = s.player.z + Math.sin(a) * radius;
+        if (Math.abs(x) > W.WORLD - 6 || Math.abs(z) > W.WORLD - 6) continue;
         if (!base.walkable(x, z, s.mapSeed, 0.6)) continue;
         const cohort = Math.floor(s.time / 35),
           type = pool[((base.hash(0, stage, s.mapSeed) >>> 0) + cohort) % pool.length],

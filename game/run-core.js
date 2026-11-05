@@ -1222,11 +1222,13 @@
             : BALANCE.mainStage(s.time),
           pool = catalog.filter((c) => c.stage === stage && c.id !== 'Devimon');
         if (s.enemies.filter((e) => e.hp > 0).length >= (boss ? 219 : 210)) return;
-        for (let tries = 0; tries < 12; tries++) {
+        for (let tries = 0; tries < 24; tries++) {
           const angle = this.random() * Math.PI * 2,
-            r = 23 + this.random() * 9,
-            x = clamp(p.x + Math.cos(angle) * r, -WORLD + 6, WORLD - 6),
-            z = clamp(p.z + Math.sin(angle) * r, -WORLD + 6, WORLD - 6);
+            r = 38 + this.random() * 12,
+            x = p.x + Math.cos(angle) * r,
+            z = p.z + Math.sin(angle) * r;
+          // Reject positions outside the island instead of clamping them near the player.
+          if (Math.abs(x) > WORLD - 6 || Math.abs(z) > WORLD - 6) continue;
           if (!walkable(x, z, s.mapSeed, 0.6)) continue;
           const cohort = Math.floor(s.time / 35),
             type = boss
@@ -1264,7 +1266,7 @@
       }
       chestDropChance(enemy) {
         if (enemy.tower || enemy.structure) return 0;
-        if (enemy.elite) return 1;
+        if (enemy.boss && !enemy.finalBoss) return 1;
         return (
           0.001 +
           this.relicRank('treasure-radar') * 0.0005 +

@@ -22,7 +22,7 @@ Las pasivas funcionan sin tener que detenerte: Vanguardia reduce el daño, Cazad
 
 El catálogo **Técnicas y objetos** muestra las 64 técnicas por familia y etapa y las 28 reliquias, incluidos cinco legendarios únicos. Las técnicas se eligen al subir de nivel, según la forma actual. Puedes llevar cuatro y elegir qué sustituir al aprender una nueva; también puedes conservar las actuales. Las técnicas heredadas siguen funcionando al digievolucionar.
 
-Hay 6 cofres en la isla y 2 por portal. El primero cuesta 100 bits y los siguientes 190, 310, 460… El precio aumenta con cada apertura y se conserva al guardar y cruzar portales. Los enemigos normales tienen un 0,1 % de probabilidad de soltar un cofre; los élites, un 100 %. Los cofres caídos duran 60 segundos y usan el mismo precio. Radar de tesoros y Antena de botín aumentan ligeramente la probabilidad normal, hasta un 0,325 % al combinar ambos en rango 3.
+Hay 6 cofres en la isla y 2 por portal. El primero cuesta 100 bits y los siguientes 190, 310, 460… El precio aumenta con cada apertura y se conserva al guardar y cruzar portales. Los enemigos normales y élites tienen un 0,1 % de probabilidad de soltar un cofre; solo los invasores tienen el cofre garantizado. Los cofres caídos duran 60 segundos y usan el mismo precio. Radar de tesoros y Antena de botín aumentan ligeramente la probabilidad normal, hasta un 0,325 % al combinar ambos en rango 3.
 
 Wizardmon solo permite quitar técnicas gratis. Las técnicas nuevas aparecen al subir de nivel si hay un hueco libre. Las tarjetas, el equipo y la barra de técnicas indican su fase evolutiva y una descripción breve del tipo de ataque.
 

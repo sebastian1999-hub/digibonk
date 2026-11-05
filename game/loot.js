@@ -300,7 +300,7 @@
       description: (r) =>
         '+' +
         (r * 0.05).toFixed(2) +
-        ' puntos de probabilidad de cofre por enemigo normal. Base: 0,1 %. Élites: siempre. Los cofres caídos duran 60 s.',
+        ' puntos de probabilidad de cofre por enemigo normal o élite. Base: 0,1 %. Invasores: siempre. Los cofres caídos duran 60 s.',
     },
     {
       id: 'loot-antenna',
@@ -311,7 +311,7 @@
       description: (r) =>
         '+' +
         (r * 0.025).toFixed(3) +
-        ' puntos de probabilidad de cofre por enemigo normal. Se suma al Radar de tesoros.',
+        ' puntos de probabilidad de cofre por enemigo normal o élite. Se suma al Radar de tesoros.',
     },
   );
   const companions = [
