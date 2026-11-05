@@ -45,7 +45,8 @@ test('elemental profiles and visible descriptions cover every damaging family an
     if (skill.kind !== 'damage') assert.deepEqual(R.forSkill(skill), []);
     else if (!['neutral', 'any'].includes(skill.family)) {
       assert.ok(R.forSkill(skill).length, skill.id);
-      assert.ok(C.describeTechnique(skill.id).includes('%'), skill.id);
+      assert.ok(C.describeTechnique(skill.id).includes(skills.statusSummary(skill)), skill.id);
+      assert.ok(skills.statusSummary(skill).length > 0, skill.id);
     }
   }
   assert.equal(R.forSkill(skills.skills['electro-shocker'])[0].id, 'shock');

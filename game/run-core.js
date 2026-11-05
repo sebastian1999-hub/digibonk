@@ -415,6 +415,27 @@
         skin: 'egg-' + (i % 8),
         branches: (forward.get(s.id) || []).filter((id) => reachesMega(id)),
       }));
+    function evolutionOptions(id, training) {
+      const level = ['damage', 'haste', 'maxHp', 'speed'].reduce(
+        (n, key) => n + (training?.[key] || 0),
+        0,
+      );
+      return (forward.get(id) || [])
+        .filter((next) => reachesMega(next))
+        .slice(0, 1 + Math.floor(level / 2));
+    }
+    function evolutionLine(egg, training, preferred = []) {
+      const line = [];
+      let current = egg;
+      while (species.get(current)?.stage < 4) {
+        const options = evolutionOptions(current, training);
+        const next = options.includes(preferred[line.length]) ? preferred[line.length] : options[0];
+        if (!next) break;
+        line.push(next);
+        current = next;
+      }
+      return line;
+    }
     function signature(id) {
       return skills.signature({ species: id, stage: species.get(id).stage, isEgg: false });
     }
@@ -439,65 +460,35 @@
       if (skill.kind === 'damage') {
         const behavior =
           {
-            cone: 'Barre un cono delante de ti.',
+            cone: 'Golpea a los enemigos que tienes delante.',
             ring: 'Golpea alrededor de tu Digimon.',
-            pillar: 'Marca al enemigo y golpea su zona tras 0,4 s.',
-            meteor: 'Deja caer un meteorito tras 0,4 s.',
-            rain: 'Ataca una zona con lluvia de impactos tras 0,4 s.',
+            pillar: 'Golpea una zona alrededor del enemigo.',
+            meteor: 'Lanza un meteorito sobre los enemigos.',
+            rain: 'Bombardea una zona con varios impactos.',
             chain: 'Salta entre hasta 3 enemigos.',
             volley: 'Dispara una ráfaga de proyectiles dirigidos.',
           }[skill.pattern] ||
           (skill.mode === 'melee'
             ? 'Golpea a los enemigos cercanos.'
-            : 'Lanza un proyectil que persigue al enemigo.');
-        const count =
-          (skill.pattern === 'volley' ? 3 : 1) +
-          (player.projectileBonus || 0) +
-          Math.floor(rank / 4);
-        return (
-          behavior +
-          '\n' +
-          count +
-          (count === 1 ? ' golpe por activación.\n' : ' golpes por activación.\n') +
-          'Cada golpe: ' +
-          Math.round(skill.power * (1 + (rank - 1) * 0.15) * 100) +
-          '% de tu ataque. Cada ' +
-          format(Math.max(0.18, (skill.cooldown * 0.48) / (haste * (1 + (rank - 1) * 0.045)))) +
-          ' s.\n' +
-          'Área y tamaño: ' +
-          Math.round((player.area || 1) * 100) +
-          '%. ' +
-          (skills.statusText(skill) || '')
+            : 'Dispara al enemigo más cercano.');
+        const cooldown = format(
+          Math.max(0.18, (skill.cooldown * 0.48) / (haste * (1 + (rank - 1) * 0.045))),
         );
+        return behavior + ' ' + skills.statusSummary(skill) + '\nRecarga: ' + cooldown + ' s.';
       }
       const e = supportEffect(skill, rank),
         duration = format(e.duration),
         cooldown = format(e.cooldown / haste),
-        tail = ' Recarga: ' + cooldown + ' s (se reduce con la cadencia).';
+        tail = ' Recarga: ' + cooldown + ' s.';
       if (skill.kind === 'heal')
-        return (
-          'Recupera el ' +
-          format(e.heal * 100) +
-          ' % de tu vida máxima. Se activa automáticamente al tener el 80 % de vida o menos.' +
-          tail
-        );
+        return 'Recupera el ' + format(e.heal * 100) + ' % de vida cuando bajas al 80 %.' + tail;
       if (skill.kind === 'shield')
-        return (
-          'Reduce el daño recibido un 55 % durante ' +
-          duration +
-          ' s. No otorga invulnerabilidad.' +
-          tail
-        );
+        return 'Reduce el daño recibido un 55 % durante ' + duration + ' s.' + tail;
       if (skill.kind === 'buff') return '+25 % de daño durante ' + duration + ' s.' + tail;
       if (skill.kind === 'restore')
         return '+15 puntos de probabilidad crítica durante ' + duration + ' s.' + tail;
       if (skill.kind === 'haste')
-        return (
-          'Ataques y técnicas un 20 % más rápidos durante ' +
-          duration +
-          ' s. No aumenta la velocidad de movimiento.' +
-          tail
-        );
+        return 'Ataques y técnicas un 20 % más rápidos durante ' + duration + ' s.' + tail;
       return '';
     }
     class Run {
@@ -608,6 +599,16 @@
             } else if (p.weapons.length < 4) p.weapons.push({ id, rank: 1, clock: 0 });
           }
           this.s.techniqueRevision = 1;
+        }
+        if (this.s.choice?.kind === 'evolution') {
+          const target = this.s.player.stage + 1;
+          const options = evolutionOptions(this.s.player.species, this.s.eggTraining);
+          const planned = this.s.evolutionLine?.[target];
+          const next = options.includes(planned) ? planned : options[0];
+          this.s.choice = next
+            ? { kind: 'evolution', cards: [{ id: next, type: 'evolution', species: next }] }
+            : null;
+          if (next) this.choose(next);
         }
       }
       validate() {
@@ -953,47 +954,18 @@
         if (s.level === 400) s.xp = 0;
         s.score += 40;
         const p = s.player,
-          target = p.stage + 1,
-          eligible =
-            s.level >= (EVOLUTION_LEVELS[target] || Infinity)
-              ? (forward.get(p.species) || [])
-                  .filter((id) => reachesMega(id))
-                  .slice(
-                    0,
-                    s.eggTraining
-                      ? 1 + Math.floor(Object.values(s.eggTraining).reduce((n, v) => n + v, 0) / 2)
-                      : Infinity,
-                  )
-              : [];
+          target = p.stage + 1;
+        const eligible =
+          s.level >= (EVOLUTION_LEVELS[target] || Infinity)
+            ? evolutionOptions(p.species, s.eggTraining)
+            : [];
         if (eligible.length) {
-          const remaining = [...eligible],
-            cards = [];
-          while (remaining.length && cards.length < 3) {
-            const i = Math.floor(this.random() * remaining.length),
-              id = remaining.splice(i, 1)[0],
-              move = signature(id);
-            cards.push({
-              id,
-              type: 'evolution',
-              species: id,
-              title: id,
-              text:
-                'Técnica: ' +
-                move.name +
-                (this.style(id, target)
-                  ? '. ' +
-                    this.style(id, target).name +
-                    '. ' +
-                    this.style(id, target).passive +
-                    ' ' +
-                    this.style(id, target).description
-                  : ''),
-              rarity: ['BEBÉ II', 'ROOKIE', 'CHAMPION', 'ULTIMATE', 'MEGA'][target],
-              stage: target,
-              skill: move.name,
-            });
-          }
-          s.choice = { kind: 'evolution', title: 'Tu siguiente digievolución', cards };
+          const planned = s.evolutionLine?.[target];
+          const id = eligible.includes(planned) ? planned : eligible[0];
+          s.evolutionLine ??= evolutionLine(s.egg, s.eggTraining);
+          s.evolutionLine[target] = id;
+          s.choice = { kind: 'evolution', cards: [{ id, type: 'evolution', species: id }] };
+          this.choose(id);
         } else s.choice = this.choices();
         this.emit('level');
       }
@@ -1158,9 +1130,7 @@
                 ? amount
                 : amount *
                     this.elementDamageMultiplier(enemy, skillId) *
-                    (this.style()?.id === 'hunter' && p.moveMomentum >= 1.5 && p.preyId === enemy.id
-                      ? 1.15
-                      : 1) *
+                    (this.style()?.id === 'hunter' && p.preyId === enemy.id ? 1.15 : 1) *
                     (crit ? 1.8 + this.relicRank('critical-lens') * 0.15 : 1) *
                     (enemy.hp / enemy.maxHp < 0.3 ? 1 + this.relicRank('finisher') * 0.15 : 1) *
                     (enemy.boss || enemy.elite ? 1 + this.relicRank('boss-hunter') * 0.12 : 1),
@@ -1672,6 +1642,8 @@
       species,
       forward,
       eggChoices,
+      evolutionOptions,
+      evolutionLine,
       reachesMega,
       signature,
       upgrades,

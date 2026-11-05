@@ -42,6 +42,7 @@ let renderer,
   toastLeft = 0,
   choiceCanvases = [],
   eggCanvases = [],
+  evolutionCanvases = [],
   keys = new DigibonkInput(),
   moveTarget = null,
   specialQueued = false,
@@ -619,6 +620,7 @@ function begin(egg) {
   sceneTransition(() => {
     run = new C.Run(egg);
     DigibonkProgression.apply(run, progression.eggs[egg]);
+    run.s.evolutionLine = C.evolutionLine(egg, progression.eggs[egg], progression.lines?.[egg]);
     run.s.onlineOwner = cloud.user?.id || null;
     run.s.cloudVersion = '1.3.0';
     activate();
@@ -704,7 +706,8 @@ function bankBits() {
   }
 }
 let homeTab = 'menu',
-  selectedEgg = 'Botamon';
+  selectedEgg = 'Botamon',
+  selectedEvolutionStage = 0;
 function purchase(id, stat, index) {
   if (DigibonkProgression.buy(progression, id, stat, index)) {
     store(META_KEY, progression);
@@ -715,6 +718,7 @@ function makeEggs() {
   const grid = $('#egg-grid');
   grid.replaceChildren();
   eggCanvases = [];
+  evolutionCanvases = [];
   if (!C.eggChoices.some((e) => e.id === selectedEgg)) selectedEgg = 'Botamon';
   $('#home-bits').textContent = number(progression.bits) + ' bits';
   $('#main-menu').hidden = homeTab !== 'menu';
@@ -733,7 +737,7 @@ function makeEggs() {
   $('#egg-section-hint').textContent =
     homeTab === 'play'
       ? 'Selecciona un huevo para empezar'
-      : 'Mejora el huevo seleccionado con tus bits';
+      : 'Elige tu línea evolutiva y mejora el huevo con tus bits';
   for (const egg of C.eggChoices) {
     const owned = !!progression.eggs[egg.id],
       button = document.createElement('button');
@@ -754,6 +758,7 @@ function makeEggs() {
     button.append(canvas, name, sub);
     button.onclick = () => {
       selectedEgg = egg.id;
+      selectedEvolutionStage = 0;
       makeEggs();
     };
     grid.append(button);
@@ -766,6 +771,99 @@ function makeEggs() {
   const title = document.createElement('h3');
   title.textContent = selectedEgg;
   panel.append(title);
+  if (training) {
+    const line = C.evolutionLine(selectedEgg, training, progression.lines?.[selectedEgg]);
+    const route = document.createElement('section');
+    route.className = 'evolution-plan';
+    const heading = document.createElement('h4');
+    heading.textContent = 'Tu línea evolutiva';
+    route.append(heading);
+    const stages = ['Bebé II', 'Rookie', 'Champion', 'Ultimate', 'Mega'];
+    const track = document.createElement('div');
+    track.className = 'evolution-track';
+    track.setAttribute('aria-label', 'Línea evolutiva elegida');
+    const icon = (id, caption, interactive = false) => {
+      const tile = document.createElement(interactive ? 'button' : 'div');
+      tile.className = 'evolution-icon';
+      const stage = document.createElement('span');
+      stage.className = 'evolution-stage';
+      stage.textContent = caption;
+      const canvas = document.createElement('canvas');
+      canvas.width = 96;
+      canvas.height = 88;
+      canvas.setAttribute('aria-hidden', 'true');
+      const name = document.createElement('b');
+      name.textContent = id;
+      tile.append(stage, canvas, name);
+      evolutionCanvases.push({ canvas, species: id });
+      return tile;
+    };
+    track.append(icon(selectedEgg, 'Bebé I'));
+    line.forEach((id, index) => {
+      const arrow = document.createElement('span');
+      arrow.className = 'evolution-arrow';
+      arrow.textContent = '→';
+      arrow.setAttribute('aria-hidden', 'true');
+      const tile = icon(id, stages[index], homeTab === 'incubator');
+      if (homeTab === 'incubator') {
+        tile.classList.toggle('editing', index === selectedEvolutionStage);
+        tile.setAttribute('aria-label', 'Elegir ' + stages[index] + ': ' + id);
+        tile.setAttribute('aria-pressed', index === selectedEvolutionStage);
+        tile.onclick = () => {
+          const scroll = track.scrollLeft;
+          selectedEvolutionStage = index;
+          makeEggs();
+          $('#egg-grid .evolution-track').scrollLeft = scroll;
+        };
+      }
+      track.append(arrow, tile);
+    });
+    route.append(track);
+    if (homeTab === 'incubator') {
+      const index = selectedEvolutionStage;
+      const options = document.createElement('div');
+      options.className = 'evolution-options';
+      options.setAttribute('role', 'group');
+      options.setAttribute('aria-label', 'Opciones de ' + stages[index]);
+      const caption = document.createElement('p');
+      caption.className = 'evolution-options-title';
+      caption.textContent = 'Elige tu ' + stages[index];
+      const from = index ? line[index - 1] : selectedEgg;
+      for (const next of C.evolutionOptions(from, training)) {
+        const option = icon(next, stages[index], true);
+        option.classList.toggle('selected', next === line[index]);
+        option.setAttribute('aria-label', 'Usar ' + next);
+        option.setAttribute('aria-pressed', next === line[index]);
+        option.onclick = () => {
+          const scroll = track.scrollLeft;
+          const preferred = line.slice(0, index);
+          preferred.push(next);
+          progression.lines ??= {};
+          progression.lines[selectedEgg] = C.evolutionLine(selectedEgg, training, preferred);
+          store(META_KEY, progression);
+          makeEggs();
+          $('#egg-grid .evolution-track').scrollLeft = scroll;
+        };
+        options.append(option);
+      }
+      route.append(caption, options);
+    } else {
+      const change = document.createElement('button');
+      change.textContent = 'Cambiar línea en Incubadora';
+      change.onclick = () => {
+        homeTab = 'incubator';
+        makeEggs();
+      };
+      route.append(change);
+    }
+    const help = document.createElement('small');
+    help.textContent =
+      homeTab === 'incubator'
+        ? 'Pulsa una etapa y elige su Digimon. Cada 2 mejoras desbloqueas más opciones. La línea se aplica automáticamente en combate.'
+        : 'Digievolucionas automáticamente por esta línea al subir de nivel.';
+    route.append(help);
+    panel.append(route);
+  }
   if (homeTab === 'play') {
     const play = document.createElement('button');
     play.className = 'primary';
@@ -1524,6 +1622,11 @@ function drawPortraits(time) {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawDigiEgg(ctx, 60, 52, 76, time, egg.skin);
+    }
+    for (const { canvas, species } of evolutionCanvases) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      DigiSprites.drawGrounded(ctx, species, 'idle', 48, 82, 76, time);
     }
   } else if (run) {
     const p = run.s.player,

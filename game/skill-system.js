@@ -382,6 +382,25 @@
   const api = {
     skills,
     statusText: STATUS_RULES.describe,
+    statusSummary: (skill) =>
+      STATUS_RULES.forSkill(skill)
+        .map(({ id, chance }) => {
+          const effects = {
+            burn: 'quemar',
+            poison: 'envenenar',
+            bleed: 'causar sangrado',
+            chill: 'ralentizar',
+            freeze: 'congelar',
+            shock: 'paralizar',
+            wet: 'empapar y potenciar la electricidad',
+            curse: 'aumentar el daño que recibe',
+            fracture: 'aumentar el daño que recibe',
+            root: 'inmovilizar',
+            weaken: 'reducir el daño del enemigo',
+          };
+          return (chance < 1 ? 'Puede ' : 'Permite ') + effects[id] + '.';
+        })
+        .join(' '),
     nextOrder,
     familyNames,
     patternNames,

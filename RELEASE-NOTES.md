@@ -1,3 +1,11 @@
+## 1.27.0 · Línea evolutiva e iconos en la incubadora
+
+- Elige tu línea hasta Mega antes de jugar, con una fila horizontal de iconos animados y opciones por etapa.
+- La línea se guarda por huevo y cuenta. Las digievoluciones se aplican automáticamente en combate al alcanzar los niveles 3, 6, 12, 20 y 30.
+- Las pasivas funcionan sin quedarse quieto: defensa, velocidad y marca automática, regeneración, ralentización cercana, alcance o inmunidad al agua según el estilo.
+- Descripciones de técnicas más breves, centradas en su efecto principal, estado y recarga.
+- Compatibilidad con partidas guardadas, incluidas las antiguas detenidas en una elección de digievolución.
+
 ## 1.26.0 · Nivel 400 y calidad de mejoras
 
 - Nivel máximo 400 y curva de experiencia más exigente.

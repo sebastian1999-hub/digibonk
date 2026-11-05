@@ -2902,3 +2902,88 @@ body[data-screen='home'] #continue-run:focus-visible {
 .choice-card.quality-4 .card-kicker {
   color: #ffe29a;
 }
+
+.evolution-plan {
+  min-width: 0;
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #779a7d66;
+  border-radius: 10px;
+}
+.evolution-plan h4 {
+  margin: 0 0 12px;
+  color: #ffe2a0;
+}
+.evolution-track,
+.evolution-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 12px;
+  scrollbar-color: #779a7d #102e29;
+}
+.selected-egg-panel .evolution-icon {
+  display: flex;
+  flex: 0 0 104px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 104px;
+  min-height: 155px;
+  margin: 0;
+  padding: 8px 4px;
+  border: 1px solid #779a7d66;
+  border-radius: 10px;
+  background: #102e2980;
+  color: #e2edde;
+  text-align: center;
+}
+.evolution-icon canvas {
+  display: block;
+  width: 96px;
+  height: 88px;
+  image-rendering: pixelated;
+}
+.evolution-icon b {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+.evolution-stage {
+  font-size: 10px;
+  color: #b7ccc8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.evolution-arrow {
+  flex: 0 0 auto;
+  color: #ffe2a0;
+  font-size: 20px;
+}
+.selected-egg-panel button.evolution-icon:hover {
+  background: #2b5145;
+  border-color: #ffe2a0;
+}
+.selected-egg-panel .evolution-icon.editing {
+  border-color: #ffe2a0;
+  background: #344c36;
+}
+.selected-egg-panel .evolution-icon.selected {
+  border-color: #a6e28b;
+  background: #264e39;
+  box-shadow: inset 0 0 0 1px #a6e28b;
+}
+.evolution-icon:focus-visible {
+  outline: 3px solid #ffe2a0;
+  outline-offset: 2px;
+}
+.evolution-options-title {
+  margin: 12px 0 8px;
+  font-weight: 700;
+}
+.evolution-plan small {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.5;
+}

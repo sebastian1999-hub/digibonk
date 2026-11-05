@@ -353,3 +353,32 @@ test('wave kills damage the tower proportionally and saving preserves the damage
   assert.ok(Math.abs(tower.hp / tower.maxHp - 2 / 3) < 1e-8);
   assert.equal(r.s.realm.phase, 'waves');
 });
+
+test('passives work while moving without stationary timers or active fields', () => {
+  const v = fresh('Greymon', 2);
+  v.s.player.stillTime = 0;
+  v.s.player.moveMomentum = 0;
+  assert.equal(v.incomingStyleDamage(), 0.8);
+  const a = fresh('MetalGreymon', 3);
+  a.s.player.stillTime = 0;
+  assert.equal(a.styleRangeMultiplier(), 1.2);
+  const h = fresh('Garurumon', 2);
+  h.s.player.moveMomentum = 0;
+  assert.equal(h.playerWorldSpeed(), 1.15);
+  h.s.enemies = [mob(4)];
+  h.updateWorld(0.05, {});
+  assert.equal(h.s.player.preyId, 90);
+  const g = fresh('Angemon', 2);
+  g.s.player.hp = 50;
+  g.s.player.x = 10;
+  g.updateStyleFields(1);
+  assert.equal(g.s.player.hp, 51);
+  g.s.player.hp = 100;
+  g.updateStyleFields(1);
+  assert.equal(g.s.player.hp, 100);
+  const c = fresh('Kabuterimon', 2);
+  assert.equal(c.enemyWorldSpeed(mob(4)), 0.85);
+  assert.equal(c.enemyWorldSpeed(mob(20)), 1);
+  for (const style of Object.values(W.styles))
+    assert.ok(!/quieto|moverte|dentro de tu sello|tu jardín/i.test(style.passive));
+});

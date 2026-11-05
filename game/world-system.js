@@ -202,18 +202,24 @@
       return this.s.sectors[W.sectorIndex(unit.x, unit.z)];
     };
     proto.styleRangeMultiplier = function () {
-      return this.style()?.id === 'artillery' && this.s.player.stillTime >= 1 ? 1.2 : 1;
+      return this.style()?.id === 'artillery' ? 1.2 : 1;
     };
     proto.playerWorldSpeed = function () {
       const p = this.s.player,
         style = this.style();
       return (
         (this.currentSector().kind === 'flood' && style?.id !== 'tide' ? 0.85 : 1) *
-        (style?.id === 'hunter' && p.moveMomentum >= 1.5 ? 1.15 : 1)
+        (style?.id === 'hunter' ? 1.15 : 1)
       );
     };
     proto.enemyWorldSpeed = function (enemy) {
       let factor = this.currentSector(enemy).kind === 'glitch' ? 1.18 : 1;
+      if (
+        this.style()?.id === 'controller' &&
+        dist(enemy, this.s.player) < 8 &&
+        !this.s.styleFields.some((f) => f.kind === 'roots' && dist(f, enemy) < f.radius)
+      )
+        factor *= 0.85;
       for (const f of this.s.styleFields)
         if (f.kind === 'roots' && dist(f, enemy) < f.radius) factor *= enemy.boss ? 0.7 : 0.45;
       return factor;
@@ -221,7 +227,7 @@
     proto.incomingStyleDamage = function () {
       const p = this.s.player,
         style = this.style();
-      let factor = style?.id === 'vanguard' && p.stillTime > 0.1 ? 0.8 : 1;
+      let factor = style?.id === 'vanguard' ? 0.8 : 1;
       if (this.s.styleFields.some((f) => f.kind === 'sanctuary' && dist(f, p) < f.radius))
         factor *= 0.75;
       return factor;
@@ -325,7 +331,7 @@
       p.styleCooldown = Math.max(0, p.styleCooldown - dt);
       p.celebrateLeft = Math.max(0, (p.celebrateLeft || 0) - dt);
       if (input.special) this.castStyle();
-      if (style?.id === 'hunter' && p.moveMomentum >= 1.5) {
+      if (style?.id === 'hunter') {
         const prey = s.enemies
           .filter((e) => e.hp > 0 && !e.shielded && dist(e, p) < 14)
           .sort((a, b) => dist(a, p) - dist(b, p))[0];
@@ -390,6 +396,7 @@
     proto.updateStyleFields = function (dt) {
       const s = this.s,
         p = s.player;
+      if (this.style()?.id === 'guardian') p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.01 * dt);
       p.chargeTrail = Math.max(0, (p.chargeTrail || 0) - dt);
       if (p.chargeTrail > 0 && p.dashLeft > 0)
         for (const enemy of s.enemies)
@@ -402,8 +409,6 @@
       for (const f of s.styleFields) {
         f.life -= dt;
         f.tick -= dt;
-        if (f.kind === 'sanctuary' && dist(f, p) < f.radius)
-          p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.01 * dt);
         if (f.kind === 'roots' && f.tick <= 0) {
           f.tick = 1;
           for (const e of s.enemies)

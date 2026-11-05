@@ -11,7 +11,7 @@
       ability: 'Embestida ígnea',
       cooldown: 10,
       color: '#ffab67',
-      passive: 'Recibes un 20 % menos de daño al permanecer quieto.',
+      passive: 'Recibes un 20 % menos de daño.',
       description:
         'Habilidad: embiste en tu dirección de movimiento, golpeando y empujando a los enemigos que atraviesas. Recarga: 10 s.',
     },
@@ -21,9 +21,9 @@
       ability: 'Caza en cadena',
       cooldown: 8,
       color: '#91dce7',
-      passive: 'Tras moverte 1,5 s: +15 % de velocidad y +15 % de daño a la presa marcada.',
+      passive: '+15 % de velocidad y +15 % de daño al enemigo marcado.',
       description:
-        'Habilidad: dispara tres ataques rápidos a un enemigo cercano. Mantente en movimiento para marcar presas. Recarga: 8 s.',
+        'Habilidad: dispara tres ataques rápidos a un enemigo cercano. El enemigo más cercano se marca automáticamente. Recarga: 8 s.',
     },
     guardian: {
       id: 'guardian',
@@ -31,9 +31,9 @@
       ability: 'Sello sagrado',
       cooldown: 16,
       color: '#ffe7a1',
-      passive: 'Dentro de tu sello: 25 % menos de daño y 1 % de curación por segundo.',
+      passive: 'Recuperas un 1 % de vida por segundo.',
       description:
-        'Habilidad: crea un sello de 5 m durante 5 s, que devuelve hasta 3 proyectiles. Recarga: 16 s.',
+        'Habilidad: crea un sello de 5 m durante 5 s, que reduce el daño un 25 % y devuelve hasta 3 proyectiles. Recarga: 16 s.',
     },
     controller: {
       id: 'controller',
@@ -41,9 +41,9 @@
       ability: 'Jardín de datos',
       cooldown: 14,
       color: '#a6e28b',
-      passive: 'Tu jardín ralentiza un 55 % a enemigos normales y un 30 % a invasores.',
+      passive: 'Los enemigos a menos de 8 m se mueven un 15 % más despacio.',
       description:
-        'Habilidad: planta un campo de 5 m cerca de un enemigo; ralentiza e inflige daño durante 6 s. Recarga: 14 s.',
+        'Habilidad: planta un campo de 5 m cerca de un enemigo; ralentiza un 55 % (30 % a jefes) e inflige daño durante 6 s. Recarga: 14 s.',
     },
     artillery: {
       id: 'artillery',
@@ -51,7 +51,7 @@
       ability: 'Bombardeo orbital',
       cooldown: 14,
       color: '#e7c18c',
-      passive: 'Tras permanecer quieto 1 s, tus técnicas tienen un 20 % más de alcance.',
+      passive: 'Tus técnicas tienen un 20 % más de alcance.',
       description:
         'Habilidad: señala hasta tres enemigos y bombardea sus posiciones tras 1 s. Recarga: 14 s.',
     },

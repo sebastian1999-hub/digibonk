@@ -10,6 +10,14 @@ Desde la versión 1.9.0, ese ejecutable es el lanzador: comprueba las versiones 
 
 Las partidas, las preferencias y la sesión se mantienen en `%LOCALAPPDATA%\Digibonk\UserData`. El actualizador usa otra carpeta, `%LOCALAPPDATA%\Digibonk\Updates`. Conserva la misma cuenta autorizada de Supabase y sus récords.
 
+## Incubadora y digievolución
+
+En la incubadora puedes elegir una forma por etapa y ver la línea completa hasta Mega. Cada dos mejoras del huevo desbloqueas otra opción por etapa. La selección se guarda por huevo y cuenta y se aplica a las nuevas partidas. Cambiar una etapa ajusta las siguientes a una ruta válida.
+
+Al alcanzar los niveles 3, 6, 12, 20 y 30 digievolucionas automáticamente por la línea elegida. Las partidas guardadas conservan su línea; las antiguas continúan con una ruta válida de sus ramas desbloqueadas.
+
+Las pasivas funcionan sin tener que detenerte: Vanguardia reduce el daño, Cazador gana velocidad y marca al enemigo cercano, Guardián regenera vida, Controlador ralentiza a los enemigos cercanos, Artillería aumenta el alcance y Marea evita la ralentización del agua.
+
 ## Técnicas y objetos
 
 El catálogo **Técnicas y objetos** muestra las 64 técnicas por familia y etapa y las 28 reliquias, incluidos cinco legendarios únicos. Las técnicas se eligen al subir de nivel, según la forma actual. Puedes llevar cuatro y elegir qué sustituir al aprender una nueva; también puedes conservar las actuales. Las técnicas heredadas siguen funcionando al digievolucionar.
@@ -18,7 +26,7 @@ Los cofres cuestan 15 bits y revelan una recompensa mediante un carrusel. Su cal
 
 ## Estados elementales
 
-Las técnicas pueden aplicar estados sobre enemigos. El catálogo **Técnicas y objetos → Estados** explica los once tipos; cada técnica muestra probabilidad y duración. El daño periódico no hace críticos ni acumula cargas del mismo estado. Empapado potencia una descarga eléctrica y después desaparece. Los controles tienen una recuperación compartida para evitar bloqueos continuos; los jefes resisten esos controles y las torres son inmunes. Los iconos sobre los Digimon enemigos muestran los estados activos y el tiempo restante.
+Las técnicas pueden aplicar estados sobre enemigos. El catálogo **Técnicas y objetos → Estados** explica los once tipos; el catálogo de estados muestra probabilidades y duración; al elegir una técnica ves un resumen breve de su efecto y recarga. El daño periódico no hace críticos ni acumula cargas del mismo estado. Empapado potencia una descarga eléctrica y después desaparece. Los controles tienen una recuperación compartida para evitar bloqueos continuos; los jefes resisten esos controles y las torres son inmunes. Los iconos sobre los Digimon enemigos muestran los estados activos y el tiempo restante.
 
 ## Presión y portales
 
@@ -28,14 +36,14 @@ La dificultad general acelera con los minutos transcurridos, también dentro de 
 
 ## Controles
 
-| Acción | Predeterminado |
-| --- | --- |
-| Movimiento | WASD o flechas; también clic en el suelo |
-| Esquivar | Espacio |
-| Interactuar / cofres / portales | E |
-| Habilidad de evolución | Q |
-| Pausa | Esc o P |
-| Pantalla completa | F11 |
+| Acción                          | Predeterminado                           |
+| ------------------------------- | ---------------------------------------- |
+| Movimiento                      | WASD o flechas; también clic en el suelo |
+| Esquivar                        | Espacio                                  |
+| Interactuar / cofres / portales | E                                        |
+| Habilidad de evolución          | Q                                        |
+| Pausa                           | Esc o P                                  |
+| Pantalla completa               | F11                                      |
 
 Hay 40 técnicas, con efectos propios de agua, fuego, hielo, electricidad, luz, oscuridad, naturaleza y armas mecánicas. Algunas formas, como WarGreymon y MetalGreymon, tienen técnicas características distintas.
 

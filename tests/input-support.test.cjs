@@ -61,7 +61,7 @@ test('every support description matches its healing, protection or buff and cool
   for (const skill of Object.values(skills.skills).filter((s) => s.kind !== 'damage'))
     for (const rank of [1, 5, 9]) {
       const text = C.describeTechnique(skill.id, rank, { haste: 1 });
-      assert.ok(text.length > 50, skill.id);
+      assert.ok(text.length > 20 && text.length < 160, skill.id);
       assert.ok(text.includes('Recarga:'), skill.id);
       const r = run();
       r.s.player.maxHp = 1000;
