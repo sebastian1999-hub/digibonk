@@ -27,7 +27,7 @@ export class ChestCarousel {
       art.append(icon);
     }
     const frameName = [null, 'common', 'rare', 'epic', 'legendary'][card.quality];
-    if (frameName) {
+    if (frameName && card.type !== 'stat') {
       const frame = document.createElement('img');
       frame.src = 'assets/rarity-frames/' + frameName + '.png';
       frame.alt = '';
@@ -85,6 +85,7 @@ export class ChestCarousel {
       const card = i === 32 ? winner : pick(),
         tile = document.createElement('article');
       tile.className = 'chest-tile quality-' + (card.quality || 0);
+      if (card.type === 'stat') tile.classList.add('stat-card');
       tile.append(this.rewardArt(card, portraits));
       const name = document.createElement('strong'),
         quality = document.createElement('small');
@@ -96,6 +97,8 @@ export class ChestCarousel {
     }
     const status = document.createElement('div');
     status.className = 'chest-result';
+    if (!spinning && winner.type === 'stat')
+      status.classList.add('stat-card', 'quality-' + winner.quality);
     status.setAttribute('aria-live', 'polite');
     const heading = document.createElement('h3'),
       description = document.createElement('p');

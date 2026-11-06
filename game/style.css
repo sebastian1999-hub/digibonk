@@ -3215,7 +3215,7 @@ body[data-screen='home'] #continue-run:focus-visible {
   display: none !important;
 }
 #gear-dialog {
-  width: min(1100px, 96vw);
+  width: min(1400px, 96vw);
   max-height: 92vh;
   padding: 26px;
 }
@@ -3224,7 +3224,7 @@ body[data-screen='home'] #continue-run:focus-visible {
 }
 .gear-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 24px;
 }
 .gear-layout h3 {
@@ -3378,6 +3378,268 @@ body[data-screen='home'] #continue-run:focus-visible {
     background-position:
       0 64px,
       0 64px;
+  }
+}
+
+/* Supplied technique and stat artwork retains its original proportions. */
+.choice-card.technique-card,
+.book-card.technique-card,
+.choice-card.stat-card {
+  box-sizing: border-box;
+  aspect-ratio: 2 / 3;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--technique-frame) center / 100% 100% no-repeat;
+  padding: 36% 13% 17%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff7e1;
+  position: relative;
+}
+.choice-card.technique-card,
+.choice-card.stat-card {
+  width: clamp(240px, 27vw, 310px);
+  flex: 0 0 auto;
+  padding: 110px 38px 64px;
+}
+.book-card.technique-card {
+  padding: 34% 13% 17%;
+}
+.choice-card.stat-card {
+  --technique-frame: url('assets/rarity-frames/stat-common.png');
+  aspect-ratio: 460 / 710;
+  padding-top: 65px;
+}
+.stat-card.quality-2 {
+  --technique-frame: url('assets/rarity-frames/stat-rare.png');
+}
+.stat-card.quality-3 {
+  --technique-frame: url('assets/rarity-frames/stat-epic.png');
+}
+.stat-card.quality-4 {
+  --technique-frame: url('assets/rarity-frames/stat-legendary.png');
+}
+.chest-tile.stat-card,
+.chest-result.stat-card {
+  --technique-frame: url('assets/rarity-frames/stat-common.png');
+  background: var(--technique-frame) center / 100% 100% no-repeat;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.chest-tile.stat-card.quality-2,
+.chest-result.stat-card.quality-2 {
+  --technique-frame: url('assets/rarity-frames/stat-rare.png');
+}
+.chest-tile.stat-card.quality-3,
+.chest-result.stat-card.quality-3 {
+  --technique-frame: url('assets/rarity-frames/stat-epic.png');
+}
+.chest-tile.stat-card.quality-4,
+.chest-result.stat-card.quality-4 {
+  --technique-frame: url('assets/rarity-frames/stat-legendary.png');
+}
+.chest-tile.stat-card {
+  width: 112px;
+  padding: 23px 18px;
+}
+.stat-card .reward-art {
+  width: 55px;
+  height: 55px;
+  margin: 0 auto 6px;
+}
+.stat-card .reward-art .reward-icon {
+  width: 75%;
+  height: 75%;
+}
+.stat-card .reward-art::before {
+  display: none;
+}
+.chest-tile.stat-card strong {
+  font-size: 10px;
+}
+.chest-tile.stat-card small {
+  font-size: 9px;
+}
+.chest-result.stat-card {
+  box-sizing: border-box;
+  width: 260px;
+  aspect-ratio: 460 / 710;
+  padding: 60px 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.chest-result.stat-card h3 {
+  font-size: 20px;
+}
+.technique-card h3,
+.stat-card h3 {
+  color: #fff4d9;
+  text-shadow: 0 2px 3px #000;
+  overflow-wrap: anywhere;
+}
+.technique-card p,
+.stat-card p {
+  color: #f0f6ff;
+  text-shadow: 0 1px 3px #000;
+  flex: 0 1 auto;
+  font-size: 12px;
+}
+.technique-card small,
+.technique-card .card-kicker {
+  color: #fff2cd;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+.technique-card strong {
+  color: #fff2cd;
+  font-size: 9px;
+}
+.technique-card .pick-label,
+.stat-card .pick-label {
+  margin-top: auto;
+  padding-top: 10px;
+}
+.technique-card.equipped::after {
+  content: '✓';
+  position: absolute;
+  right: 15%;
+  top: 25%;
+  color: #c9ffc6;
+  font-weight: bold;
+}
+.choice-card.technique-card:hover:not(:disabled),
+.choice-card.stat-card:hover:not(:disabled) {
+  background: var(--technique-frame) center / 100% 100% no-repeat;
+  filter: brightness(1.12);
+}
+.choice-card.technique-card:focus-visible,
+.choice-card.stat-card:focus-visible {
+  outline: 3px solid #aafff2;
+  outline-offset: 3px;
+}
+.weapon .technique-emblem {
+  float: left;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  margin-right: 8px;
+}
+.technique-device {
+  position: relative;
+  width: 100%;
+  max-width: 310px;
+  aspect-ratio: 953 / 1650;
+  margin: 0 auto -32px;
+}
+.technique-device-art {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  clip-path: polygon(
+    14% 4%,
+    17% 1%,
+    23% 1%,
+    29% 7%,
+    36% 7%,
+    40% 9%,
+    43% 9%,
+    46% 7%,
+    76% 7%,
+    90% 14%,
+    90% 29%,
+    91% 32%,
+    90% 82%,
+    84% 86%,
+    83% 89%,
+    78% 92%,
+    22% 92%,
+    9% 83%,
+    9% 46%,
+    11% 44%,
+    11% 32%,
+    10% 30%,
+    10% 19%,
+    11% 14%,
+    16% 11%
+  );
+}
+.technique-slot {
+  position: absolute;
+  left: 39%;
+  top: calc(36.6% + var(--slot-index) * 11.75%);
+  width: 23%;
+  height: 8.2%;
+  padding: 0.8% 1.2%;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.technique-slot .technique-emblem {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.technique-slot:hover:not(:disabled),
+.technique-slot[aria-pressed='true'] {
+  background: #a0ffd520;
+}
+.technique-slot:focus-visible {
+  outline: 2px solid #b1ffd4;
+  outline-offset: 2px;
+}
+.technique-slot:disabled {
+  opacity: 1;
+}
+#gear-techniques .technique-detail {
+  margin: 0;
+  color: #d9f9ee;
+  line-height: 1.6;
+  font-size: 12px;
+}
+@media (max-width: 1100px) {
+  .gear-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  #choice-cards {
+    flex-wrap: wrap;
+  }
+  .choice-card.technique-card,
+  .choice-card.stat-card {
+    width: 250px;
+  }
+  .book-card.technique-card {
+    min-height: 350px;
+  }
+  .book-card.technique-card p {
+    font-size: 11px;
+  }
+}
+@media (max-width: 520px) {
+  #book-grid {
+    grid-template-columns: 1fr;
+  }
+  .book-card.technique-card {
+    width: min(300px, 100%);
+    justify-self: center;
+  }
+  .gear-layout {
+    grid-template-columns: 1fr;
   }
 }
 @media (prefers-reduced-motion: reduce) {

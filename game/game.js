@@ -1,4 +1,5 @@
 import { renderBook } from './technique-book.js';
+import { frameTechnique, techniqueEmblem, renderTechniqueDevice } from './technique-art.js';
 import { ChestCarousel } from './chest-carousel.js';
 import { Cloud } from './cloud.js';
 
@@ -438,13 +439,7 @@ function openGear() {
   $('#gear-stage').textContent = stageNames[p.stage] + ' · NIVEL ' + s.level;
   $('#gear-passive').textContent = run.style()?.passive || '';
   const techniques = $('#gear-techniques');
-  techniques.replaceChildren();
-  for (const w of p.weapons)
-    article(
-      techniques,
-      SkillSystem.skills[w.id].name + ' · ' + SkillSystem.stageName(w.id) + ' · ' + w.rank + '/9',
-      C.describeTechnique(w.id, w.rank, p),
-    );
+  renderTechniqueDevice(techniques, p);
   const numberStat = (v) => Number(v.toFixed(2)).toLocaleString('es-ES');
   const stats = [
     ['Vida', numberStat(p.hp) + ' / ' + numberStat(p.maxHp)],
@@ -1034,6 +1029,7 @@ function refreshHud() {
           small = document.createElement('span');
         div.className = 'weapon';
         div.title = C.describeTechnique(w.id, w.rank, p);
+        div.append(techniqueEmblem(w.id));
         div.append(document.createTextNode(SkillSystem.skills[w.id].name));
         small.textContent = SkillSystem.stageName(w.id) + ' · RANGO ' + w.rank + ' / 9';
         div.append(small);
@@ -1277,6 +1273,8 @@ function showChoice() {
         (card.type === 'evolution' ? ' evolution' : '') +
         (card.rare ? ' rare' : '') +
         (card.quality ? ' quality-' + card.quality : '');
+      if (card.weapon) frameTechnique(button, card.weapon);
+      else if (card.type === 'stat') button.classList.add('stat-card');
       const kicker = document.createElement('span');
       kicker.className = 'card-kicker';
       kicker.textContent =
@@ -1288,7 +1286,7 @@ function showChoice() {
         canvas.height = 140;
         button.append(canvas);
         choiceCanvases.push({ canvas, species: card.species });
-      } else {
+      } else if (!card.weapon) {
         const symbol = document.createElement('div');
         symbol.className = 'card-symbol';
         if (card.type === 'artifact') {

@@ -1,3 +1,5 @@
+import { frameTechnique } from './technique-art.js';
+
 export function renderBook(host, run, mode = 'techniques', family = 'all') {
   host.replaceChildren();
   const skills = window.SkillSystem,
@@ -63,6 +65,7 @@ export function renderBook(host, run, mode = 'techniques', family = 'all') {
       text = document.createElement('p'),
       state = document.createElement('strong');
     card.className = 'book-card';
+    frameTechnique(card, skill.id);
     const weapon = p?.weapons.find((w) => w.id === skill.id);
     if (weapon) card.classList.add('equipped');
     badge.textContent = skills.familyNames[skill.family] + ' · ' + stageNames[skill.stage];

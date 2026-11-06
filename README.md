@@ -65,4 +65,4 @@ Este repositorio no contiene cuentas, contraseñas ni claves administrativas. La
 
 Proyecto fan sin finalidad comercial. Los personajes y recursos mantienen sus derechos originales. Consulta [los créditos](CREDITOS-SPRITES.md).
 
-Durante la partida, Tabulador abre o cierra el menú de equipo y pausa la acción: objetos y compañeros a la izquierda, sprite y técnicas del Digimon en el centro, y estadísticas a la derecha. Los objetos ya no se acumulan en el lateral de la pantalla.
+Durante la partida, Tabulador abre o cierra el menú de equipo y pausa la acción: objetos y compañeros, sprite del Digimon, dispositivo de técnicas y estadísticas. El dispositivo muestra los emblemas de las cuatro técnicas equipadas; selecciona uno para consultar su etapa, rango y descripción. Las 64 técnicas tienen tarjetas ilustradas en el catálogo y en las elecciones. Las mejoras de estadísticas tienen marcos verdes, cian, magenta o amarillos según su rareza. Los objetos ya no se acumulan en el lateral de la pantalla.

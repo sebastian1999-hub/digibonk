@@ -1,3 +1,11 @@
+## 1.31.0 · Tarjetas y emblemas de técnicas
+
+- Las 64 técnicas usan sus tarjetas ilustradas en el catálogo y al elegir, mejorar, sustituir o quitar una técnica.
+- El menú de equipo incorpora el dispositivo de técnicas con cuatro huecos numerados y el emblema de cada técnica equipada. Selecciona un emblema para consultar su nombre, etapa, rango y descripción; los huecos libres permanecen vacíos.
+- Los emblemas también acompañan a las técnicas en la barra de combate.
+- Las mejoras de estadísticas usan los nuevos marcos por rareza: verde común, cian raro, magenta épico y amarillo legendario. También aparecen al comprar mejoras en la tienda.
+- Ajustados el contraste del texto, el foco del teclado y la distribución del equipo para ventanas pequeñas.
+
 ## 1.30.1 · Invasores y distancia de aparición
 
 - Solo los invasores garantizan un cofre. Los enemigos normales y élites comparten la probabilidad baja del 0,1 %, mejorable con objetos.
