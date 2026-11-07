@@ -1,3 +1,10 @@
+## 1.31.1 · Técnicas visibles en partida y vendedor sin scroll
+
+- El dispositivo de técnicas aparece arriba a la izquierda durante las partidas, con los emblemas de las habilidades equipadas en sus cuatro huecos. Se actualiza al aprender, mejorar, sustituir o quitar técnicas.
+- El tamaño del dispositivo se adapta a la altura de la ventana para dejar espacio al panel de vida y experiencia.
+- Las tarjetas del vendedor se reparten por igual y la pantalla de elección se ajusta entera a la ventana, sin scroll ni tarjetas cortadas.
+- El ajuste también se aplica a las recompensas compradas y responde a los cambios de tamaño de ventana.
+
 ## 1.31.0 · Tarjetas y emblemas de técnicas
 
 - Las 64 técnicas usan sus tarjetas ilustradas en el catálogo y al elegir, mejorar, sustituir o quitar una técnica.

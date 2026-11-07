@@ -15,7 +15,7 @@ export function techniqueEmblem(id) {
   return img;
 }
 
-export function renderTechniqueDevice(host, player) {
+export function renderTechniqueDevice(host, player, { compact = false } = {}) {
   host.replaceChildren();
   const device = document.createElement('div'),
     art = document.createElement('img'),
@@ -59,9 +59,15 @@ export function renderTechniqueDevice(host, player) {
       slot.disabled = true;
       slot.setAttribute('aria-label', 'Técnica ' + (index + 1) + ': hueco libre');
     }
+    if (compact) {
+      slot.onclick = null;
+      slot.removeAttribute('aria-pressed');
+      slot.tabIndex = -1;
+    }
     device.append(slot);
   }
   if (player.weapons.length) describe(player.weapons[0]);
   else detail.textContent = 'Cuatro huecos libres. Aprende técnicas al subir de nivel.';
-  host.append(device, detail);
+  host.append(device);
+  if (!compact) host.append(detail);
 }

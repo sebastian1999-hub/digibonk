@@ -1,5 +1,6 @@
 import { renderBook } from './technique-book.js';
-import { frameTechnique, techniqueEmblem, renderTechniqueDevice } from './technique-art.js';
+import { frameTechnique, renderTechniqueDevice } from './technique-art.js';
+import { installChoiceFitter } from './choice-layout.js';
 import { ChestCarousel } from './chest-carousel.js';
 import { Cloud } from './cloud.js';
 
@@ -1023,19 +1024,7 @@ function refreshHud() {
   const sig = p.weapons.map((w) => w.id + ':' + w.rank).join(',');
   if ($('#weapons').dataset.signature !== sig) {
     $('#weapons').dataset.signature = sig;
-    $('#weapons').replaceChildren(
-      ...p.weapons.map((w) => {
-        const div = document.createElement('div'),
-          small = document.createElement('span');
-        div.className = 'weapon';
-        div.title = C.describeTechnique(w.id, w.rank, p);
-        div.append(techniqueEmblem(w.id));
-        div.append(document.createTextNode(SkillSystem.skills[w.id].name));
-        small.textContent = SkillSystem.stageName(w.id) + ' · RANGO ' + w.rank + ' / 9';
-        div.append(small);
-        return div;
-      }),
-    );
+    renderTechniqueDevice($('#weapons'), p, { compact: true });
   }
   const boss =
     s.enemies.find((e) => e.tower && e.hp > 0) ||
@@ -1187,6 +1176,7 @@ $('#skip-chest').onclick = () => {
   refreshHud();
 };
 const chestCarousel = new ChestCarousel($('#chest-carousel'));
+const fitChoices = installChoiceFitter($('#choice-overlay'));
 function riskChest() {
   if (!run?.riskChest()) return;
   save();
@@ -1209,6 +1199,7 @@ function showChoice() {
     $('#skip-chest').hidden = true;
     $('#chest-carousel').hidden = false;
     $('#choice-overlay').hidden = false;
+    fitChoices();
     const key = choice.roll.id + ':' + choice.roll.revision + ':' + choice.roll.phase;
     if (key !== overlayKey) {
       overlayKey = key;
@@ -1322,6 +1313,7 @@ function showChoice() {
   );
   $('#skip-chest').hidden = choice.kind !== 'chest';
   $('#choice-overlay').hidden = false;
+  fitChoices();
   save();
 }
 

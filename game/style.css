@@ -3648,3 +3648,88 @@ body[data-screen='home'] #continue-run:focus-visible {
     animation: none;
   }
 }
+
+/* Live technique device: show all four emblems above the player panel. */
+#weapons {
+  display: block;
+  position: fixed;
+  left: 12px;
+  top: 74px;
+  width: min(210px, max(110px, calc((100dvh - 290px) * 953 / 1650)));
+  max-width: none;
+  pointer-events: none;
+}
+#weapons .technique-device {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+#weapons .technique-slot {
+  pointer-events: auto;
+  cursor: default;
+}
+#weapons .technique-slot:hover:not(:disabled) {
+  transform: none;
+}
+@media (max-width: 760px) {
+  #weapons {
+    left: 6px;
+    top: 140px;
+    width: min(165px, max(90px, calc((100dvh - 350px) * 953 / 1650)));
+  }
+}
+
+/* Scale the whole seller/choice screen instead of scrolling or cropping cards. */
+#choice-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  overflow: hidden;
+}
+#choice-overlay .choice-shell {
+  flex: none;
+  width: 1040px;
+  max-height: none;
+  overflow: visible;
+  padding: 12px;
+  transform: scale(var(--choice-scale, 1));
+  transform-origin: center;
+}
+#choice-overlay #choice-cards {
+  display: grid;
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+#choice-overlay .choice-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  container-type: inline-size;
+}
+#choice-overlay .choice-card.technique-card {
+  padding: 35% 13% 28%;
+}
+#choice-overlay .choice-card.stat-card {
+  padding: 21% 13% 18%;
+}
+#choice-overlay .choice-card h3 {
+  font-size: clamp(14px, 8cqw, 20px);
+}
+#choice-overlay .choice-card p {
+  font-size: clamp(11px, 6cqw, 12px);
+}
+#choice-overlay .choice-card .card-symbol {
+  height: auto;
+  margin: 12px 0;
+  font-size: 42px;
+}
+#choice-overlay .choice-shell > small {
+  margin-top: 12px;
+}
+#choice-overlay .choice-shell > p {
+  margin-bottom: 14px;
+}
