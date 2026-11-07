@@ -2,6 +2,8 @@
   'use strict';
   const W = typeof module !== 'undefined' ? require('./world-rules') : root.DigibonkWorld;
   const B = typeof module !== 'undefined' ? require('./balance.js') : root.DigibonkBalance;
+  const RETURN_GRACE = 3.5,
+    RETURN_HOLD = 0.5;
   const sceneFields = [
     'mapSeed',
     'sectors',
@@ -28,6 +30,9 @@
     proto.initializeWorld = function () {
       const s = this.s,
         p = s.player;
+      s.portalReturnGrace = Number.isFinite(s.portalReturnGrace)
+        ? Math.max(0, Math.min(RETURN_GRACE, s.portalReturnGrace))
+        : 0;
       if (s.world?.missionVersion !== W.MAP_VERSION) {
         s.realm = null;
         s.mainScene = null;
@@ -320,6 +325,7 @@
       const s = this.s,
         realm = s.realm;
       if (!realm || !s.mainScene) return false;
+      this.collectClearedRealmExperience();
       if (!s.world.portals.find((p) => p.id === realm.portalId)?.closed)
         s.portalRuns[realm.portalId] = {
           scene: this.captureScene(),
@@ -340,12 +346,28 @@
       s.styleFields = [];
       s.worldHazards = [];
       s.pendingRealmReturn = false;
+      s.portalReturnGrace = RETURN_GRACE;
       this.syncMainPressure?.();
-      for (let i = 0; i < 4; i++) this.spawn();
-      s.spawnClock = 0.15;
+      // Give the player time to leave the arrival point before a fresh group appears.
+      s.spawnClock = 1.5 + this.random() * 1.5;
       this.emit('portal-returned');
       if (s.world.cleansed >= s.world.target) this.spawnDevimon();
       return true;
+    };
+    proto.collectClearedRealmExperience = function () {
+      if (this.s.realm?.phase !== 'cleared') return;
+      for (const gem of this.s.gems) this.collectGem(gem);
+      this.s.gems = [];
+    };
+    proto.portalReturnSpeed = function () {
+      if (this.s.realm || !(this.s.portalReturnGrace > 0)) return 1;
+      return Math.max(
+        0,
+        Math.min(
+          1,
+          (RETURN_GRACE - this.s.portalReturnGrace - RETURN_HOLD) / (RETURN_GRACE - RETURN_HOLD),
+        ),
+      );
     };
     proto.onTowerDestroyed = function (tower) {
       const s = this.s,
@@ -360,6 +382,7 @@
       s.xp += 60;
       s.totalXp += 60;
       r.phase = 'cleared';
+      this.collectClearedRealmExperience();
       r.focusTower = false;
       r.clearedAt = s.time;
       r.returnDelay = 1.6;
@@ -499,6 +522,7 @@
     };
     proto.updateWorld = function (dt, input) {
       const s = this.s;
+      if (!s.realm) s.portalReturnGrace = Math.max(0, (s.portalReturnGrace || 0) - dt);
       if (s.realm?.phase === 'cleared') {
         s.realm.returnDelay -= dt;
         if (s.realm.returnDelay <= 0) s.pendingRealmReturn = true;

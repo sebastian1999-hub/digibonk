@@ -1,3 +1,10 @@
+## 1.33.0 · Experiencia de portales y regreso con margen
+
+- Completar un portal recoge automáticamente todos los fragmentos de experiencia que queden dentro, incluido el de la última baja. Conserva los multiplicadores, los puntos y la curación de la recogida normal.
+- Las partidas guardadas con un portal ya completado también recogen los fragmentos pendientes al volver a la isla. Salir de un portal sin completar mantiene su experiencia dentro para la próxima visita.
+- Al volver de cualquier portal, los enemigos quedan quietos medio segundo y recuperan gradualmente su velocidad durante los tres segundos siguientes. La recuperación se conserva al guardar y se detiene con los menús y las cargas.
+- Eliminada la aparición instantánea de grupos al regresar: el primer grupo espera entre 1,5 y 3 segundos. Los grupos siguientes varían su intervalo habitual un 20 % y respetan el límite de enemigos.
+
 ## 1.32.0 · Tamaño de interfaz y clasificación semanal
 
 - Nuevo control en Ajustes para cambiar el tamaño de la interfaz entre el 70 % y el 130 %, con aplicación inmediata, guardado en este PC y botón para restaurar el 100 %. El escenario conserva su tamaño.

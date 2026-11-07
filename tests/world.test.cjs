@@ -231,7 +231,8 @@ test('scene snapshots isolate enemies and loot while preserving earned stats and
   assert.equal(r.s.coins, 15);
   assert.equal(r.s.player.damage, 12);
   assert.ok(!r.s.enemies.some((e) => e.id === 90));
-  assert.ok(r.s.enemies.length > 0);
+  assert.equal(r.s.enemies.length, 0);
+  assert.ok(r.s.spawnClock >= 1.5 && r.s.spawnClock <= 3);
   assert.equal(r.s.gems[0].id, 80);
   assert.deepEqual({ x: r.s.player.x, z: r.s.player.z }, position);
   r.enterPortal(portal.id);

@@ -222,7 +222,7 @@
         factor *= 0.85;
       for (const f of this.s.styleFields)
         if (f.kind === 'roots' && dist(f, enemy) < f.radius) factor *= enemy.boss ? 0.7 : 0.45;
-      return factor;
+      return factor * this.portalReturnSpeed();
     };
     proto.incomingStyleDamage = function () {
       const p = this.s.player,

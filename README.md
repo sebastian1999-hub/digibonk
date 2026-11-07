@@ -59,6 +59,8 @@ En **Ajustes → Tamaño de la interfaz** puedes elegir una escala del 70 % al 1
 
 La clasificación del grupo es semanal: conserva la mejor partida de cada jugador y comienza de nuevo cada lunes a las 00:00, hora de Madrid. El servidor mantiene el histórico de semanas anteriores y los récords locales se conservan.
 
+Completar un portal recoge todos sus fragmentos de experiencia, con tus multiplicadores. Al regresar a la isla, los enemigos tienen medio segundo de pausa y tres segundos de recuperación gradual de movimiento. El primer grupo nuevo espera entre 1,5 y 3 segundos y los siguientes tienen intervalos variables para evitar apariciones de golpe.
+
 ## Desarrollo y publicación
 
 El código del juego está en `game/`; el lanzador y la aplicación Windows, en `desktop/`. Las comprobaciones se ejecutan con `node --test tests/*.test.cjs`.

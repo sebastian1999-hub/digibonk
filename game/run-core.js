@@ -1334,6 +1334,16 @@
         s.score += 50;
         return { ok: true };
       }
+      collectGem(gem) {
+        const s = this.s,
+          p = s.player,
+          value = gem.value * p.xpMult;
+        if (gem.heal) p.hp = Math.min(p.maxHp, p.hp + 8);
+        s.xp += value;
+        s.totalXp += value;
+        s.score += Math.ceil(gem.value);
+        this.emit('gem');
+      }
       update(dt, input = {}) {
         const s = this.s,
           p = s.player;
@@ -1421,7 +1431,10 @@
           s.spawnClock -= dt;
           if (s.spawnClock <= 0 && s.enemies.filter((e) => e.hp > 0).length < 210) {
             const density = BALANCE.main(s.time, p.stage);
-            s.spawnClock = density.interval * (s.challenge ? 0.65 : 1);
+            s.spawnClock = Math.max(
+              0.18,
+              density.interval * (0.8 + this.random() * 0.4) * (s.challenge ? 0.65 : 1),
+            );
             for (let i = 0; i < density.batch; i++) this.spawn();
           }
           if (s.time >= s.nextBoss) {
@@ -1638,12 +1651,7 @@
         s.gems = s.gems.filter((g) => {
           const d = distance(g, p);
           if (d < 1.05) {
-            if (g.heal) p.hp = Math.min(p.maxHp, p.hp + 8);
-            const value = g.value * p.xpMult;
-            s.xp += value;
-            s.totalXp += value;
-            s.score += Math.ceil(g.value);
-            this.emit('gem');
+            this.collectGem(g);
             return false;
           }
           if (d < p.magnet || g.attracted) {
