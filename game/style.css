@@ -3733,3 +3733,58 @@ body[data-screen='home'] #continue-run:focus-visible {
 #choice-overlay .choice-shell > p {
   margin-bottom: 14px;
 }
+
+:root {
+  --ui-scale: 1;
+}
+#top-brand,
+#home,
+.player-panel,
+.run-stats,
+#weapons,
+#map-panel,
+#style-panel,
+#portal-timer,
+#boss-bar,
+#controls-hint,
+#interact,
+#challenge-label,
+#toast,
+dialog,
+.overlay > .dialog,
+.result-shell,
+.loading-card {
+  zoom: var(--ui-scale);
+}
+dialog,
+.overlay > .dialog,
+.result-shell {
+  max-width: calc((100vw - 24px) / var(--ui-scale)) !important;
+  max-height: calc((100dvh - 24px) / var(--ui-scale)) !important;
+}
+#weapons {
+  width: min(210px, max(48px, calc((100dvh / var(--ui-scale) - 310px) * 953 / 1650)));
+}
+@media (max-width: 760px) {
+  #weapons {
+    width: min(165px, max(40px, calc((100dvh / var(--ui-scale) - 350px) * 953 / 1650)));
+  }
+}
+.interface-settings {
+  margin: 0 0 18px;
+  padding: 16px;
+  border: 1px solid #779a7d66;
+  border-radius: 10px;
+}
+.interface-settings p {
+  font-size: 12px;
+}
+.interface-settings input {
+  width: min(300px, 45%);
+  vertical-align: middle;
+  margin: 0 12px;
+}
+.interface-settings output {
+  display: inline-block;
+  min-width: 55px;
+}

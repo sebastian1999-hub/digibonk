@@ -36,6 +36,7 @@ test('choices fit both viewport dimensions, including five cards and tall seller
           querySelector: () => shell,
         },
         box = {
+          document: { documentElement: { style: { getPropertyValue: () => '' } } },
           ResizeObserver: class {
             constructor(callback) {
               onContentResize = callback;

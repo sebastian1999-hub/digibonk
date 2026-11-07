@@ -1,5 +1,6 @@
 (function (root) {
   'use strict';
+  // Completed-run wire protocol; independent of the desktop release number.
   const VERSION = '1.3.0';
   function username(value) {
     const name = String(value || '')
@@ -19,6 +20,7 @@
       species: s.player.species,
       version: VERSION,
       finished: true,
+      finished_at: new Date().toISOString(),
     };
     if (
       !r.id ||

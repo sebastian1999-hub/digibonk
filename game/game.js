@@ -1,6 +1,7 @@
 import { renderBook } from './technique-book.js';
 import { frameTechnique, renderTechniqueDevice } from './technique-art.js';
 import { installChoiceFitter } from './choice-layout.js';
+import { bindUiScale } from './ui-scale.js';
 import { ChestCarousel } from './chest-carousel.js';
 import { Cloud } from './cloud.js';
 
@@ -63,6 +64,7 @@ keys = new DigibonkInput(settings.bindings);
 let bindingCapture = null,
   settingsWasPaused = false;
 const keyLabel = (action) => keys.label(action);
+bindUiScale(settings, () => store(SETTINGS_KEY, settings));
 
 function read(key, fallback) {
   try {

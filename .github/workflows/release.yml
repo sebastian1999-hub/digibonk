@@ -18,6 +18,8 @@ jobs:
         run: |
           $version=(Get-Content version.txt -Raw).Trim()
           if($env:GITHUB_REF_TYPE -ne 'tag' -or $env:GITHUB_REF_NAME -ne "v$version"){throw 'Publica desde una etiqueta vX.Y.Z que coincida con version.txt.'}
+      - name: Preparar pruebas PostgreSQL
+        run: npm install --prefix .build/database-test --no-save --ignore-scripts @electric-sql/pglite@0.5.13
       - name: Pruebas de juego
         run: node --test tests/*.test.cjs
       - name: Descargar WebView2 SDK

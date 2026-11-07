@@ -9,7 +9,8 @@ export function installChoiceFitter(overlay) {
       availableHeight = Math.max(1, overlay.clientHeight - 24),
       width = Math.max(shell.offsetWidth, shell.scrollWidth),
       height = Math.max(shell.offsetHeight, shell.scrollHeight),
-      scale = Math.min(1, availableWidth / width, availableHeight / height);
+      preferred = Number(document.documentElement.style.getPropertyValue('--ui-scale')) || 1,
+      scale = Math.min(preferred, availableWidth / width, availableHeight / height);
     shell.style.setProperty('--choice-scale', scale);
   };
   const schedule = () => {

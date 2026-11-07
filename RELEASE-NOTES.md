@@ -1,3 +1,10 @@
+## 1.32.0 · Tamaño de interfaz y clasificación semanal
+
+- Nuevo control en Ajustes para cambiar el tamaño de la interfaz entre el 70 % y el 130 %, con aplicación inmediata, guardado en este PC y botón para restaurar el 100 %. El escenario conserva su tamaño.
+- Las pantallas de elección respetan la escala elegida y se siguen ajustando para entrar completas en la ventana.
+- La clasificación se renueva cada lunes a las 00:00, hora de Madrid, sin borrar el histórico. El reinicio semanal ya está activo en el servidor.
+- Los nuevos resultados pendientes conservan la fecha de finalización para clasificarse en su semana al recuperar la conexión.
+
 ## 1.31.1 · Técnicas visibles en partida y vendedor sin scroll
 
 - El dispositivo de técnicas aparece arriba a la izquierda durante las partidas, con los emblemas de las habilidades equipadas en sus cuatro huecos. Se actualiza al aprender, mejorar, sustituir o quitar técnicas.

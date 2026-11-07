@@ -55,6 +55,10 @@ Hay 40 técnicas, con efectos propios de agua, fuego, hielo, electricidad, luz, 
 
 En **Ajustes** puedes cambiar dos teclas por acción y regular la opacidad de ataques, experiencia y proyectiles enemigos. La barra bajo el personaje muestra cuándo vuelve a estar disponible la habilidad. Cofres: una recompensa o cerrar sin elegir. Hasta tres compañeros distintos activos. El minimapa utiliza iconos: amplíalo con ⛶ para consultar toda la leyenda. Wizardmon permite quitar técnicas gratis. Los portales ajustan su presión al nivel y tiempo acumulado al entrar; entrar tarde no congela enemigos débiles.
 
+En **Ajustes → Tamaño de la interfaz** puedes elegir una escala del 70 % al 130 %. Se aplica al momento y se guarda en el PC; el escenario conserva su tamaño. Las tarjetas se ajustan a la ventana para seguir viéndose completas.
+
+La clasificación del grupo es semanal: conserva la mejor partida de cada jugador y comienza de nuevo cada lunes a las 00:00, hora de Madrid. El servidor mantiene el histórico de semanas anteriores y los récords locales se conservan.
+
 ## Desarrollo y publicación
 
 El código del juego está en `game/`; el lanzador y la aplicación Windows, en `desktop/`. Las comprobaciones se ejecutan con `node --test tests/*.test.cjs`.

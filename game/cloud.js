@@ -177,7 +177,7 @@ export class Cloud {
       this.status(
         pending
           ? 'Hay resultados pendientes de envío.'
-          : 'Clasificación online · mejor partida de cada jugador',
+          : 'Clasificación semanal · mejor partida de cada jugador esta semana',
       );
       this.lastRefresh = Date.now();
     } catch (error) {
@@ -194,7 +194,7 @@ export class Cloud {
       const p = document.createElement('p');
       p.className = 'empty-board';
       p.textContent =
-        'Aún no hay récords. Termina una partida con la sesión iniciada para estrenar la clasificación.';
+        'Aún no hay récords esta semana. Termina una partida con la sesión iniciada para estrenar la clasificación.';
       list.append(p);
       return;
     }

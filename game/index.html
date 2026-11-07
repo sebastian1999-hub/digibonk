@@ -59,7 +59,7 @@
             fetchpriority="high"
           />
         </h1>
-        <span id="build-version" class="build-version">Versión 1.31.1</span>
+        <span id="build-version" class="build-version">Versión 1.32.0</span>
         <p class="tagline">Sobrevive. Digievoluciona. Rompe tu récord.</p>
         <div id="home-records"></div>
         <button id="continue-run" class="primary" hidden>Continuar partida</button>
@@ -122,15 +122,15 @@
         <p id="cloud-status" role="status">Conectando con Supabase…</p>
         <section id="leaderboard" hidden>
           <div class="board-heading">
-            <h3>Clasificación</h3>
+            <h3>Clasificación semanal</h3>
             <button id="leaderboard-refresh">Actualizar</button>
           </div>
           <div class="board-labels"><span>JUGADOR / DIGIMON</span><span>PUNTOS</span></div>
           <ol id="leaderboard-list"></ol>
         </section>
         <p class="online-note">
-          El mejor récord de cada jugador. Los resultados de las partidas iniciadas con tu cuenta se
-          envían automáticamente al terminar.
+          Mejor partida de cada jugador esta semana. Reinicio los lunes a las 00:00, hora de Madrid.
+          Los resultados se envían al terminar la partida.
         </p>
       </aside>
     </section>
@@ -353,6 +353,14 @@
       <form method="dialog"><button class="close" aria-label="Cerrar ajustes">×</button></form>
       <div class="eyebrow">A TU MANERA</div>
       <h2 id="settings-title">Ajustes</h2>
+      <fieldset class="interface-settings">
+        <legend>Tamaño de la interfaz</legend>
+        <p>Ajusta los paneles, menús y tarjetas. El escenario conserva su tamaño.</p>
+        <label for="ui-scale">Escala de la interfaz</label>
+        <input id="ui-scale" type="range" min="70" max="130" step="5" value="100" />
+        <output id="ui-scale-value" for="ui-scale">100 %</output>
+        <button id="ui-scale-reset" type="button">Restaurar 100 %</button>
+      </fieldset>
       <fieldset class="music-settings">
         <legend>Música de fondo</legend>
         <p>
