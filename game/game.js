@@ -1,4 +1,5 @@
 import { renderIncubatorMenu } from './incubator-menu.js';
+import { applyAccountRewards } from './account-rewards.js';
 import { renderBook } from './technique-book.js';
 import { frameTechnique, renderTechniqueDevice } from './technique-art.js';
 import { installChoiceFitter } from './choice-layout.js';
@@ -842,6 +843,17 @@ cloud.onChange = (uid) => {
   showHome();
 };
 
+cloud.onRewards = (uid, rewards) => {
+  if (uid !== cloud.user?.id || META_KEY !== 'digibonk.progression.v1:' + uid) return;
+  const previous = progression;
+  progression = applyAccountRewards(progression, rewards, (next) =>
+    localStorage.setItem(META_KEY, JSON.stringify(next)),
+  );
+  if (progression !== previous) {
+    if (!active) makeEggs();
+    toast('Bonificación recibida · +' + number(progression.bits - previous.bits) + ' bits');
+  }
+};
 void cloud.initialize();
 
 function refreshHud() {

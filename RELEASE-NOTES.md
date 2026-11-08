@@ -1,3 +1,8 @@
+## 1.35.2 · Bonificaciones de cuenta
+
+- El juego recoge las bonificaciones asignadas por administración al iniciar sesión o actualizar la clasificación.
+- Los bits se suman al saldo local y se guardan junto a un recibo para evitar duplicados en ese perfil. No se modifican huevos ni mejoras.
+
 ## 1.35.1 · Botones estables y acceso a incubación
 
 - Incubar y Jugar mantienen su tamaño y posición al pasar el cursor; conservan el cambio de color.

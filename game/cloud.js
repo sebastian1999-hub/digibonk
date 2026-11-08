@@ -10,6 +10,7 @@ export class Cloud {
     this.busy = false;
     this.client = null;
     this.onChange = () => {};
+    this.onRewards = () => {};
     this.onBeforeChange = () => {};
     this.portraits = [];
     this.bind();
@@ -160,6 +161,10 @@ export class Cloud {
     const epoch = this.epoch;
     $('#leaderboard-refresh').disabled = true;
     try {
+      const account = await this.client.auth.getUser();
+      if (this.epoch !== epoch) return;
+      if (!account.error && account.data.user?.id === user.id)
+        this.onRewards(user.id, account.data.user.app_metadata?.digibonk_rewards);
       await this.queue.flush(
         user.id,
         async (run) => {
