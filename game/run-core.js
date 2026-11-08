@@ -342,7 +342,7 @@
     {
       id: 'orbit',
       title: 'Satélite de datos',
-      text: 'Añade un orbe que daña a los rivales cercanos',
+      text: 'Añade un orbe que busca experiencia y la trae al Digimon',
       stat: 'orbits',
       amount: 1,
       rare: true,
@@ -902,6 +902,48 @@
           });
         }
         return { kind: 'chest', title: 'Un cofre. Una decisión.', cards };
+      }
+      updateCollectors(dt) {
+        const s = this.s,
+          p = s.player,
+          scene = s.realm?.portalId ?? 'main';
+        if (s.collectorScene !== scene) {
+          s.collectors = [];
+          s.collectorScene = scene;
+        }
+        s.collectors ??= [];
+        s.collectors.length = Math.min(s.collectors.length, p.orbits);
+        while (s.collectors.length < p.orbits) s.collectors.push({ x: p.x, z: p.z });
+        const reserved = new Set(s.collectors.map((o) => o.target).filter((id) => id != null));
+        for (const [i, orb] of s.collectors.entries()) {
+          let gem = s.gems.find((g) => g.id === orb.target);
+          if (!gem) {
+            orb.target = null;
+            orb.returning = false;
+            gem = s.gems
+              .filter((g) => !g.attracted && !reserved.has(g.id))
+              .sort((a, b) => distance(a, orb) - distance(b, orb))[0];
+            if (gem) {
+              orb.target = gem.id;
+              reserved.add(gem.id);
+            }
+          }
+          const angle = s.time * 2.5 + (i * Math.PI * 2) / Math.max(1, p.orbits);
+          const target = gem
+            ? orb.returning
+              ? p
+              : gem
+            : { x: p.x + Math.cos(angle) * 3.4, z: p.z + Math.sin(angle) * 3.4 };
+          const d = distance(orb, target),
+            step = Math.min(d, (24 + p.speed) * dt);
+          orb.x += ((target.x - orb.x) / (d || 1)) * step;
+          orb.z += ((target.z - orb.z) / (d || 1)) * step;
+          if (gem && !orb.returning && distance(orb, gem) < 0.6) orb.returning = true;
+          if (gem && orb.returning) {
+            gem.x = orb.x;
+            gem.z = orb.z;
+          }
+        }
       }
       updateBuddy(dt) {
         for (const [index, buddy] of this.s.buddies.entries())
@@ -1538,17 +1580,7 @@
           }
         }
         s.shots = s.shots.filter((s) => s.life > 0).slice(-180);
-        p.orbitClock -= dt;
-        if (p.orbits > 0 && p.orbitClock <= 0) {
-          p.orbitClock = 0.5;
-          for (let i = 0; i < p.orbits; i++) {
-            const angle = s.time * 2.5 + (i * Math.PI * 2) / p.orbits,
-              orb = { x: p.x + Math.cos(angle) * 3.4, z: p.z + Math.sin(angle) * 3.4 };
-            for (const e of alive)
-              if (e.hp > 0 && distance(e, orb) < 1.5 * p.area)
-                this.hurt(e, p.damage * 0.65, 'energy-bolt');
-          }
-        }
+        this.updateCollectors(dt);
         const crowd = crowdGrid(alive);
         for (const e of alive) {
           if (e.hp <= 0) continue;
@@ -1654,7 +1686,7 @@
             this.collectGem(g);
             return false;
           }
-          if (d < p.magnet || g.attracted) {
+          if ((d < p.magnet || g.attracted) && !s.collectors?.some((o) => o.target === g.id)) {
             g.attracted = true;
             const step = Math.min(d, (32 + d * 3) * dt);
             g.x += ((p.x - g.x) / (d || 1)) * step;

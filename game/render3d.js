@@ -1117,8 +1117,8 @@ export class Renderer3D {
     this.opacityCategory = 'player';
     for (let i = 0; i < (p.orbits || 0); i++) {
       const a = time * 2.5 + (i * Math.PI * 2) / p.orbits,
-        x = p.x + Math.cos(a) * 3.4,
-        z = p.z + Math.sin(a) * 3.4,
+        x = s.collectors?.[i]?.x ?? p.x + Math.cos(a) * 3.4,
+        z = s.collectors?.[i]?.z ?? p.z + Math.sin(a) * 3.4,
         mesh = this.pooled('orbit-' + i, 'gem', 0xdde6a5).mesh;
       mesh.position.set(x, C.heightAt(x, z, seed) + 1.1, z);
       mesh.scale.setScalar(0.55);

@@ -1,3 +1,9 @@
+## 1.35.4 · Recolección orbital y habilidades Q
+
+- Satélite de datos envía sus orbes al fragmento de experiencia libre más cercano y lo transporta al Digimon. Cada orbe recoge un fragmento distinto.
+- Las Q aumentan su potencia con fuerza, etapa evolutiva y rango de técnicas; aprovechan área, cadencia y proyectiles adicionales según su función. Refuerzo también potencia su daño.
+- Aumentado el daño de las Q para mantenerlas útiles durante la run.
+
 ## 1.35.3 · Flechas de incubación
 
 - Las flechas de la incubadora permanecen visibles al pasar el cursor o pulsarlas, sin el panel verde superpuesto.

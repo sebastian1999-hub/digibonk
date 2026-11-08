@@ -13,7 +13,7 @@
       color: '#ffab67',
       passive: 'Recibes un 20 % menos de daño.',
       description:
-        'Habilidad: embiste en tu dirección de movimiento, golpeando y empujando a los enemigos que atraviesas. Recarga: 10 s.',
+        'Habilidad: embiste en tu dirección de movimiento, golpeando y empujando a los enemigos que atraviesas. Recarga base: 10 s.',
     },
     hunter: {
       id: 'hunter',
@@ -23,7 +23,7 @@
       color: '#91dce7',
       passive: '+15 % de velocidad y +15 % de daño al enemigo marcado.',
       description:
-        'Habilidad: dispara tres ataques rápidos a un enemigo cercano. El enemigo más cercano se marca automáticamente. Recarga: 8 s.',
+        'Habilidad: dispara tres ataques rápidos más tus proyectiles adicionales a un enemigo cercano. El enemigo más cercano se marca automáticamente. Recarga base: 8 s.',
     },
     guardian: {
       id: 'guardian',
@@ -33,7 +33,7 @@
       color: '#ffe7a1',
       passive: 'Recuperas un 1 % de vida por segundo.',
       description:
-        'Habilidad: crea un sello de 5 m durante 5 s, que reduce el daño un 25 % y devuelve hasta 3 proyectiles. Recarga: 16 s.',
+        'Habilidad: crea un sello de 5 m durante 5 s, que reduce el daño un 25 % y devuelve 3 proyectiles más tus proyectiles adicionales. Recarga base: 16 s.',
     },
     controller: {
       id: 'controller',
@@ -43,7 +43,7 @@
       color: '#a6e28b',
       passive: 'Los enemigos a menos de 8 m se mueven un 15 % más despacio.',
       description:
-        'Habilidad: planta un campo de 5 m cerca de un enemigo; ralentiza un 55 % (30 % a jefes) e inflige daño durante 6 s. Recarga: 14 s.',
+        'Habilidad: planta un campo de 5 m cerca de un enemigo; ralentiza un 55 % (30 % a jefes) e inflige daño durante 6 s. Recarga base: 14 s.',
     },
     artillery: {
       id: 'artillery',
@@ -53,7 +53,7 @@
       color: '#e7c18c',
       passive: 'Tus técnicas tienen un 20 % más de alcance.',
       description:
-        'Habilidad: señala hasta tres enemigos y bombardea sus posiciones tras 1 s. Recarga: 14 s.',
+        'Habilidad: señala hasta tres enemigos más tus proyectiles adicionales y bombardea sus posiciones tras 1 s. Recarga base: 14 s.',
     },
     tide: {
       id: 'tide',
@@ -63,7 +63,7 @@
       color: '#7edbf0',
       passive: 'Las inundaciones digitales no reducen tu velocidad.',
       description:
-        'Habilidad: libera una ola de 7 m que daña, empuja y ralentiza a los enemigos durante 2,5 s. Recarga: 11 s.',
+        'Habilidad: libera una ola de 7 m que daña, empuja y ralentiza a los enemigos durante 2,5 s. Recarga base: 11 s.',
     },
   };
   const types = {

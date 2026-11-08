@@ -392,3 +392,66 @@ test('passives work while moving without stationary timers or active fields', ()
   for (const style of Object.values(W.styles))
     assert.ok(!/quieto|moverte|dentro de tu sello|tu jardín/i.test(style.passive));
 });
+
+test('collectors reserve distinct nearest fragments, carry them home and recover lost targets', () => {
+  const r = fresh(),
+    p = r.s.player;
+  p.orbits = 2;
+  r.s.gems = [
+    { id: 901, x: p.x + 12, z: p.z, value: 5 },
+    { id: 902, x: p.x + 20, z: p.z, value: 7 },
+  ];
+  r.updateCollectors(0.05);
+  assert.deepEqual(
+    r.s.collectors.map((o) => o.target),
+    [901, 902],
+  );
+  const xp = r.s.totalXp;
+  for (let i = 0; i < 200; i++) {
+    r.updateCollectors(0.05);
+    r.s.gems = r.s.gems.filter((g) => {
+      if (Math.hypot(g.x - p.x, g.z - p.z) < 1.05) {
+        r.collectGem(g);
+        return false;
+      }
+      return true;
+    });
+  }
+  assert.equal(r.s.gems.length, 0);
+  assert.equal(r.s.totalXp - xp, 12 * p.xpMult);
+  r.s.gems = [{ id: 903, x: p.x + 30, z: p.z, value: 2 }];
+  r.updateCollectors(0.05);
+  r.s.gems = [];
+  r.updateCollectors(0.05);
+  assert.ok(r.s.collectors.every((o) => o.target === null));
+  const restored = new C.Run(null, { saved: r.snapshot() });
+  restored.updateCollectors(0.05);
+  assert.equal(restored.s.collectors.length, 2);
+});
+
+test('Q abilities scale damage, area, haste and projectiles with current build', () => {
+  for (const name of [
+    'Greymon',
+    'Garurumon',
+    'Angemon',
+    'Kabuterimon',
+    'MetalGreymon',
+    'Gomamon',
+  ]) {
+    const r = fresh(name, 2),
+      p = r.s.player;
+    r.s.enemies = [mob(4)];
+    const base = r.styleDamage();
+    p.damage *= 2;
+    p.stage = 4;
+    p.weapons = [{ id: 'energy-bolt', rank: 5, clock: 0 }];
+    p.area = 2;
+    p.haste = 2;
+    p.projectileBonus = 2;
+    assert.ok(r.styleDamage() > base * 2);
+    r.castStyle();
+    assert.equal(p.styleCooldown, r.style().cooldown / 2);
+    if (r.style().id === 'hunter') assert.equal(r.s.shots.length, 5);
+    for (const f of r.s.styleFields) assert.ok(f.radius >= 6);
+  }
+});

@@ -22,7 +22,7 @@
           area: 'área de las técnicas',
           armor: 'armadura',
           projectileBonus: 'golpes o proyectiles extra en todas las técnicas ofensivas',
-          orbits: 'orbes alrededor del personaje',
+          orbits: 'orbes recolectores de experiencia',
         },
         icons = {
           damage: 'finisher',

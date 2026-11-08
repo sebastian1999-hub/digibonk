@@ -232,6 +232,16 @@
         factor *= 0.75;
       return factor;
     };
+    proto.styleDamage = function () {
+      const p = this.s.player;
+      const rank = Math.max(1, ...p.weapons.map((w) => w.rank));
+      return (
+        p.damage *
+        (1 + Math.max(0, p.stage - 1) * 0.25) *
+        (1 + (rank - 1) * 0.15) *
+        (p.rallyLeft > 0 ? 1.25 : 1)
+      );
+    };
     proto.castStyle = function () {
       const s = this.s,
         p = s.player,
@@ -244,10 +254,20 @@
         target = enemies[0];
       if (['hunter', 'artillery'].includes(style.id) && (!target || dist(target, p) > 20))
         return false;
-      p.styleCooldown = style.cooldown;
+      p.styleCooldown = style.cooldown / (p.haste * (p.hasteLeft > 0 ? 1.2 : 1));
       p.attackAt = s.time;
       const field = (kind, x, z, life, radius) => {
-        const f = { id: s.nextId++, kind, x, z, life, maxLife: life, radius, tick: 0, absorbed: 0 };
+        const f = {
+          id: s.nextId++,
+          kind,
+          x,
+          z,
+          life,
+          maxLife: life,
+          radius: radius * p.area,
+          tick: 0,
+          absorbed: 0,
+        };
         s.styleFields.push(f);
         return f;
       };
@@ -265,7 +285,7 @@
       if (style.id === 'hunter') {
         p.preyId = target.id;
         p.lastSkill = 'fang-rush';
-        for (let i = 0; i < 3; i++)
+        for (let i = 0; i < 3 + p.projectileBonus; i++)
           s.shots.push({
             id: s.nextId++,
             x: p.x,
@@ -274,7 +294,7 @@
             oz: p.z,
             target: target.id,
             speed: 26 + i * 7,
-            damage: p.damage * 0.45,
+            damage: this.styleDamage() * 1.2,
             area: 0,
             life: 2.8,
             skillId: 'air-shot',
@@ -292,14 +312,16 @@
         p.lastSkill = 'spore-burst';
       }
       if (style.id === 'artillery') {
-        for (const enemy of enemies.filter((e) => dist(e, p) < 20).slice(0, 3))
+        for (const enemy of enemies
+          .filter((e) => dist(e, p) < 20 * p.area)
+          .slice(0, 3 + p.projectileBonus))
           field('bomb', enemy.x, enemy.z, 1, 3);
         p.lastSkill = 'mega-laser';
       }
       if (style.id === 'tide') {
         for (const enemy of enemies)
-          if (dist(enemy, p) < 7) {
-            this.hurt(enemy, p.damage * 0.7, 'tidal-wave');
+          if (dist(enemy, p) < 7 * p.area) {
+            this.hurt(enemy, this.styleDamage() * 3, 'tidal-wave');
             enemy.slowLeft = 2.5;
             this.move(enemy, enemy.x - p.x, enemy.z - p.z, 10, 0.12, 0.55);
           }
@@ -307,7 +329,7 @@
           skillId: 'tidal-wave',
           color: '#5de2f0',
           size: 3,
-          radius: 7,
+          radius: 7 * p.area,
         });
         p.lastSkill = 'tidal-wave';
       }
@@ -400,9 +422,9 @@
       p.chargeTrail = Math.max(0, (p.chargeTrail || 0) - dt);
       if (p.chargeTrail > 0 && p.dashLeft > 0)
         for (const enemy of s.enemies)
-          if (enemy.hp > 0 && enemy.chargeId !== p.chargeId && dist(enemy, p) < 2.8) {
+          if (enemy.hp > 0 && enemy.chargeId !== p.chargeId && dist(enemy, p) < 2.8 * p.area) {
             enemy.chargeId = p.chargeId;
-            this.hurt(enemy, p.damage * 0.9, 'mega-flame');
+            this.hurt(enemy, this.styleDamage() * 3, 'mega-flame');
             this.move(enemy, enemy.x - p.x, enemy.z - p.z, 9, 0.12, 0.55);
             this.effect('burst', enemy.x, enemy.z, { skillId: 'mega-flame', size: 1.5 });
           }
@@ -412,11 +434,13 @@
         if (f.kind === 'roots' && f.tick <= 0) {
           f.tick = 1;
           for (const e of s.enemies)
-            if (e.hp > 0 && dist(e, f) < f.radius) this.hurt(e, p.damage * 0.2, 'spore-burst');
+            if (e.hp > 0 && dist(e, f) < f.radius)
+              this.hurt(e, this.styleDamage() * 0.6, 'spore-burst');
         }
         if (f.kind === 'bomb' && f.life <= 0) {
           for (const e of s.enemies)
-            if (e.hp > 0 && dist(e, f) < f.radius) this.hurt(e, p.damage * 1.2, 'mega-laser');
+            if (e.hp > 0 && dist(e, f) < f.radius)
+              this.hurt(e, this.styleDamage() * 4, 'mega-laser');
           this.effect('burst', f.x, f.z, { skillId: 'mega-laser', color: '#ffd291', size: 2 });
         }
       }
@@ -425,7 +449,10 @@
     proto.reflectProjectile = function (shot) {
       const s = this.s,
         f = s.styleFields.find(
-          (f) => f.kind === 'sanctuary' && f.absorbed < 3 && dist(f, shot) < f.radius,
+          (f) =>
+            f.kind === 'sanctuary' &&
+            f.absorbed < 3 + s.player.projectileBonus &&
+            dist(f, shot) < f.radius,
         );
       if (!f) return false;
       f.absorbed++;
@@ -442,7 +469,7 @@
           oz: shot.z,
           target: target.id,
           speed: 26,
-          damage: s.player.damage * 0.35,
+          damage: this.styleDamage() * 1.2,
           area: 0,
           life: 2.8,
           skillId: 'holy-ray',
