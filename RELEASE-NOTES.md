@@ -1,3 +1,7 @@
+## 1.35.3 · Flechas de incubación
+
+- Las flechas de la incubadora permanecen visibles al pasar el cursor o pulsarlas, sin el panel verde superpuesto.
+
 ## 1.35.2 · Bonificaciones de cuenta
 
 - El juego recoge las bonificaciones asignadas por administración al iniciar sesión o actualizar la clasificación.

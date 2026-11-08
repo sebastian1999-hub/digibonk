@@ -279,6 +279,12 @@ body[data-screen='home'] #home:has(.digital-menu):has(#home-content:not([hidden]
   border: 0;
   background: transparent;
 }
+.digital-menu .incubator-arrow:hover:not(:disabled),
+.digital-menu .incubator-arrow:focus-visible,
+.digital-menu .incubator-arrow:active {
+  background: transparent;
+  transform: none;
+}
 .incubator-arrow.previous {
   left: 31.4%;
 }
