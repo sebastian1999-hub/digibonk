@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three.module.js';
+import { paintAttackDetail } from './attack-detail-textures.js';
 
 // Original, code-drawn VFX art. Crisp silhouettes carry the action; soft light is an accent.
 export function attackTexture(kind) {
@@ -11,7 +12,9 @@ export function attackTexture(kind) {
     stops.forEach(([p, color]) => g.addColorStop(p, color));
     return g;
   };
-  if (kind === 'fx-comet') {
+  if (paintAttackDetail(c, kind)) {
+    // Additional elemental masks share the same cached texture/material pipeline.
+  } else if (kind === 'fx-comet') {
     // Points right: a rounded head, torn tail, and a narrow white-hot centre.
     for (let layer = 0; layer < 3; layer++) {
       c.save();

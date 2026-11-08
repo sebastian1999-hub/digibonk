@@ -16,6 +16,14 @@ Estas son observaciones visuales para orientar el trabajo, no afirmaciones sobre
 
 Los hechizos de pilar, lluvia y meteorito muestran preparación durante los mismos 0,4 segundos que espera el combate antes de aplicar el daño. Los demás ataques muestran un destello inicial, expansión con desaceleración y disipación. Se elimina el estallido genérico de siete esferas que antes se superponía a cada número de daño.
 
+## Renovación 1.34.0
+
+`attack-details.js` añade animación secundaria por elemento a las 64 técnicas. `attack-detail-textures.js` dibuja las máscaras de plasma, coronas, salpicaduras curvas, copos, crecientes, pétalos, plumas, halos, hexágonos, impactos, cruces, escudo, velocidad y luz ambiental. Se generan una vez y comparten las instancias del renderizador. Las llamaradas de plasma se deforman en el shader y la esfera solar tiene superficie animada.
+
+Las siluetas crecen aproximadamente un 24 % y las luces mantienen la saturación bajo la exposición de la isla. La máscara de impacto acompaña al elemento, sin sustituir la forma principal: el fénix sigue teniendo alas y los murciélagos conservan su enjambre. Los adornos se reducen al alcanzar el 70 % del presupuesto de 4600 instancias. La opacidad del jugador y de los enemigos se aplica por separado. Las áreas de daño y los relojes de combate no cambian.
+
+La galería conserva las estelas entre sus seis vistas y las limpia al retroceder el reloj. La auditoría recorre todas las técnicas y añade una escena de carga con 180 proyectiles y 60 impactos. Las pruebas comprueban también la reutilización de materiales tras el calentamiento, opacidad fraccionaria, retroceso temporal y ramificación de rayos verticales.
+
 ## Revisar
 
 Ejecutar `node preview-server.cjs` desde el repositorio y abrir `http://127.0.0.1:4173/attack-preview.html`. Permite revisar las 64 técnicas por familia, proyectil e impacto, cámara lenta, fotograma e instante fijo, sobre fondo de isla u oscuro. No lee ni modifica partidas guardadas. Usa la iluminación y el tone mapping del juego, y el mismo `AttackVisuals` de producción.

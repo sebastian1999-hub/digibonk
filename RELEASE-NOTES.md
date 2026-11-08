@@ -1,3 +1,11 @@
+## 1.34.0 · Ataques con más fuerza visual
+
+- Renovadas las 64 técnicas, incluidos el ataque básico y las habilidades de apoyo: siluetas más marcadas, colores más vivos, estelas con núcleo luminoso e iluminación breve sobre el suelo.
+- Fuego con turbulencia y llamaradas, Fuerza Terra con núcleo solar, fénix con plumas, agua con salpicaduras curvas, hielo con escarcha y electricidad con ramificaciones más visibles. Los rayos verticales también zigzaguean.
+- Nuevos arcos de garras y viento, pétalos y polen, plumas y halos sagrados, coronas de oscuridad, fragmentos mecánicos y golpes con destellos angulares.
+- Escudo con trama hexagonal, símbolos de curación, impulsos de velocidad y auras de concentración y potenciación.
+- Los efectos conservan la opacidad configurable, el presupuesto máximo de partículas y los tiempos de impacto. Las texturas y materiales se reutilizan; daño, alcance, cadencia y estados de combate se mantienen.
+
 ## 1.33.0 · Experiencia de portales y regreso con margen
 
 - Completar un portal recoge automáticamente todos los fragmentos de experiencia que queden dentro, incluido el de la última baja. Conserva los multiplicadores, los puntos y la curación de la recogida normal.

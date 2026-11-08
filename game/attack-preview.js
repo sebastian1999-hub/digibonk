@@ -177,7 +177,44 @@ $('audit').onclick = async () => {
       $('report').textContent = `Revisando ${checked}/${all.length}: ${skill.name}`;
       await new Promise(requestAnimationFrame);
     }
-    auditResult = `${checked}/${all.length} técnicas · ${errors} errores WebGL`;
+    let crowdedPeak = 0;
+    const offensive = all.filter((skill) => skill.kind === 'damage');
+    for (let frame = 0; frame < 6; frame++) {
+      fx.begin();
+      for (let i = 0; i < 180; i++) {
+        const skill = offensive[i % offensive.length],
+          x = ((i % 12) - 6) * 0.8 + frame * 0.12,
+          z = (Math.floor(i / 12) - 7) * 0.5;
+        fx.projectile(
+          { id: i + 2000, skillId: skill.id, x, z, prevX: x - 0.1, prevZ: z },
+          state,
+          3 + frame / 30,
+          i % 3 ? 'player' : 'enemy',
+        );
+        if (i % 3 === 0)
+          fx.impact(
+            {
+              id: i + 3000,
+              skillId: skill.id,
+              kind: 'burst',
+              x,
+              z,
+              life: 0.45,
+              maxLife: 0.9,
+              radius: 3,
+            },
+            state,
+            3 + frame / 30,
+          );
+      }
+      fx.finish();
+      crowdedPeak = Math.max(crowdedPeak, fx.count);
+      renderer.render(scene, camera);
+      if (renderer.getContext().getError() !== 0) errors++;
+      await new Promise(requestAnimationFrame);
+    }
+    fx.trails.clear();
+    auditResult = `${checked}/${all.length} técnicas · ${errors} errores WebGL · carga intensa: ${crowdedPeak}/${fx.budget} piezas`;
   } catch (error) {
     auditResult = 'ERROR: ' + error.message;
   } finally {
@@ -208,6 +245,8 @@ function animate(now) {
   renderer.clear();
   renderer.setScissorTest(true);
   const start = performance.now();
+  // Six viewports share a painter, but trail ownership spans the complete gallery frame.
+  fx.trailKeys.clear();
   for (const { skill, viewport, phase } of cards) {
     const rect = viewport.getBoundingClientRect();
     if (rect.bottom < 0 || rect.top > h) continue;
@@ -235,7 +274,7 @@ function animate(now) {
       ctx.drawImage(image, f.x + b.x, f.y + b.y, b.w, b.h, 0, 0, 64, 64);
       texture.needsUpdate = true;
     }
-    fx.begin();
+    fx.begin({ preserveTrails: true });
     if (flight) {
       const x = mode === 'flight' ? Math.sin(clock * 1.4) * 2 : (cycle / 0.9) * 7 - 5.2;
       fx.projectile(
@@ -281,12 +320,13 @@ function animate(now) {
       );
       phase.textContent = isField && t < 0.4 / 0.9 ? 'Preparación' : support ? 'Apoyo' : 'Impacto';
     } else phase.textContent = 'Disipación';
-    fx.finish();
+    fx.finish({ preserveTrails: true });
     peak = Math.max(peak, fx.count);
     renderer.setViewport(rect.left, h - rect.bottom, rect.width, rect.height);
     renderer.setScissor(rect.left, Math.max(0, h - rect.bottom), rect.width, rect.height);
     renderer.render(scene, camera);
   }
+  fx.finish();
   total += performance.now() - start;
   frames++;
   if (frames % 30 === 0 && !auditResult)

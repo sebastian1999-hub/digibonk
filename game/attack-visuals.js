@@ -366,6 +366,8 @@ export class AttackVisuals {
         depthWrite: false,
         side: THREE.DoubleSide,
         fog: false,
+        // Emissive art retains its saturated palette under the bright island exposure.
+        toneMapped: solid,
         blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
       });
     m.onBeforeCompile = (shader) => {
@@ -404,6 +406,21 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
  #endif`,
         );
       }
+      if (texture === 'fx-plasma') {
+        shader.uniforms.fxTime = this.shaderTime;
+        shader.fragmentShader = 'uniform float fxTime;\n' + shader.fragmentShader;
+        shader.fragmentShader = shader.fragmentShader.replace(
+          '#include <map_fragment>',
+          `#ifdef USE_MAP
+vec2 plasmaUV = vMapUv;
+float flow = sin(plasmaUV.x*19.0-fxTime*15.0) + sin(plasmaUV.x*33.0-fxTime*21.0)*0.4;
+plasmaUV.y += flow*0.024*(1.0-plasmaUV.x);
+vec4 sampledDiffuseColor=texture2D(map,plasmaUV);
+sampledDiffuseColor.a *= 0.88+0.12*sin(plasmaUV.x*16.0-fxTime*12.0);
+diffuseColor *= sampledDiffuseColor;
+#endif`,
+        );
+      }
       shader.vertexShader =
         'attribute float fxAlpha; varying float vFxAlpha;\n' +
         shader.vertexShader.replace(
@@ -419,7 +436,7 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
     };
     m.forceSinglePass = true;
     m.customProgramCacheKey = () =>
-      'digibonk-fx-v2-' +
+      'digibonk-fx-v3-' +
       geometry +
       '-' +
       (texture?.includes('flame')
@@ -428,7 +445,9 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
           ? 'sun'
           : texture === 'water'
             ? 'water'
-            : 'base');
+            : texture === 'fx-plasma'
+              ? 'plasma'
+              : 'base');
     const mesh = new THREE.InstancedMesh(g, m, capacity);
     mesh.frustumCulled = false;
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -450,8 +469,8 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
     this.batches.set(name, b);
     return b;
   }
-  begin() {
-    this.trailKeys.clear();
+  begin({ preserveTrails = false } = {}) {
+    if (!preserveTrails) this.trailKeys.clear();
     this.count = 0;
     for (const b of this.batches.values()) b.count = 0;
   }
@@ -473,6 +492,7 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
   ) {
     const visibility = this.warming ? 1 : (this.r.visibility?.[owner] ?? 1);
     if (visibility <= 0 || this.count >= this.budget) return;
+    if (alpha <= 0 && !this.warming) return;
     const b = this.batch(name, geometry, texture, additive);
     if (b.count >= b.capacity) return;
     const d = this.dummy;
@@ -668,7 +688,10 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
       this.trails.set(key, points);
     }
     let last = points.at(-1);
-    if (last && (Math.hypot(x - last.x, z - last.z) > 4 || time - last.time > 0.25)) {
+    if (
+      last &&
+      (Math.hypot(x - last.x, z - last.z) > 4 || time - last.time > 0.25 || time < last.time)
+    ) {
       points.length = 0;
       last = null;
     }
@@ -680,7 +703,7 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
     if (points.length < 2) return;
     const fire = ['flame', 'inferno', 'blue-flame', 'sun', 'missile', 'phoenix'].includes(type),
       water = ['wave', 'jet', 'torpedo', 'bubble', 'ice', 'frost'].includes(type),
-      dark = ['dark-orb', 'bats', 'dark-claw'].includes(type),
+      dark = ['dark-orb', 'bats', 'dark-claw', 'soul-chaser', 'soul-rain'].includes(type),
       color = fire
         ? type === 'blue-flame'
           ? '#66caff'
@@ -691,19 +714,35 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
             ? '#b774ef'
             : type === 'flower'
               ? '#ff9ad9'
-              : '#fff0b0';
+              : ['lightning', 'thunder-cloud', 'laser', 'laser-barrage'].includes(type)
+                ? '#64c9ff'
+                : ['leaf', 'spores'].includes(type)
+                  ? '#adf075'
+                  : ['air', 'wind-cutter'].includes(type)
+                    ? '#9af4dc'
+                    : '#fff0b0';
     for (let i = 1; i < points.length; i++) {
-      const age = Math.max(0, 1 - (time - points[i].time) / 0.32),
-        width = (fire ? 0.2 : water ? 0.14 : 0.1) * power * age;
+      const age = Math.max(0, Math.min(1, 1 - (time - points[i].time) / 0.32)),
+        width = (fire ? 0.44 : water ? 0.3 : 0.24) * power * age;
       this.ribbon(
         'motion-trails',
         new THREE.Vector3(points[i - 1].x, points[i - 1].y, points[i - 1].z),
         new THREE.Vector3(points[i].x, points[i].y, points[i].z),
         width,
         color,
-        age * 0.35,
+        age * 0.65,
         owner,
       );
+      if (i % 2 === 0 && this.count < this.budget * 0.7)
+        this.ribbon(
+          'motion-trail-core',
+          new THREE.Vector3(points[i - 1].x, points[i - 1].y, points[i - 1].z),
+          new THREE.Vector3(points[i].x, points[i].y, points[i].z),
+          width * 0.25,
+          '#eaffff',
+          age * 0.55,
+          owner,
+        );
     }
   }
   warmup(state = { mapSeed: 83461 }) {
@@ -742,6 +781,8 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
         yield;
       }
       warmStatusVisuals(this);
+      this.batch('motion-trails', 'quad', 'ribbon', true);
+      this.batch('motion-trail-core', 'quad', 'ribbon', true);
       for (const b of this.batches.values()) {
         b.mesh.visible = true;
         b.mesh.count = 0;
@@ -759,6 +800,7 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
       window.SkillSystem.skills[shot.dark ? 'dark-pulse' : 'bubble'];
     if (skill.kind !== 'damage') return;
     const y = window.DigibonkCore.heightAt(shot.x, shot.z, s.mapSeed) + (shot.height ?? 1.2);
+    drawAttack(this, skill, shot, s, time, owner, 'flight');
     this.trail(
       shot,
       s,
@@ -770,7 +812,6 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
       shot.z,
       (1 + Math.max(0, skill.stage) * 0.14) * (shot.visualScale || 1),
     );
-    drawAttack(this, skill, shot, s, time, owner, 'flight');
   }
   impact(effect, s, time) {
     this.shaderTime.value = time;
@@ -792,8 +833,9 @@ vec2 waterUV=vMapUv+vec2(sin(vMapUv.y*16.0+fxTime*2.0)*0.018,sin(vMapUv.x*13.0-f
       effect.kind === 'cast' ? 'cast' : 'impact',
     );
   }
-  finish() {
-    for (const key of this.trails.keys()) if (!this.trailKeys.has(key)) this.trails.delete(key);
+  finish({ preserveTrails = false } = {}) {
+    if (!preserveTrails)
+      for (const key of this.trails.keys()) if (!this.trailKeys.has(key)) this.trails.delete(key);
     for (const b of this.batches.values()) {
       b.mesh.count = b.count;
       b.mesh.visible = b.count > 0;

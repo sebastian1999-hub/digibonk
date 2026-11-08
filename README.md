@@ -51,7 +51,7 @@ La dificultad general acelera con los minutos transcurridos, también dentro de 
 | Pausa                           | Esc o P                                  |
 | Pantalla completa               | F11                                      |
 
-Hay 40 técnicas, con efectos propios de agua, fuego, hielo, electricidad, luz, oscuridad, naturaleza y armas mecánicas. Algunas formas, como WarGreymon y MetalGreymon, tienen técnicas características distintas.
+Las 64 técnicas tienen efectos por elemento: llamaradas con turbulencia, salpicaduras, cristales y copos de hielo, rayos ramificados, cortes de garras, pétalos, plumas de luz, coronas oscuras y destellos mecánicos. Los proyectiles dejan estelas de color y los impactos iluminan brevemente el suelo. Fuerza Terra tiene un núcleo solar y el fénix despliega plumas de fuego. Algunas formas, como WarGreymon y MetalGreymon, tienen técnicas características distintas.
 
 En **Ajustes** puedes cambiar dos teclas por acción y regular la opacidad de ataques, experiencia y proyectiles enemigos. La barra bajo el personaje muestra cuándo vuelve a estar disponible la habilidad. Cofres: una recompensa o cerrar sin elegir. Hasta tres compañeros distintos activos. El minimapa utiliza iconos: amplíalo con ⛶ para consultar toda la leyenda. Wizardmon permite quitar técnicas gratis. Los portales ajustan su presión al nivel y tiempo acumulado al entrar; entrar tarde no congela enemigos débiles.
 

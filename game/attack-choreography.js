@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three.module.js';
+import { flightDetails, impactDetails, supportDetails } from './attack-details.js';
 
 const TAU = Math.PI * 2;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -37,14 +38,18 @@ class Painter {
     this.y = this.g + (e.height ?? 1.2);
     this.seed = Math.abs(e.id || 1);
     this.t = phase === 'flight' ? 0 : clamp(1 - e.life / (e.maxLife || 1));
-    this.fade = Math.pow(1 - this.t, 1.5);
-    this.p = (0.85 + Math.max(0, skill.stage) * 0.14) * (e.visualScale || 1);
+    this.fade = Math.pow(1 - this.t, 1.1);
+    this.p = (1.05 + Math.max(0, skill.stage) * 0.17) * (e.visualScale || 1);
     this.r = e.radius || (e.size || 1) * 1.7;
     [this.ink, this.color, this.hot] = palettes[skill.family] || palettes.neutral;
     if (skill.visual === 'blue-flame')
       [this.ink, this.color, this.hot] = ['#245fda', '#47cfff', '#e1ffff'];
     if (skill.visual === 'flower')
       [this.ink, this.color, this.hot] = ['#90367e', '#f38ccf', '#ffe4f9'];
+    if (['lightning', 'thunder-cloud'].includes(skill.visual))
+      [this.ink, this.color, this.hot] = ['#12368a', '#3eabff', '#e2ffff'];
+    if (skill.visual === 'phoenix')
+      [this.ink, this.color, this.hot] = ['#a32b1b', '#ff9c26', '#fff3c1'];
     let dx = e.dx ?? e.x - (e.prevX ?? e.ox ?? e.x - 1),
       dz = e.dz ?? e.z - (e.prevZ ?? e.oz ?? e.z);
     if (Math.hypot(dx, dz) < 0.001) {
@@ -175,15 +180,21 @@ class Painter {
   }
   bolt(from, to, width = 0.13, alpha = 1) {
     const axis = to.clone().sub(from),
-      side = V(-axis.z, 0, axis.x).normalize();
+      side = V(-axis.z, 0, axis.x);
+    // Vertical thunderbolts also need a sideways zigzag, not a collapsed straight beam.
+    if (side.lengthSq() < 0.001) side.set(1, 0, 0);
+    side.normalize();
     let last = from;
     const flicker = Math.floor(this.time * 18);
     for (let i = 1; i <= 7; i++) {
       const q = i / 7,
-        j = (noise(i + this.seed + flicker) - 0.5) * Math.sin(q * Math.PI) * 0.8;
+        j =
+          (noise(i + this.seed + flicker) - 0.5) *
+          Math.sin(q * Math.PI) *
+          Math.max(0.9, Math.min(2.2, axis.length() * 0.45));
       const pos = from.clone().addScaledVector(axis, q).addScaledVector(side, j);
       pos.y += j * 0.5;
-      this.line(last, pos, width * 3, '#53b9ff', alpha * 0.25);
+      this.line(last, pos, width * 4, '#2588ff', alpha * 0.5);
       this.line(last, pos, width, '#efffff', alpha);
       if (i === 3 || i === 5)
         this.line(
@@ -227,9 +238,25 @@ function flight(v) {
         color,
       );
     }
-    if (type === 'sun')
+    if (type === 'sun') {
+      a.emit(
+        'solar-core',
+        'sphere',
+        'sun',
+        tip.x,
+        tip.y,
+        tip.z,
+        p * 0.72,
+        p * 0.72,
+        p * 0.72,
+        '#ffffff',
+        1,
+        a.yaw(time * 0.8),
+        v.owner,
+      );
       for (let i = 0; i < 2; i++)
         v.arc(tip, 0.8 * p, time * 3 + i * Math.PI, Math.PI * 1.2, 0.12, 0.75, hot, true);
+    }
   } else if (['bubble', 'jet', 'torpedo', 'wave', 'waterfall', 'rainfall'].includes(type)) {
     if (type === 'wave') {
       a.wave(v.x, v.g + 0.08, v.z, p * 1.15, yaw, time, v.owner, 0.8, 0.65 * p);
@@ -298,8 +325,9 @@ function flight(v) {
   else if (['claw', 'dark-claw', 'wind-cutter', 'air'].includes(type)) {
     for (let i = 0; i < (type === 'air' ? 1 : 3); i++) {
       const pos = v.point(-i * 0.22, (i - 1) * 0.3);
-      v.sprite('fx-cut', pos, p * 2, p * 2, color, 0.8 - i * 0.15, v.roll - 0.7);
-      v.sprite('fx-cut', pos, p * 1.85, p * 1.85, hot, 0.85 - i * 0.18, v.roll - 0.7);
+      v.sprite('fx-crescent', pos, p * 2.25, p * 2.25, ink, 0.9 - i * 0.15, v.roll - 0.7);
+      v.sprite('fx-crescent', pos, p * 2, p * 2, color, 0.9 - i * 0.15, v.roll - 0.7);
+      v.sprite('fx-cut', pos, p * 1.8, p * 1.8, hot, 0.9 - i * 0.18, v.roll - 0.65);
     }
   } else if (['tornado', 'hurricane'].includes(type)) vortex(v, false);
   else if (['phoenix', 'bats'].includes(type)) {
@@ -421,8 +449,10 @@ export function drawAttack(a, skill, e, state, time, owner, phase) {
     return true;
   if (phase !== 'flight' && (!(e.life > 0) || !(e.maxLife > 0))) return true;
   const v = new Painter(a, skill, e, state, time, owner, phase);
-  if (phase === 'flight') flight(v);
-  else if (phase === 'cast') cast(v);
+  if (phase === 'flight') {
+    flight(v);
+    flightDetails(v);
+  } else if (phase === 'cast') cast(v);
   else if (skill.kind !== 'damage') support(v);
   else impact(v);
   return true;
@@ -435,6 +465,15 @@ function cast(v) {
   // The gameplay launches immediately; this is a short muzzle release, not a fake wind-up.
   if (['holy', 'dark'].includes(v.k.family)) v.ring(r, f * 0.6, 0.09, true);
   v.spark(v.point(0.3), v.p * (0.3 + out(t) * 0.55), (1 - t) * 0.8);
+  v.sprite(
+    'fx-corona',
+    v.point(0.35),
+    v.p * (0.5 + out(t) * 0.8),
+    v.p * (0.5 + out(t) * 0.8),
+    v.color,
+    (1 - t) * 0.8,
+    v.roll + t,
+  );
   for (let i = 0; i < 3; i++)
     v.line(
       v.point(-t * 0.8, (i - 1) * r, 0),
@@ -457,6 +496,7 @@ function support(v) {
           ? '#ffcb72'
           : '#b1cfff';
   v.color = color;
+  supportDetails(v);
   v.ring((0.65 + rise) * p, v.fade * 0.7, 0.08, true, color);
   for (let i = 0; i < 5; i++) {
     const q = (i * TAU) / 5 + t,
@@ -518,8 +558,9 @@ function impact(v) {
       return;
     }
     v.t = clamp((elapsed - 0.4) / (v.e.maxLife - 0.4));
-    v.fade = Math.pow(1 - v.t, 1.5);
+    v.fade = Math.pow(1 - v.t, 1.1);
   }
+  impactDetails(v);
   if (v.k.pattern === 'cone') {
     cone(v);
     return;
@@ -735,7 +776,7 @@ function impactElement(v) {
       v.bolt(
         v.point(),
         V(v.x + Math.cos(q) * r, v.g + 0.4 + (i % 2), v.z + Math.sin(q) * r),
-        0.08,
+        0.15,
         fade,
       );
     }
@@ -747,8 +788,9 @@ function impactElement(v) {
         local = clamp((t - delay) / (1 - delay)),
         alpha = Math.sin(Math.PI * Math.min(1, local / 0.75));
       const pos = v.point(0.3 + sweep * 0.6, (i - 1) * 0.28);
-      v.sprite('fx-cut', pos, p * 3.3, p * 3.3, color, alpha * 0.85, v.roll - 1.5 + sweep * 1.2);
-      v.sprite('fx-cut', pos, p * 3.1, p * 3.1, hot, alpha * 0.9, v.roll - 1.5 + sweep * 1.2);
+      v.sprite('fx-crescent', pos, p * 3.6, p * 3.6, ink, alpha * 0.9, v.roll - 1.5 + sweep * 1.2);
+      v.sprite('fx-crescent', pos, p * 3.3, p * 3.3, color, alpha, v.roll - 1.5 + sweep * 1.2);
+      v.sprite('fx-cut', pos, p * 3, p * 3, hot, alpha * 0.9, v.roll - 1.45 + sweep * 1.2);
     }
     v.debris(4, v.r * 0.7, color);
   } else if (['tornado', 'hurricane'].includes(type)) {

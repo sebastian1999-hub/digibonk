@@ -132,3 +132,115 @@ test('hidden enemy effects are hidden and attack rendering leaves gameplay RNG u
     Math.random = random;
   }
 });
+
+test('all enhanced projectiles reuse warmed resources and respect independent player/enemy opacity', async () => {
+  const a = await setup(),
+    state = Object.freeze({ mapSeed: 3, sceneSerial: 1, rng: 55 });
+  a.warmup(state);
+  const textures = a.textures.size,
+    batches = a.batches.size;
+  const random = Math.random;
+  Math.random = () => {
+    throw new Error('unwarmed render allocation or random particle');
+  };
+  try {
+    for (const k of Object.values(skills.skills).filter((k) => k.kind === 'damage')) {
+      const shot = { id: 5, skillId: k.id, x: 1, z: 0, prevX: 0.9, prevZ: 0 };
+      for (const owner of ['player', 'enemy']) {
+        a.trails.clear();
+        a.r.visibility[owner] = 1;
+        a.begin();
+        a.projectile(Object.freeze(shot), state, 1, owner);
+        a.finish();
+        const alpha = new Map(
+          [...a.batches].map(([name, b]) => [name, [...b.alpha.array.slice(0, b.count)]]),
+        );
+        a.r.visibility[owner] = 0.4;
+        a.begin();
+        a.projectile(Object.freeze(shot), state, 1, owner);
+        a.finish();
+        for (const [name, b] of a.batches) {
+          assert.equal(b.count, alpha.get(name).length, k.id + ' ' + name);
+          for (let i = 0; i < b.count; i++)
+            assert.ok(Math.abs(b.alpha.array[i] - alpha.get(name)[i] * 0.4) < 0.00001, k.id);
+        }
+        for (let frame = 1; frame < 12; frame++) {
+          a.begin();
+          a.projectile(
+            Object.freeze({ ...shot, x: 1 + frame * 0.2, prevX: 0.8 + frame * 0.2 }),
+            state,
+            1 + frame / 30,
+            owner,
+          );
+          a.finish();
+        }
+        a.r.visibility[owner] = 1;
+      }
+    }
+  } finally {
+    Math.random = random;
+  }
+  assert.equal(a.textures.size, textures, 'textures are cached before combat');
+  assert.equal(a.batches.size, batches, 'no surprise material creation in combat');
+  assert.equal(state.rng, 55);
+});
+
+test('gallery viewports retain both moving trails, then prune missing shots and expired scenes', async () => {
+  const a = await setup(),
+    state = { mapSeed: 1, sceneSerial: 1 };
+  for (let frame = 0; frame < 12; frame++) {
+    a.trailKeys.clear();
+    for (const id of [1, 2]) {
+      a.begin({ preserveTrails: true });
+      a.projectile(
+        { id, skillId: 'fireball', x: frame * 0.2, z: id, prevX: frame * 0.2 - 0.2, prevZ: id },
+        state,
+        frame / 30,
+      );
+      a.finish({ preserveTrails: true });
+      if (frame > 1) assert.ok(a.batches.get('motion-trails').count > 0);
+    }
+    a.finish();
+  }
+  assert.equal(a.trails.size, 2);
+  for (const trail of a.trails.values()) assert.ok(trail.length <= 10 && trail.length > 1);
+  a.begin();
+  a.projectile({ id: 1, skillId: 'fireball', x: 1, z: 1, prevX: 0.9, prevZ: 1 }, state, 0.05);
+  a.finish();
+  assert.equal(a.trails.size, 1);
+  assert.equal([...a.trails.values()][0].length, 1, 'scrubbing backwards drops future samples');
+  assert.equal(a.batches.get('motion-trails').count, 0, 'no oversized trails after a rewind');
+  a.begin();
+  a.finish();
+  assert.equal(a.trails.size, 0);
+});
+
+test('vertical thunder has lateral branches after the strike while retaining the field delay', async () => {
+  const a = await setup(),
+    state = { mapSeed: 1 };
+  const effect = {
+    id: 17,
+    skillId: 'electric-cloud',
+    kind: 'burst',
+    x: 0,
+    z: 0,
+    radius: 3.5,
+    maxLife: 0.9,
+  };
+  a.begin();
+  a.impact({ ...effect, life: 0.51 }, state, 2);
+  a.finish();
+  assert.equal(a.batches.get('art-ribbon')?.count || 0, 0, 'no early lightning');
+  a.begin();
+  a.impact({ ...effect, life: 0.35 }, state, 2);
+  a.finish();
+  const b = a.batches.get('art-ribbon');
+  const high = [];
+  for (let i = 0; i < b.count; i++)
+    if (b.mesh.instanceMatrix.array[i * 16 + 13] > 2)
+      high.push(b.mesh.instanceMatrix.array[i * 16 + 12]);
+  assert.ok(
+    high.some((x) => Math.abs(x) > 0.1),
+    'sky-to-ground bolt zigzags sideways',
+  );
+});
