@@ -1,3 +1,8 @@
+## 1.35.1 · Botones estables y acceso a incubación
+
+- Incubar y Jugar mantienen su tamaño y posición al pasar el cursor; conservan el cambio de color.
+- Retirado el acceso directo a Incubadora del menú inicial. Se entra seleccionando un huevo y pulsando Incubar.
+
 ## 1.35.0 · Nuevos menús de huevos e incubación
 
 - Nuevos fondos y botones proporcionados para Jugar e Incubadora, con doce cápsulas y huevos animados.

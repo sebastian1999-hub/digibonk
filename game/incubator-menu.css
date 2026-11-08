@@ -125,6 +125,16 @@ body[data-screen='home'] #home:has(.digital-menu):has(#home-content:not([hidden]
 .digital-menu .art-action.play:is(:hover, :focus-visible) {
   background-image: url('assets/incubator/play-selected.png');
 }
+.digital-menu .art-action,
+.digital-menu .art-action:hover:not(:disabled),
+.digital-menu .art-action:focus-visible {
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  transform: none;
+  transition: none;
+}
 .art-action span {
   position: absolute;
   bottom: -8%;

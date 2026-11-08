@@ -749,9 +749,7 @@ function makeEggs() {
     homeTab !== 'menu' || !read(RUN_KEY, null) || !!read(RUN_KEY, null)?.done;
   if (['menu', 'league', 'information'].includes(homeTab)) return;
   $('#tab-play').classList.toggle('primary', homeTab === 'play');
-  $('#tab-incubator').classList.toggle('primary', homeTab === 'incubator');
   $('#tab-play').setAttribute('aria-selected', homeTab === 'play');
-  $('#tab-incubator').setAttribute('aria-selected', homeTab === 'incubator');
   $('#egg-section-title').textContent = homeTab === 'play' ? 'ELIGE TU HUEVO' : 'INCUBADORA';
   $('#egg-section-hint').textContent =
     homeTab === 'play'
@@ -804,10 +802,6 @@ function makeEggs() {
 $('#tab-play').onclick = () => {
   homeTab = 'play';
   eggConfirmed = false;
-  makeEggs();
-};
-$('#tab-incubator').onclick = () => {
-  homeTab = 'incubator';
   makeEggs();
 };
 $('#menu-information').onclick = () => {
