@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+  <meta charset="utf-8" /><link rel="stylesheet" href="style.css" /><link
+    rel="stylesheet"
+    href="incubator-menu.css"
+  /><title>Vista de incubadoras</title>
+  <body data-screen="home">
+    <section id="home">
+      <div id="home-panel">
+        <section id="home-content">
+          <div class="section-label">Vista de prueba · No modifica partidas</div>
+          <div id="egg-grid"></div>
+        </section>
+      </div>
+    </section>
+    <script src="species-catalog.js"></script>
+    <script src="evolution-routes.js"></script>
+    <script src="status-rules.js"></script>
+    <script src="status-icons.js"></script>
+    <script src="skill-system.js"></script>
+    <script src="assets/sprites-data.js"></script>
+    <script src="assets/portrait-data.js"></script>
+    <script src="sprite-renderer.js"></script>
+    <script src="assets/eggs-data.js"></script>
+    <script src="egg-renderer.js"></script>
+    <script src="map-icons.js"></script>
+    <script src="input-state.js"></script>
+    <script src="loot.js"></script>
+    <script src="world-rules.js"></script>
+    <script src="balance.js"></script>
+    <script src="portal-system.js"></script>
+    <script src="world-system.js"></script>
+    <script src="chest-system.js"></script>
+    <script src="relic-effects.js"></script>
+    <script src="pattern-combat.js"></script>
+    <script src="status-system.js"></script>
+    <script src="difficulty-system.js"></script>
+    <script src="progression.js"></script>
+    <script src="run-core.js"></script>
+    <script type="module">
+      import { renderIncubatorMenu } from './incubator-menu.js';
+      const C = window.DigibonkCore,
+        P = window.DigibonkProgression,
+        meta = P.fresh();
+      meta.bits = 1000;
+      let mode = 'play',
+        selected = 'Botamon',
+        confirmed = false,
+        stage = 0,
+        rendered;
+      function render() {
+        const host = document.querySelector('#egg-grid');
+        host.replaceChildren();
+        rendered = renderIncubatorMenu(host, {
+          C,
+          P,
+          meta,
+          mode,
+          selected,
+          confirmed,
+          stage,
+          select(id) {
+            selected = id;
+            confirmed = true;
+            stage = 0;
+            render();
+          },
+          open(m) {
+            mode = m;
+            render();
+          },
+          chooseStage(i) {
+            stage = i;
+            render();
+          },
+          saveLine(p) {
+            meta.lines ??= {};
+            meta.lines[selected] = C.evolutionLine(selected, meta.eggs[selected], p);
+            render();
+          },
+          buy(stat) {
+            P.buy(
+              meta,
+              selected,
+              stat,
+              C.eggChoices.findIndex((e) => e.id === selected),
+            );
+            render();
+          },
+          play() {
+            document.querySelector('.section-label').textContent =
+              'Selección lista para jugar: ' + selected;
+          },
+        });
+      }
+      render();
+      function animate(time) {
+        for (const { canvas, egg } of rendered.eggs) {
+          const c = canvas.getContext('2d');
+          c.clearRect(0, 0, 120, 100);
+          drawDigiEgg(c, 60, 52, 76, time / 1000, egg.skin);
+        }
+        for (const { canvas, species } of rendered.portraits) {
+          const c = canvas.getContext('2d');
+          c.clearRect(0, 0, 96, 88);
+          DigiSprites.drawGrounded(c, species, 'idle', 48, 82, 76, time / 1000);
+        }
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    </script>
+  </body>
+</html>

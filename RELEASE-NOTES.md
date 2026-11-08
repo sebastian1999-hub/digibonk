@@ -1,3 +1,11 @@
+## 1.35.0 · Nuevos menús de huevos e incubación
+
+- Nuevos fondos y botones proporcionados para Jugar e Incubadora, con doce cápsulas y huevos animados.
+- Selección con borde naranja; Incubar y Jugar aparecen al seleccionar un huevo. Los huevos bloqueados se desbloquean desde Incubar.
+- Vista previa de la línea evolutiva al mantener el cursor o el foco sobre un huevo.
+- Incubación con seis etapas a la izquierda, Digimon animado en el centro y flechas para cambiar la evolución elegida. Cuatro mejoras con coste y nivel a la derecha.
+- Se conservan los huevos, las mejoras, los bits y las rutas guardadas. El panel adapta su tamaño a la ventana y a la escala de interfaz.
+
 ## 1.34.0 · Ataques con más fuerza visual
 
 - Renovadas las 64 técnicas, incluidos el ataque básico y las habilidades de apoyo: siluetas más marcadas, colores más vivos, estelas con núcleo luminoso e iluminación breve sobre el suelo.
