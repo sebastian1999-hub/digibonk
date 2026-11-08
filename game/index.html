@@ -60,7 +60,7 @@
             fetchpriority="high"
           />
         </h1>
-        <span id="build-version" class="build-version">Versión 1.35.4</span>
+        <span id="build-version" class="build-version">Versión 1.35.5</span>
         <p class="tagline">Sobrevive. Digievoluciona. Rompe tu récord.</p>
         <div id="home-records"></div>
         <button id="continue-run" class="primary" hidden>Continuar partida</button>
@@ -286,7 +286,18 @@
       >
         <i id="skill-recharge-fill"></i>
       </div>
-      <small id="skill-recharge-label">Habilidad lista</small><small id="style-key-hint"></small>
+      <small id="skill-recharge-label">Habilidad lista</small>
+      <div
+        id="dash-recharge"
+        role="progressbar"
+        aria-label="Recarga del salto"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="100"
+      >
+        <i id="dash-recharge-fill"></i>
+      </div>
+      <small id="dash-recharge-label">Salto listo</small><small id="style-key-hint"></small>
     </aside>
     <div id="equipment-strip" hidden></div>
     <div id="controls-hint" hidden>

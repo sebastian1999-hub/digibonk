@@ -1919,7 +1919,8 @@ dialog h2 {
   }
 }
 
-#skill-recharge {
+#skill-recharge,
+#dash-recharge {
   height: 7px;
   background: #102e32;
   border: 1px solid #6f9c9e66;
@@ -1927,14 +1928,16 @@ dialog h2 {
   overflow: hidden;
   margin-top: 10px;
 }
-#skill-recharge-fill {
+#skill-recharge-fill,
+#dash-recharge-fill {
   display: block;
   height: 100%;
   width: 0;
   background: linear-gradient(90deg, #73b7d4, #b7f1dc);
   transition: width 0.1s linear;
 }
-#style-panel #skill-recharge-label {
+#style-panel #skill-recharge-label,
+#style-panel #dash-recharge-label {
   font-size: 10px;
   color: #d3ecd6;
   margin-top: 5px;

@@ -979,6 +979,11 @@ function refreshWorldHud() {
     !style || p.styleCooldown > 0 || paused || !!s.choice || !!s.evolution || s.hatch > 0;
   $('#style-activate').title = style?.description || '';
   const ready = style ? Math.max(0, Math.min(1, 1 - p.styleCooldown / style.cooldown)) : 0;
+  const dashReady = Math.max(0, Math.min(1, 1 - p.dash / 3.2));
+  $('#dash-recharge-fill').style.width = dashReady * 100 + '%';
+  $('#dash-recharge').setAttribute('aria-valuenow', String(Math.round(dashReady * 100)));
+  $('#dash-recharge-label').textContent =
+    keyLabel('dash') + ' · ' + (p.dash > 0 ? 'Salto · ' + Math.ceil(p.dash) + ' s' : 'Salto listo');
   $('#skill-recharge-fill').style.width = ready * 100 + '%';
   $('#skill-recharge').setAttribute('aria-valuenow', String(Math.round(ready * 100)));
   $('#skill-recharge-label').textContent = !style

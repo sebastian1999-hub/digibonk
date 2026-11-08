@@ -979,13 +979,19 @@ export class Renderer3D {
     }
     if (s && !this.travelHidden && !s.done && s.hatch <= 0 && !s.evolution) {
       const role = run.style();
-      if (role) {
+      const indicators = [
+        ...(role
+          ? [{ action: 'special', left: p.styleCooldown, total: role.cooldown, label: 'HABILIDAD' }]
+          : []),
+        { action: 'dash', left: p.dash, total: 3.2, label: 'SALTO' },
+      ];
+      for (const [index, indicator] of indicators.entries()) {
         const at = this.screen(p.x, C.heightAt(p.x, p.z, seed) + 0.55, p.z),
           c = this.fxCtx,
-          ready = Math.max(0, Math.min(1, 1 - p.styleCooldown / role.cooldown)),
+          ready = Math.max(0, Math.min(1, 1 - indicator.left / indicator.total)),
           w = 54,
           x = at.x - w / 2,
-          y = at.y + 20;
+          y = at.y + 20 + index * 34;
         if (at.visible) {
           c.save();
           c.fillStyle = '#12282ff2';
@@ -1005,9 +1011,11 @@ export class Renderer3D {
           c.strokeStyle = '#12282f';
           c.lineWidth = 3;
           const text =
-            (this.bindings?.label('special') || 'Q') +
+            (this.bindings?.label(indicator.action) ||
+              (indicator.action === 'dash' ? 'Espacio' : 'Q')) +
             ' · ' +
-            (ready >= 1 ? 'LISTA' : Math.ceil(p.styleCooldown) + ' s');
+            (indicator.action === 'dash' ? 'SALTO ' : '') +
+            (ready >= 1 ? 'LISTO' : Math.ceil(indicator.left) + ' s');
           c.strokeText(text, at.x, y + 21);
           c.fillText(text, at.x, y + 21);
           c.restore();

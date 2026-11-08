@@ -1,3 +1,7 @@
+## 1.35.5 · Indicador del salto
+
+- El salto muestra disponibilidad y segundos de recarga bajo el Digimon, con el mismo estilo que la habilidad Q, y en el panel lateral. Respeta la tecla configurada.
+
 ## 1.35.4 · Recolección orbital y habilidades Q
 
 - Satélite de datos envía sus orbes al fragmento de experiencia libre más cercano y lo transporta al Digimon. Cada orbe recoge un fragmento distinto.
