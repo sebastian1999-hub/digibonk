@@ -3425,7 +3425,7 @@ body[data-screen='home'] #continue-run:focus-visible {
   --technique-frame: url('assets/rarity-frames/stat-epic.png');
 }
 .stat-card.quality-4 {
-  --technique-frame: url('assets/rarity-frames/stat-legendary.png');
+  --technique-frame: url('assets/rarity-frames/stat-legendary-orange.png');
 }
 .chest-tile.stat-card,
 .chest-result.stat-card {
@@ -3445,7 +3445,7 @@ body[data-screen='home'] #continue-run:focus-visible {
 }
 .chest-tile.stat-card.quality-4,
 .chest-result.stat-card.quality-4 {
-  --technique-frame: url('assets/rarity-frames/stat-legendary.png');
+  --technique-frame: url('assets/rarity-frames/stat-legendary-orange.png');
 }
 .chest-tile.stat-card {
   width: 112px;
@@ -3812,4 +3812,62 @@ dialog,
   color: white;
   font-size: 11px;
   text-shadow: 0 1px 2px #071727;
+}
+
+/* Legendary upgrades: supplied orange frame and a quiet golden sheen. */
+.stat-card.quality-4 {
+  position: relative;
+  filter: drop-shadow(0 0 6px #ff980080) drop-shadow(0 0 14px #ffb52f33);
+}
+.stat-card.quality-4::after {
+  content: '';
+  position: absolute;
+  inset: 12% 12%;
+  border-radius: 8px;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    #fff2b532 47%,
+    #ffffff50 50%,
+    #ffd36724 53%,
+    transparent 65%
+  );
+  background-size: 350% 100%;
+  background-position: 100% 0;
+  animation: legendary-card-sheen 4.5s ease-in-out infinite;
+}
+.stat-card.quality-4 .card-kicker,
+.chest-tile.stat-card.quality-4 small {
+  color: #ffe9a7;
+  text-shadow: 0 0 8px #ff9e1b99;
+}
+@keyframes legendary-card-sheen {
+  0%,
+  25% {
+    background-position: 100% 0;
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.65;
+  }
+  70% {
+    background-position: 0% 0;
+    opacity: 0.65;
+  }
+  80%,
+  100% {
+    background-position: 0% 0;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stat-card.quality-4::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.choice-card.stat-card.quality-4:hover:not(:disabled) {
+  filter: brightness(1.12) drop-shadow(0 0 8px #ff980099) drop-shadow(0 0 18px #ffb52f44);
 }

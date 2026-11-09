@@ -1,3 +1,8 @@
+## 1.37.3 · Marco legendario
+
+- Nuevo marco naranja para mejoras legendarias, con halo dorado y reflejo suave para reconocerlas rápidamente.
+- El reflejo animado respeta la preferencia de movimiento reducido.
+
 ## 1.37.2 · Elegir técnica al evolucionar
 
 - Con cuatro técnicas equipadas, una nueva técnica de evolución permite elegir cuál sustituir o conservar las cuatro actuales. La elección aparece al terminar la animación y se conserva al guardar.
