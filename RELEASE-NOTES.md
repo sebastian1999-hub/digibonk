@@ -1,3 +1,8 @@
+## 1.37.1 · Cofres gratuitos y botín de portales
+
+- Los cofres que dejan los enemigos cuestan 0 bits y no encarecen los cofres de pago.
+- Los cofres abiertos dentro de portales tienen una probabilidad ligeramente mayor de objetos raros, épicos y legendarios. Las probabilidades mostradas reflejan la bonificación.
+
 ## 1.37.0 · Escudo regenerativo
 
 - Sustituida la armadura por escudo: absorbe daño antes de la vida y se regenera un 20 % de su capacidad por segundo tras 4 s sin recibir golpes.

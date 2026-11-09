@@ -773,7 +773,7 @@
         return 40 + 25 * n + 5 * Math.floor(n / 5) ** 2;
       }
       poiCost(poi) {
-        if (poi.type === 'chest') return this.chestPrice();
+        if (poi.type === 'chest') return poi.id.startsWith('drop-chest-') ? 0 : this.chestPrice();
         return poi.type === 'merchant' ? 0 : (this.s.poiPrices[poi.id] ?? poi.cost);
       }
       removalChoices() {
@@ -1388,7 +1388,7 @@
         }
         s.coins -= cost;
         if (poi.type === 'chest') {
-          s.chestsOpened++;
+          if (!poi.id.startsWith('drop-chest-')) s.chestsOpened++;
           s.usedPois.push(poi.id);
           p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.05 * this.relicRank('rations'));
           s.choice = this.chestChoices();

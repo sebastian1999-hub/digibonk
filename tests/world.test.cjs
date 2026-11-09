@@ -530,3 +530,41 @@ test('shield absorbs overflow, recharges after four seconds and scales with heal
   assert.equal(loaded.s.player.shield, 150);
   assert.equal(loaded.s.player.armor, undefined);
 });
+
+test('enemy loot is free at any chest price and does not inflate paid prices', () => {
+  const r = fresh();
+  r.s.coins = 0;
+  r.s.chestsOpened = 8;
+  const chest = {
+    id: 'drop-chest-900',
+    type: 'chest',
+    x: r.s.player.x,
+    z: r.s.player.z,
+    expires: 60,
+  };
+  r.s.droppedChests = [chest];
+  r.nearestPoi = () => chest;
+  const price = r.chestPrice();
+  assert.equal(r.poiCost(chest), 0);
+  assert.ok(r.interact().ok);
+  assert.equal(r.s.coins, 0);
+  assert.equal(r.chestPrice(), price);
+  assert.ok(r.s.usedPois.includes(chest.id));
+  assert.equal(r.s.choice.kind, 'chest');
+  assert.equal(r.poiCost({ id: 'chest-0', type: 'chest' }), price);
+});
+test('portal chest odds mildly favor each higher rarity and stay normalized', () => {
+  const r = fresh(),
+    pool = [1, 2, 3, 4].map((quality) => ({ quality }));
+  const normal = r.chestOdds(pool, false),
+    portal = r.chestOdds(pool, true);
+  assert.ok(portal[0].chance < normal[0].chance);
+  for (let i = 1; i < 4; i++) assert.ok(portal[i].chance > normal[i].chance);
+  assert.ok(Math.abs(portal.reduce((n, o) => n + o.chance, 0) - 1) < 1e-9);
+  r.s.realm = { portalId: 'test' };
+  assert.deepEqual(r.chestOdds(pool), portal);
+  r.s.relics = [{ id: 'fortune-charm', rank: 3 }];
+  const boosted = r.chestOdds(pool, true);
+  assert.ok(boosted[3].chance > portal[3].chance);
+  assert.ok(Math.abs(boosted.reduce((n, o) => n + o.chance, 0) - 1) < 1e-9);
+});

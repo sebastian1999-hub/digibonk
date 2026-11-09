@@ -117,7 +117,7 @@
     };
     p.shopRoll = function (base) {
       const pool = this.shopQualityPool(base),
-        winner = this.rollChestCard(pool);
+        winner = this.rollChestCard(pool, false);
       if (!winner) return null;
       return {
         kind: 'chest',
@@ -132,7 +132,7 @@
           riskUsed: false,
           empty: false,
           pool,
-          odds: this.chestOdds(pool),
+          odds: this.chestOdds(pool, false),
         },
       };
     };
@@ -188,24 +188,22 @@
             });
       return cards;
     };
-    p.chestOdds = function (pool) {
+    p.chestOdds = function (pool, portal = !!this.s.realm) {
+      const weight = (q) => qualities[q].weight * (portal ? [0, 1, 1.12, 1.2, 1.25][q] : 1);
       const qs = [1, 2, 3, 4].filter((q) => pool.some((c) => c.quality === q));
-      const sum = qs.reduce((n, q) => n + qualities[q].weight, 0);
+      const sum = qs.reduce((n, q) => n + weight(q), 0);
       if (!sum) return [];
-      const base = qs.includes(4) ? qualities[4].weight / sum : 0;
+      const base = qs.includes(4) ? weight(4) / sum : 0;
       const bonus = this.relicRank('fortune-charm') * 0.02;
       const legendary = qs.includes(4) ? Math.min(1, base + bonus) : 0;
       return qs.map((q) => ({
         quality: q,
-        chance:
-          q === 4
-            ? legendary
-            : (qualities[q].weight / sum) * (base ? (1 - legendary) / (1 - base) : 1),
+        chance: q === 4 ? legendary : (weight(q) / sum) * (base ? (1 - legendary) / (1 - base) : 1),
       }));
     };
-    p.rollChestCard = function (pool) {
+    p.rollChestCard = function (pool, portal = !!this.s.realm) {
       if (!pool.length) return null;
-      const odds = this.chestOdds(pool),
+      const odds = this.chestOdds(pool, portal),
         r = this.random();
       let cumulative = 0,
         quality = odds.at(-1).quality;
