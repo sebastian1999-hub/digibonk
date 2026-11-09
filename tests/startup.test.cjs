@@ -51,7 +51,7 @@ test('actual transition prepares scene and releases loading overlay', async () =
     loading: false,
     run: null,
     active: false,
-    keys: { clear() {} },
+    keys: new (require('../game/input-state'))(),
     renderer: {
       async prepare(run, progress) {
         prepared++;
@@ -63,10 +63,14 @@ test('actual transition prepares scene and releases loading overlay', async () =
     performance,
     console,
   };
+  box.keys.down({ code: 'KeyW' });
   vm.createContext(box);
   vm.runInContext(source.slice(start, end), box);
   await vm.runInContext('sceneTransition()', box);
   assert.equal(prepared, 1);
+  assert.equal(box.keys.size, 0);
+  box.keys.restoreMovement();
+  assert.equal(box.keys.pressed('up'), true);
   assert.equal(box.loading, false);
   assert.equal(get('#portal-transition')['aria-hidden'], 'true');
 });
