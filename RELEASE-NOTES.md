@@ -1,3 +1,7 @@
+## 1.37.4 · Fondo del menú de huevos
+
+- Sustituido el fondo del menú de huevos por la imagen corregida con transparencia proporcionada. Incluye el marco naranja y el brillo de las mejoras legendarias de 1.37.3.
+
 ## 1.37.3 · Marco legendario
 
 - Nuevo marco naranja para mejoras legendarias, con halo dorado y reflejo suave para reconocerlas rápidamente.

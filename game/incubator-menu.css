@@ -23,7 +23,7 @@ body[data-screen='home'] #home:has(.digital-menu):has(#home-content:not([hidden]
   aspect-ratio: 1672/941;
   padding: 0;
   margin: 0;
-  background: url('assets/incubator/menu.png') center/100% 100% no-repeat;
+  background: url('assets/incubator/menu-transparent.png') center/100% 100% no-repeat;
   container-type: inline-size;
   color: #e6fbff;
 }
