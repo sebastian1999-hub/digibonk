@@ -1,3 +1,7 @@
+## 1.37.2 · Elegir técnica al evolucionar
+
+- Con cuatro técnicas equipadas, una nueva técnica de evolución permite elegir cuál sustituir o conservar las cuatro actuales. La elección aparece al terminar la animación y se conserva al guardar.
+
 ## 1.37.1 · Cofres gratuitos y botín de portales
 
 - Los cofres que dejan los enemigos cuestan 0 bits y no encarecen los cofres de pago.

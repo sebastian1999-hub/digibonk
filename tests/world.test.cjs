@@ -568,3 +568,37 @@ test('portal chest odds mildly favor each higher rarity and stay normalized', ()
   assert.ok(boosted[3].chance > portal[3].chance);
   assert.ok(Math.abs(boosted.reduce((n, o) => n + o.chance, 0) - 1) < 1e-9);
 });
+
+test('full build chooses evolution technique after animation, can keep or replace and survives reload', () => {
+  const r = fresh('Agumon', 1);
+  r.s.player.weapons = [
+    { id: 'fireball', rank: 3, clock: 1 },
+    { id: 'heat-breath', rank: 2, clock: 1 },
+    { id: 'heal', rank: 1, clock: 1 },
+    { id: 'guard', rank: 1, clock: 1 },
+  ];
+  const original = structuredClone(r.s.player.weapons);
+  const technique = C.signature('Greymon').id;
+  assert.ok(!original.some((w) => w.id === technique));
+  r.s.choice = {
+    kind: 'evolution',
+    cards: [{ id: 'Greymon', type: 'evolution', species: 'Greymon' }],
+  };
+  r.choose('Greymon');
+  assert.deepEqual(r.s.player.weapons, original);
+  assert.ok(r.s.evolution);
+  assert.equal(r.s.choice, null);
+  const restored = new C.Run(null, { saved: r.snapshot() });
+  for (let i = 0; i < 55; i++) restored.update(0.05);
+  assert.equal(restored.s.evolution, null);
+  assert.equal(restored.s.choice.kind, 'replace');
+  assert.equal(restored.s.choice.cards.length, 5);
+  assert.deepEqual(restored.s.player.weapons, original);
+  const keep = new C.Run(null, { saved: restored.snapshot() });
+  assert.ok(keep.choose('keep-weapons'));
+  assert.deepEqual(keep.s.player.weapons, original);
+  assert.ok(restored.choose('replace-heal'));
+  assert.equal(restored.s.player.weapons[2].id, technique);
+  assert.equal(restored.s.player.weapons.length, 4);
+  assert.deepEqual(restored.s.player.weapons[0], original[0]);
+});

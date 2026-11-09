@@ -758,6 +758,35 @@
           weakest.clock = 0;
         }
       }
+      weaponReplacement(weapon) {
+        const p = this.s.player;
+        return {
+          kind: 'replace',
+          title: '¿Qué técnica quieres sustituir?',
+          cards: [
+            ...p.weapons.map((w) => ({
+              id: 'replace-' + w.id,
+              type: 'weapon-replace',
+              replace: w.id,
+              weapon: weapon,
+              title: skills.skills[w.id].name + ' → ' + skills.skills[weapon].name,
+              text:
+                'Rango ' +
+                Math.min(9, w.rank + 1) +
+                '/9. ' +
+                describeTechnique(weapon, Math.min(9, w.rank + 1), p),
+              rarity: 'SUSTITUIR TÉCNICA',
+            })),
+            {
+              id: 'keep-weapons',
+              type: 'weapon-decline',
+              title: 'Conservar mis técnicas',
+              text: 'Renuncia a aprender este ataque. Mantienes las cuatro técnicas actuales.',
+              rarity: 'CANCELAR',
+            },
+          ],
+        };
+      }
       upgradeAvailable(u) {
         const p = this.s.player;
         return !{
@@ -1118,7 +1147,10 @@
           p.damage *= 1.12;
           p.shieldRatio += 0.05;
           p.speed = Math.max(p.speed, Math.min(15, p.speed + 0.2));
-          this.addWeapon(signature(p.species).id);
+          const technique = signature(p.species).id;
+          if (p.weapons.length >= 4 && !p.weapons.some((w) => w.id === technique))
+            s.pendingEvolutionWeapon = technique;
+          else this.addWeapon(technique);
           s.history.push({ from, to: p.species, level: s.level, time: s.time });
           s.evolution = { from, to: p.species, left: 2.4, duration: 2.4 };
           s.score += 150;
@@ -1126,32 +1158,7 @@
         } else if (card.type === 'weapon') {
           if (p.weapons.length < 4) p.weapons.push({ id: card.weapon, rank: 1, clock: 0 });
           else {
-            s.choice = {
-              kind: 'replace',
-              title: '¿Qué técnica quieres sustituir?',
-              cards: [
-                ...p.weapons.map((w) => ({
-                  id: 'replace-' + w.id,
-                  type: 'weapon-replace',
-                  replace: w.id,
-                  weapon: card.weapon,
-                  title: skills.skills[w.id].name + ' → ' + skills.skills[card.weapon].name,
-                  text:
-                    'Rango ' +
-                    Math.min(9, w.rank + 1) +
-                    '/9. ' +
-                    describeTechnique(card.weapon, Math.min(9, w.rank + 1), p),
-                  rarity: 'SUSTITUIR TÉCNICA',
-                })),
-                {
-                  id: 'keep-weapons',
-                  type: 'weapon-decline',
-                  title: 'Conservar mis técnicas',
-                  text: 'Renuncia a aprender este ataque. Mantienes las cuatro técnicas actuales.',
-                  rarity: 'CANCELAR',
-                },
-              ],
-            };
+            s.choice = this.weaponReplacement(card.weapon);
             return true;
           }
         } else if (card.type === 'weapon-replace') {
@@ -1436,7 +1443,16 @@
         }
         if (s.evolution) {
           s.evolution.left -= dt;
-          if (s.evolution.left <= 0) s.evolution = null;
+          if (s.evolution.left <= 0) {
+            s.evolution = null;
+            if (s.pendingEvolutionWeapon) {
+              s.choice = this.weaponReplacement(s.pendingEvolutionWeapon);
+              s.choice.title =
+                'Nueva técnica de evolución: ' + skills.skills[s.pendingEvolutionWeapon].name;
+              delete s.pendingEvolutionWeapon;
+              this.emit('pick');
+            }
+          }
           return;
         }
         this.maybeLevel();
