@@ -1,3 +1,4 @@
+import { createChest, animateChest, disposeChest } from './chest-visuals.js';
 import { evolutionHeight } from './evolution-scale.js';
 import { drawEnemyStatuses } from './status-visuals.js';
 import { AttackVisuals } from './attack-visuals.js';
@@ -444,6 +445,13 @@ export class Renderer3D {
     this.poiMeshes = new Map();
     for (const poi of this.map.pois) {
       const h = C.heightAt(poi.x, poi.z, seed);
+      if (poi.type === 'chest') {
+        const chest = createChest(this.geo);
+        chest.position.set(poi.x, h, poi.z);
+        this.world.add(chest);
+        this.poiMeshes.set(poi.id, chest);
+        continue;
+      }
       const group = new THREE.Group();
       group.position.set(poi.x, h, poi.z);
       this.world.add(group);
@@ -465,11 +473,7 @@ export class Renderer3D {
         [2.6, 2.6, 2.6],
       );
       ring.rotation.x = -Math.PI / 2;
-      if (poi.type === 'chest') {
-        add(this.geo.cube, '#947448', 0, 0.42, 0, [1.5, 0.8, 1]);
-        add(this.geo.cube, '#e7bf68', 0, 0.9, 0, [1.55, 0.2, 1.04]);
-        add(this.geo.cube, '#edcf81', 0, 0.65, 0.53, [0.2, 0.4, 0.1]);
-      } else if (poi.type === 'fire') {
+      if (poi.type === 'fire') {
         for (let i = 0; i < 7; i++) {
           const a = (i * Math.PI * 2) / 7;
           add(rockGeo, '#a5ac94', Math.cos(a) * 1.2, 0.28, Math.sin(a) * 1.2, [0.45, 0.35, 0.4]);
@@ -896,20 +900,45 @@ export class Renderer3D {
     for (const [id, mesh] of this.poiMeshes) {
       if (id.startsWith('drop-chest-') && !liveDropIds.has(id)) {
         this.world.remove(mesh);
+        disposeChest(mesh);
         this.poiMeshes.delete(id);
       }
     }
     for (const chest of liveDrops) {
       if (this.poiMeshes.has(chest.id)) continue;
-      const template = [...this.poiMeshes].find(([id]) => id.startsWith('chest-'))?.[1];
-      if (!template) continue;
-      const mesh = template.clone(true);
+      const mesh = createChest(this.geo, true);
       mesh.position.set(chest.x, C.heightAt(chest.x, chest.z, s.mapSeed), chest.z);
       this.world.add(mesh);
       this.poiMeshes.set(chest.id, mesh);
     }
     for (const [id, group] of this.poiMeshes) {
       group.visible = !(s?.usedPois || []).includes(id);
+      if (group.visible && group.userData.chest) {
+        animateChest(group, time);
+        if (
+          group.userData.chest.free &&
+          !this.travelHidden &&
+          Math.hypot(group.position.x - p.x, group.position.z - p.z) < 32
+        ) {
+          const at = this.screen(group.position.x, group.position.y + 4.1, group.position.z);
+          if (at.visible) {
+            const c = this.fxCtx;
+            c.save();
+            c.font = 'bold 11px Segoe UI';
+            c.textAlign = 'center';
+            c.fillStyle = '#103645ee';
+            c.strokeStyle = '#8cffe0';
+            c.lineWidth = 1.5;
+            c.beginPath();
+            c.roundRect(at.x - 44, at.y - 12, 88, 23, 6);
+            c.fill();
+            c.stroke();
+            c.fillStyle = '#c6ffea';
+            c.fillText('◆ GRATIS', at.x, at.y + 4);
+            c.restore();
+          }
+        }
+      }
       const ring = group.children[0];
       if (ring) ring.rotation.z = time * 0.2;
       const poi = this.map.pois.find((p) => p.id === id) || liveDrops.find((p) => p.id === id);

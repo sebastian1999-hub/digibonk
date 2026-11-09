@@ -1,3 +1,8 @@
+## 1.36.0 · Cofres digitales
+
+- Cofres renovados con armadura, refuerzos dorados, cierre luminoso y núcleo flotante animado.
+- Los cofres gratuitos de enemigos tienen un modelo propio más grande, luces turquesas, partículas ascendentes y un indicador GRATIS visible al acercarse.
+
 ## 1.35.6 · Mejoras entre evoluciones
 
 - Digievolucionar ya no reduce la velocidad acumulada cuando supera 12.
