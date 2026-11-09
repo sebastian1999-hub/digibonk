@@ -102,3 +102,30 @@ test('healing waits until the described health threshold and higher ranks improv
       C.supportEffect(skills.skills.heal, 1).heal,
   );
 });
+
+test('held movement survives menu and portal suspension without relying on key repeat', () => {
+  const k = new Input();
+  k.down({ code: 'KeyW' });
+  k.down({ code: 'KeyD' });
+  k.down({ code: 'Space' });
+  k.suspend();
+  assert.equal(k.size, 0);
+  k.track({ code: 'ArrowDown' });
+  k.up({ code: 'KeyD' });
+  k.suspend();
+  k.restoreMovement();
+  assert.ok(k.pressed('up'));
+  assert.ok(k.pressed('down'));
+  assert.equal(k.pressed('right'), false);
+  assert.equal(k.pressed('dash'), false);
+  k.up({ code: 'KeyW' });
+  k.up({ code: 'ArrowDown' });
+  k.restoreMovement();
+  assert.equal(k.size, 0);
+  k.down({ code: 'KeyS' });
+  k.clear();
+  k.restoreMovement();
+  assert.equal(k.size, 0);
+  k.down({ code: 'KeyS' });
+  assert.ok(k.pressed('down'));
+});

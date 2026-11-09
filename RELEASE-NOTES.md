@@ -1,3 +1,8 @@
+## 1.37.5 · Teclas tras menús y portales
+
+- El movimiento mantenido se recupera al cerrar menús o terminar transiciones, incluso con varias teclas pulsadas. Soltar una tecla durante la transición se registra correctamente.
+- Perder el foco limpia las teclas para evitar movimiento atascado. Las acciones puntuales no se repiten al recuperar el movimiento.
+
 ## 1.37.4 · Fondo del menú de huevos
 
 - Sustituido el fondo del menú de huevos por la imagen corregida con transparencia proporcionada. Incluye el marco naranja y el brillo de las mejoras legendarias de 1.37.3.

@@ -45,6 +45,7 @@
   class InputState extends Set {
     constructor(saved = {}) {
       super();
+      this.held = new Set();
       this.bindings = structuredClone(defaults);
       if (saved && typeof saved === 'object') {
         const candidate = { ...structuredClone(defaults), ...saved },
@@ -74,10 +75,26 @@
         if (valid) this.bindings = structuredClone(candidate);
       }
     }
+    track(event) {
+      this.held.add(token(event));
+    }
+    suspend() {
+      super.clear();
+    }
+    clear() {
+      super.clear();
+      this.held.clear();
+    }
+    restoreMovement() {
+      for (const action of ['up', 'down', 'left', 'right'])
+        for (const key of this.bindings[action]) if (key && this.held.has(key)) this.add(key);
+    }
     down(event) {
+      this.track(event);
       this.add(token(event));
     }
     up(event) {
+      this.held.delete(token(event));
       this.delete(token(event));
     }
     actionFor(event) {
@@ -124,6 +141,7 @@
       this.clear();
     }
     resumeMovement() {
+      this.restoreMovement();
       const movement = new Set(['up', 'down', 'left', 'right'].flatMap((a) => this.bindings[a]));
       for (const key of this) if (!movement.has(key)) this.delete(key);
     }

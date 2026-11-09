@@ -277,7 +277,7 @@ function openSettings() {
     paused = true;
     save();
   }
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
   specialQueued = false;
   bindingCapture = null;
@@ -330,7 +330,7 @@ $('#settings-dialog').addEventListener('cancel', (event) => {
 });
 $('#settings-dialog').addEventListener('close', () => {
   bindingCapture = null;
-  keys.clear();
+  keys.suspend();
   specialQueued = false;
   moveTarget = null;
   paused = settingsWasPaused;
@@ -350,7 +350,7 @@ function openMap() {
     return;
   mapWasPaused = paused;
   paused = true;
-  keys.clear();
+  keys.suspend();
   specialQueued = false;
   moveTarget = null;
   save();
@@ -363,7 +363,7 @@ function openMap() {
 $('#map-toggle').onclick = openMap;
 $('#minimap').onclick = openMap;
 $('#map-dialog').addEventListener('close', () => {
-  keys.clear();
+  keys.suspend();
   specialQueued = false;
   paused = mapWasPaused;
   if (active) $('#world').focus({ preventScroll: true });
@@ -397,7 +397,7 @@ function openGear() {
   if (!run || loading) return;
   gearWasPaused = paused;
   paused = true;
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
   specialQueued = false;
   save();
@@ -489,7 +489,7 @@ function openGear() {
 }
 $('#gear-dialog').addEventListener('close', () => {
   paused = gearWasPaused;
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
   specialQueued = false;
   if (active) $('#world').focus({ preventScroll: true });
@@ -517,7 +517,7 @@ $('#book-toggle').onclick = () => {
     paused = true;
     save();
   }
-  keys.clear();
+  keys.suspend();
   specialQueued = false;
   bookMode = 'techniques';
   $('#book-family').value = run ? SkillSystem.family(run.s.player.species) : 'all';
@@ -539,7 +539,7 @@ $('#book-states').onclick = () => {
 $('#book-family').onchange = refreshBook;
 $('#book-dialog').addEventListener('close', () => {
   paused = bookWasPaused;
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
   specialQueued = false;
   if (active) $('#world').focus({ preventScroll: true });
@@ -595,7 +595,7 @@ function showHome() {
   $('#equipment-strip').hidden = true;
   active = false;
   paused = false;
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
   $('#home').hidden = false;
   $('#hud').hidden = true;
@@ -653,7 +653,7 @@ function activate() {
   active = true;
   paused = false;
   overlayKey = '';
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
   saveClock = 0;
   $('#home').hidden = true;
@@ -700,14 +700,14 @@ $('#pause-run').onclick = () => {
   if (active && !run.s.done && !run.s.choice && !run.s.evolution) {
     paused = !paused;
     specialQueued = false;
-    keys.clear();
+    keys.suspend();
     save();
   }
 };
 
 $('#resume-run').onclick = () => {
   paused = false;
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
 };
 
@@ -1011,7 +1011,7 @@ $('#style-activate').onclick = () => {
 function choose(id) {
   if (!run?.choose(id)) return;
   if (run.s.choice?.roll) {
-    keys.clear();
+    keys.suspend();
     moveTarget = null;
     specialQueued = false;
     save();
@@ -1275,7 +1275,7 @@ function end() {
   $('#boss-bar').hidden = true;
   $('#challenge-label').hidden = true;
   paused = false;
-  keys.clear();
+  keys.suspend();
 }
 
 async function sceneTransition(
@@ -1284,7 +1284,7 @@ async function sceneTransition(
 ) {
   if (loading) return;
   loading = true;
-  keys.clear();
+  keys.suspend();
   moveTarget = null;
   specialQueued = false;
   const el = $('#portal-transition'),
@@ -1319,7 +1319,7 @@ async function sceneTransition(
     el.setAttribute('aria-hidden', 'true');
     if (active && run) await renderer.travel(run, true);
     last = performance.now();
-    keys.clear();
+    keys.suspend();
     moveTarget = null;
     specialQueued = false;
     loading = false;
@@ -1376,6 +1376,15 @@ function interact() {
 }
 
 $('#interact').onclick = interact;
+
+document.addEventListener(
+  'keydown',
+  (event) => {
+    if (active && !event.target.matches('input,textarea,select,[contenteditable="true"]'))
+      keys.track(event);
+  },
+  true,
+);
 
 document.addEventListener('keydown', (event) => {
   if (loading) {
@@ -1463,7 +1472,7 @@ document.addEventListener('keydown', (event) => {
       if (!event.repeat) {
         paused = !paused;
         specialQueued = false;
-        keys.clear();
+        keys.suspend();
         save();
       }
     }
@@ -1482,7 +1491,7 @@ document.addEventListener('keydown', (event) => {
   if (!paused) keys.down(event);
 });
 
-document.addEventListener('keyup', (event) => keys.up(event));
+window.addEventListener('keyup', (event) => keys.up(event), true);
 
 $('#world').addEventListener('pointerdown', (event) => {
   if (!active || paused || run.s.choice || run.s.done || event.button !== 0) return;
@@ -1509,6 +1518,7 @@ window.addEventListener('beforeunload', save);
 window.addEventListener('digibonk-save', save);
 
 function controls(dt) {
+  keys.restoreMovement();
   const sx = (keys.pressed('right') ? 1 : 0) - (keys.pressed('left') ? 1 : 0),
     sz = (keys.pressed('down') ? 1 : 0) - (keys.pressed('up') ? 1 : 0),
     yaw = renderer.cameraYaw;
