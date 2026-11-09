@@ -497,3 +497,36 @@ test('chain attacks use accumulated area for their reach in every evolutionary s
       assert.equal(e.hp < 200, area === 2);
     }
 });
+
+test('shield absorbs overflow, recharges after four seconds and scales with health', () => {
+  const r = fresh('Gomamon'),
+    p = r.s.player;
+  p.hp = p.maxHp = 100;
+  p.shieldRatio = 0.5;
+  p.shield = 50;
+  const hp = p.hp;
+  r.hitPlayer(30);
+  assert.equal(p.hp, hp);
+  assert.equal(p.shield, 20);
+  p.invulnerable = 0;
+  r.hitPlayer(30);
+  assert.equal(p.hp, hp - 10);
+  assert.equal(p.shield, 0);
+  r.s.enemies = [];
+  p.weapons = [];
+  r.update(0.1);
+  assert.equal(p.shield, 0);
+  p.shieldDelay = 0;
+  p.maxHp = 200;
+  r.update(0.1);
+  assert.ok(p.shield > 0);
+  assert.ok(p.shield <= 100);
+  const saved = r.snapshot();
+  delete saved.player.shieldRatio;
+  delete saved.player.shield;
+  saved.player.armor = 5;
+  const loaded = new C.Run(null, { saved });
+  assert.equal(loaded.s.player.shieldRatio, 0.75);
+  assert.equal(loaded.s.player.shield, 150);
+  assert.equal(loaded.s.player.armor, undefined);
+});

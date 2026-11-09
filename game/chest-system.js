@@ -20,7 +20,7 @@
           magnet: 'alcance de recogida',
           xpMult: 'experiencia recogida',
           area: 'área de las técnicas',
-          armor: 'armadura',
+          shieldRatio: 'vida máxima como escudo',
           projectileBonus: 'golpes o proyectiles extra en todas las técnicas ofensivas',
           orbits: 'orbes recolectores de experiencia',
         },
@@ -34,7 +34,7 @@
           magnet: 'vacuum',
           xpMult: 'battery',
           area: 'frost',
-          armor: 'thorns',
+          shieldRatio: 'thorns',
           projectileBonus: 'dash-burst',
           orbits: 'battery',
         },
@@ -69,7 +69,7 @@
         }
         if (delta <= 0 || Math.abs(delta - last) < 1e-9) continue;
         last = delta;
-        const percent = !!base.factor || base.stat === 'crit',
+        const percent = !!base.factor || ['crit', 'shieldRatio'].includes(base.stat),
           value = percent ? delta * 100 : delta;
         card.text =
           '+' +

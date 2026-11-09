@@ -3791,3 +3791,25 @@ dialog,
   display: inline-block;
   min-width: 55px;
 }
+
+.shield-bar {
+  position: relative;
+  height: 17px;
+  background: #102d48;
+  border: 1px solid #72dbff;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+#shield-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2475b4, #70e7f0);
+}
+#shield-label {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  color: white;
+  font-size: 11px;
+  text-shadow: 0 1px 2px #071727;
+}

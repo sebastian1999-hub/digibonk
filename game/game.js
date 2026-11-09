@@ -454,7 +454,7 @@ function openGear() {
       numberStat(Math.min(0.85, p.crit + (p.focusLeft > 0 ? 0.15 : 0)) * 100) + ' %',
     ],
     ['Daño crítico', numberStat((1.8 + run.relicRank('critical-lens') * 0.15) * 100) + ' %'],
-    ['Armadura', numberStat(p.armor)],
+    ['Escudo', numberStat(p.shield) + ' / ' + numberStat(p.maxHp * p.shieldRatio)],
     ['Velocidad de movimiento', numberStat(p.speed * run.playerWorldSpeed())],
     [
       'Velocidad de ataque',
@@ -867,6 +867,14 @@ function refreshHud() {
   $('#stage-name').textContent = stageNames[p.stage];
   $('#life-fill').style.width = Math.max(0, (p.hp / p.maxHp) * 100) + '%';
   $('#life-label').textContent = Math.ceil(p.hp) + ' / ' + Math.ceil(p.maxHp);
+  const shieldMax = p.maxHp * p.shieldRatio;
+  $('#shield-fill').style.width = (shieldMax > 0 ? (p.shield / shieldMax) * 100 : 0) + '%';
+  $('#shield-label').textContent =
+    '⬡ ' +
+    Math.ceil(p.shield) +
+    ' / ' +
+    Math.ceil(shieldMax) +
+    (p.shieldDelay > 0 ? ' · ' + Math.ceil(p.shieldDelay) + ' s' : '');
   $('#xp-fill').style.width =
     (s.level >= 400 ? 100 : Math.min(100, (s.xp / C.xpNeeded(s.level)) * 100)) + '%';
   $('#level-label').textContent =
@@ -1159,7 +1167,7 @@ function showChoice() {
                   power: '⚔',
                   heart: '♡',
                   speed: '➤',
-                  armor: '⬡',
+                  shieldRatio: '⬡',
                   wisdom: '◇',
                   projectile: '»',
                   orbit: '◉',

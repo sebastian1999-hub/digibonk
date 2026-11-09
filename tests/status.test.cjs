@@ -168,6 +168,8 @@ test('frozen enemies cannot move, attack or shoot; roots stop movement while all
 test('weakness reduces both contact and launched projectile damage without altering base enemy stats', () => {
   const r = fresh(),
     e = enemy({ x: 1, contactDamage: 10 });
+  r.s.player.shield = 0;
+  r.s.player.shieldDelay = 4;
   r.s.enemies = [e];
   r.addEnemyStatus(e, 'weaken');
   r.update(0.05);

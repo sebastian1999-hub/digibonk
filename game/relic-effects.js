@@ -17,7 +17,7 @@
           stats = {
             'critical-chip': ['crit', 0.04],
             'vitality-chip': ['maxHp', 15],
-            'armor-chip': ['armor', 1],
+            'armor-chip': ['shieldRatio', 0.1],
             'regen-chip': ['regen', 0.25],
           },
           factors = {
@@ -30,7 +30,7 @@
           };
         const def = L.relics.find((d) => d.id === item.id);
         if (def?.stat) {
-          if (['armor', 'regen', 'maxHp', 'crit'].includes(def.stat)) {
+          if (['shieldRatio', 'regen', 'maxHp', 'crit'].includes(def.stat)) {
             player[def.stat] += def.value * delta;
             if (def.stat === 'maxHp')
               player.hp = Math.min(player.maxHp, player.hp + def.value * delta);

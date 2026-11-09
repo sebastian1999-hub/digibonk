@@ -1,3 +1,9 @@
+## 1.37.0 · Escudo regenerativo
+
+- Sustituida la armadura por escudo: absorbe daño antes de la vida y se regenera un 20 % de su capacidad por segundo tras 4 s sin recibir golpes.
+- Capacidad inicial del 25 % de vida máxima. Mejoras, reliquias y evoluciones aumentan esa proporción; crece con la vida máxima. Barra propia en el HUD.
+- Las partidas existentes convierten cada punto de armadura en un 10 % adicional de vida máxima como escudo.
+
 ## 1.36.0 · Cofres digitales
 
 - Cofres renovados con armadura, refuerzos dorados, cierre luminoso y núcleo flotante animado.

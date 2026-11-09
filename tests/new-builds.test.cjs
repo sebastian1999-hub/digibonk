@@ -183,7 +183,7 @@ test('every new passive grants its exact rank-three stat bonus without double ap
   const additives = {
       'critical-chip': ['crit', 0.04],
       'vitality-chip': ['maxHp', 15],
-      'armor-chip': ['armor', 1],
+      'armor-chip': ['shieldRatio', 0.1],
       'regen-chip': ['regen', 0.25],
     },
     factors = {
@@ -227,6 +227,7 @@ test('critical lens changes damage, dash drive changes cooldown and panic shield
   const p = fresh();
   grant(p, 'panic-shell', 3);
   p.s.player.hp = 35;
+  p.s.player.shield = 0;
   p.hitPlayer(10);
   assert.equal(p.s.player.shieldLeft, 5);
   assert.equal(p.s.relicClocks.panic, 20);

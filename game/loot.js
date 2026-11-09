@@ -106,10 +106,11 @@
     },
     {
       id: 'armor-chip',
-      name: 'Placa de Chrome Digizoid',
+      name: 'Escudo de Chrome Digizoid',
       icon: '⬡',
       theme: 'mint',
-      description: (r) => '+' + r + ' de armadura: reduce el daño recibido antes de escudos.',
+      description: (r) =>
+        '+' + r * 10 + ' % de vida máxima como escudo. Se recarga tras 4 s sin recibir golpes.',
     },
     {
       id: 'regen-chip',
@@ -259,7 +260,7 @@
     ['combat-gloves', 'Guantes de combate', 'damage', 0.06, 'daño', 'power-chip'],
     ['servo', 'Servomotor', 'haste', 0.06, 'velocidad de ataque', 'haste-chip'],
     ['clockwork', 'Engranaje acelerado', 'haste', 0.1, 'velocidad de ataque', 'haste-chip'],
-    ['shell', 'Caparazón de datos', 'armor', 1, 'armadura', 'armor-chip'],
+    ['shell', 'Barrera de datos', 'shieldRatio', 0.1, 'vida máxima como escudo', 'armor-chip'],
     ['repair-kit', 'Kit de reparación', 'regen', 0.2, 'vida por segundo', 'regen-chip'],
     ['life-cell', 'Célula vital', 'maxHp', 12, 'vida máxima', 'vitality-chip'],
     ['wind-ribbon', 'Cinta de viento', 'speed', 0.04, 'movimiento', 'swift-chip'],
@@ -269,7 +270,7 @@
     ['signal', 'Receptor de señal', 'magnet', 0.12, 'recogida', 'magnet-chip'],
     ['omega-reactor', 'Reactor de Omegamon', 'damage', 0.35, 'daño', 'power-chip', true],
     ['ulforce-drive', 'Motor Ulforce', 'haste', 0.35, 'velocidad de ataque', 'haste-chip', true],
-    ['aegis', 'Égida real', 'armor', 6, 'armadura', 'armor-chip', true],
+    ['aegis', 'Égida real', 'shieldRatio', 0.6, 'vida máxima como escudo', 'armor-chip', true],
     ['yggdrasil', 'Semilla de Yggdrasil', 'regen', 2, 'vida por segundo', 'regen-chip', true],
   ];
   for (const [id, name, stat, value, label, art, legendary] of extra)

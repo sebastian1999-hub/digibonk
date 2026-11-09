@@ -330,7 +330,13 @@
       stat: 'area',
       factor: 1.15,
     },
-    { id: 'armor', title: 'Escamas resistentes', text: '+1 de armadura', stat: 'armor', amount: 1 },
+    {
+      id: 'armor',
+      title: 'Barrera de datos',
+      text: '+10 % de vida máxima como escudo',
+      stat: 'shieldRatio',
+      amount: 0.1,
+    },
     {
       id: 'projectile',
       title: 'Disparo gemelo',
@@ -529,7 +535,7 @@
               maxHp: 100,
               damage: 10,
               speed: 8,
-              armor: 0,
+              shieldRatio: 0.25,
               crit: 0.05,
               haste: 1,
               area: 1,
@@ -560,6 +566,13 @@
             fx: [],
           };
         }
+        const defender = this.s.player;
+        if (defender.shieldRatio == null) {
+          defender.shieldRatio = 0.25 + Math.max(0, defender.armor || 0) * 0.1;
+        }
+        delete defender.armor;
+        defender.shield ??= defender.maxHp * defender.shieldRatio;
+        defender.shieldDelay ??= 0;
         this.s.relics ??= [];
         this.s.droppedChests ??= [];
         this.s.chestsOpened ??= [
@@ -1103,7 +1116,7 @@
           p.maxHp = Math.round(p.maxHp * 1.12 + 10);
           p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.18);
           p.damage *= 1.12;
-          p.armor += 0.5;
+          p.shieldRatio += 0.05;
           p.speed = Math.max(p.speed, Math.min(15, p.speed + 0.2));
           this.addWeapon(signature(p.species).id);
           s.history.push({ from, to: p.species, level: s.level, time: s.time });
@@ -1152,7 +1165,8 @@
           const w = p.weapons.find((w) => w.id === card.weapon);
           if (w) w.rank = Math.min(9, w.rank + (card.ranks || 1));
         } else {
-          if (card.factor) p[card.stat] *= card.factor;
+          if (card.stat === 'armor') p.shieldRatio += (card.amount || 0) * 0.1;
+          else if (card.factor) p[card.stat] *= card.factor;
           else p[card.stat] += card.amount;
           p.crit = Math.min(0.85, p.crit);
           p.speed = Math.min(15, p.speed);
@@ -1236,12 +1250,21 @@
           p = s.player;
         if (p.invulnerable > 0 || p.dashLeft > 0 || s.done) return;
         const value =
-          Math.max(1, amount - p.armor) *
-          (p.shieldLeft > 0 ? 0.45 : 1) *
-          this.incomingStyleDamage();
-        p.hp = Math.max(0, p.hp - value);
+          Math.max(0, amount) * (p.shieldLeft > 0 ? 0.45 : 1) * this.incomingStyleDamage();
+        const absorbed = Math.min(p.shield, value);
+        p.shield -= absorbed;
+        p.shieldDelay = 4;
+        const lifeDamage = value - absorbed;
+        p.hp = Math.max(0, p.hp - lifeDamage);
         p.invulnerable = 0.48;
-        this.effect('damage', p.x, p.z, { text: '−' + Math.ceil(value) });
+        this.effect('damage', p.x, p.z, {
+          text:
+            absorbed > 0
+              ? '⬡ −' +
+                Math.ceil(absorbed) +
+                (lifeDamage > 0 ? ' · ♥ −' + Math.ceil(lifeDamage) : '')
+              : '−' + Math.ceil(lifeDamage),
+        });
         this.emit('damage');
         this.onRelicDamage();
         if (p.hp > 0 && this.relicRank('thorns')) {
@@ -1420,6 +1443,10 @@
         if (s.choice) return;
         s.time += dt;
         p.hp = Math.min(p.maxHp, p.hp + p.regen * dt);
+        const shieldMax = p.maxHp * p.shieldRatio;
+        const rechargeTime = Math.max(0, dt - p.shieldDelay);
+        p.shieldDelay = Math.max(0, p.shieldDelay - dt);
+        p.shield = Math.min(shieldMax, p.shield + shieldMax * 0.2 * rechargeTime);
         p.invulnerable = Math.max(0, p.invulnerable - dt);
         p.dash = Math.max(0, p.dash - dt);
         p.dashLeft = Math.max(0, p.dashLeft - dt);
