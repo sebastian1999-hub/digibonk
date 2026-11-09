@@ -1,3 +1,9 @@
+## 1.35.6 · Mejoras entre evoluciones
+
+- Digievolucionar ya no reduce la velocidad acumulada cuando supera 12.
+- Los ataques en cadena aprovechan el área acumulada para su alcance.
+- Verificada la conservación de mejoras desde Rookie hasta Mega y al guardar y cargar.
+
 ## 1.35.5 · Indicador del salto
 
 - El salto muestra disponibilidad y segundos de recarga bajo el Digimon, con el mismo estilo que la habilidad Q, y en el panel lateral. Respeta la tecla configurada.

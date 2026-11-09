@@ -455,3 +455,45 @@ test('Q abilities scale damage, area, haste and projectiles with current build',
     for (const f of r.s.styleFields) assert.ok(f.radius >= 6);
   }
 });
+
+test('run upgrades survive Rookie to Mega and save reload without reducing speed', () => {
+  let r = fresh('Agumon', 1);
+  const stats = {
+    area: 2.4,
+    haste: 2.1,
+    speed: 15,
+    crit: 0.6,
+    magnet: 18,
+    projectileBonus: 3,
+    orbits: 4,
+    regen: 2,
+    xpMult: 1.7,
+  };
+  Object.assign(r.s.player, stats);
+  r.s.player.damage = 80;
+  r.s.player.maxHp = 300;
+  for (const species of ['Greymon', 'MetalGreymon', 'WarGreymon']) {
+    const before = { ...r.s.player };
+    r.s.choice = { kind: 'evolution', cards: [{ id: species, type: 'evolution', species }] };
+    assert.ok(r.choose(species));
+    for (const [key, value] of Object.entries(stats))
+      assert.equal(r.s.player[key], value, key + ' after ' + species);
+    assert.ok(r.s.player.damage >= before.damage);
+    assert.ok(r.s.player.maxHp >= before.maxHp);
+    r = new C.Run(null, { saved: r.snapshot() });
+    for (const [key, value] of Object.entries(stats))
+      assert.equal(r.s.player[key], value, key + ' after reload');
+  }
+});
+
+test('chain attacks use accumulated area for their reach in every evolutionary stage', () => {
+  for (const stage of [1, 4])
+    for (const area of [1, 2]) {
+      const r = fresh('Agumon', stage);
+      r.s.player.area = area;
+      const e = mob(20);
+      r.s.enemies = [e];
+      r.castPattern({ id: 'energy-bolt', pattern: 'chain' }, 1, e, 10);
+      assert.equal(e.hp < 200, area === 2);
+    }
+});

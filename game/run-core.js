@@ -1104,7 +1104,7 @@
           p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.18);
           p.damage *= 1.12;
           p.armor += 0.5;
-          p.speed = Math.min(12, p.speed + 0.2);
+          p.speed = Math.max(p.speed, Math.min(15, p.speed + 0.2));
           this.addWeapon(signature(p.species).id);
           s.history.push({ from, to: p.species, level: s.level, time: s.time });
           s.evolution = { from, to: p.species, left: 2.4, duration: 2.4 };

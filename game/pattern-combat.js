@@ -113,7 +113,7 @@
         for (let i = 0; i < 3; i++) {
           available.sort((a, b) => dist(a, origin) - dist(b, origin));
           const e = available.shift();
-          if (!e || dist(e, origin) > 15) break;
+          if (!e || dist(e, origin) > 15 * p.area) break;
           apply(e);
           this.effect('burst', e.x, e.z, {
             skillId: skill.id,
