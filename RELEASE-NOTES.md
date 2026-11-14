@@ -1,3 +1,20 @@
+## 1.38.0 · Pasivas de huevo y novedades de combate
+
+- Doce pasivas propias de cada huevo, persistentes al evolucionar, con nuevos iconos y cartas de rareza.
+- El exceso de probabilidad crítica aumenta el daño crítico. Choromon renueva tarjetas, Mokumon compra técnicas de otras líneas y YukimiBotamon detiene una ruleta de cofres.
+- Mejor rendimiento de navegación para las hordas de Yuramon y ajustes del menú de incubación.
+
+- Info parche sustituye el botón Liga y muestra las novedades y correcciones de cada versión.
+- La habilidad activa Q tiene una recarga mínima de 2,5 segundos.
+- Los enemigos se vuelven incontrolables tras acumular 5 segundos de stun o ralentización; un escudo naranja identifica su inmunidad durante 5 segundos. Después el contador se reinicia y pueden volver a recibir controles.
+
+- Gacha exclusivo de Zurumon: un intento por cofre, con éxito del 20 % al 50 % según el nivel.
+- Reliquias y mejoras de cantidad acumulables, incluidos los objetos legendarios.
+
+- Rebote digital: mejora desde rara, con 1/2/3 rebotes según rareza, acumulables. Cada salto busca otro enemigo cercano y conserva el 80 % del daño.
+- Mapa y minimapa en rombo con el marco aportado y coordenadas adaptadas.
+- Recolectores con sprites nuevos: básicos más lentos, fusión de cada tres mejoras en un recolector evolucionado más rápido.
+
 ## 1.37.6 · Teclas tras menús y portales
 
 - El movimiento mantenido se recupera al cerrar menús o terminar transiciones, incluso con varias teclas pulsadas. Soltar una tecla durante la transición se registra correctamente.

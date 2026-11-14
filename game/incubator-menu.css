@@ -9,7 +9,7 @@ body[data-screen='home'] #home:has(.digital-menu):has(#home-content:not([hidden]
   display: none !important;
 }
 #home-panel:has(#home-content:not([hidden])) {
-  max-width: min(1400px, calc((100dvh / var(--ui-scale, 1) - 150px) * 1672 / 941));
+  max-width: min(1400px, calc((100dvh / var(--ui-scale, 1) - 220px) * 1672 / 941));
   margin: auto;
 }
 #home-content .section-label {

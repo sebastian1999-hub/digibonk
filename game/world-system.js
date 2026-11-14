@@ -172,7 +172,7 @@
       }
       if (boss.summonClock <= 0) {
         boss.summonClock = 18;
-        for (let i = 0; i < 3 && s.enemies.length < 210; i++) {
+        for (let i = 0; i < 3 && s.enemies.length < 210 + this.enemyCapBonus(); i++) {
           const a = this.random() * Math.PI * 2,
             x = boss.x + Math.cos(a) * 8,
             z = boss.z + Math.sin(a) * 8;
@@ -202,32 +202,24 @@
       return this.s.sectors[W.sectorIndex(unit.x, unit.z)];
     };
     proto.styleRangeMultiplier = function () {
-      return this.style()?.id === 'artillery' ? 1.2 : 1;
+      return 1;
     };
     proto.playerWorldSpeed = function () {
       const p = this.s.player,
         style = this.style();
-      return (
-        (this.currentSector().kind === 'flood' && style?.id !== 'tide' ? 0.85 : 1) *
-        (style?.id === 'hunter' ? 1.15 : 1)
-      );
+      return this.currentSector().kind === 'flood' ? 0.85 : 1;
     };
     proto.enemyWorldSpeed = function (enemy) {
       let factor = this.currentSector(enemy).kind === 'glitch' ? 1.18 : 1;
-      if (
-        this.style()?.id === 'controller' &&
-        dist(enemy, this.s.player) < 8 &&
-        !this.s.styleFields.some((f) => f.kind === 'roots' && dist(f, enemy) < f.radius)
-      )
-        factor *= 0.85;
       for (const f of this.s.styleFields)
-        if (f.kind === 'roots' && dist(f, enemy) < f.radius) factor *= enemy.boss ? 0.7 : 0.45;
+        if (!enemy.uncontrollable && f.kind === 'roots' && f.life > 0 && dist(f, enemy) < f.radius)
+          factor *= enemy.boss ? 0.7 : 0.45;
       return factor * this.portalReturnSpeed();
     };
     proto.incomingStyleDamage = function () {
       const p = this.s.player,
         style = this.style();
-      let factor = style?.id === 'vanguard' ? 0.8 : 1;
+      let factor = 1;
       if (this.s.styleFields.some((f) => f.kind === 'sanctuary' && dist(f, p) < f.radius))
         factor *= 0.75;
       return factor;
@@ -242,6 +234,13 @@
         (p.rallyLeft > 0 ? 1.25 : 1)
       );
     };
+    proto.styleCooldownDuration = function () {
+      const p = this.s.player;
+      return Math.max(
+        2.5,
+        (this.style()?.cooldown || 2.5) / (p.haste * (p.hasteLeft > 0 ? 1.2 : 1)),
+      );
+    };
     proto.castStyle = function () {
       const s = this.s,
         p = s.player,
@@ -254,7 +253,7 @@
         target = enemies[0];
       if (['hunter', 'artillery'].includes(style.id) && (!target || dist(target, p) > 20))
         return false;
-      p.styleCooldown = style.cooldown / (p.haste * (p.hasteLeft > 0 ? 1.2 : 1));
+      p.styleCooldown = p.styleCooldownDuration = this.styleCooldownDuration();
       p.attackAt = s.time;
       const field = (kind, x, z, life, radius) => {
         const f = {
@@ -322,7 +321,7 @@
         for (const enemy of enemies)
           if (dist(enemy, p) < 7 * p.area) {
             this.hurt(enemy, this.styleDamage() * 3, 'tidal-wave');
-            enemy.slowLeft = 2.5;
+            this.slowEnemy(enemy, 2.5);
             this.move(enemy, enemy.x - p.x, enemy.z - p.z, 10, 0.12, 0.55);
           }
         this.effect('burst', p.x, p.z, {
@@ -353,12 +352,7 @@
       p.styleCooldown = Math.max(0, p.styleCooldown - dt);
       p.celebrateLeft = Math.max(0, (p.celebrateLeft || 0) - dt);
       if (input.special) this.castStyle();
-      if (style?.id === 'hunter') {
-        const prey = s.enemies
-          .filter((e) => e.hp > 0 && !e.shielded && dist(e, p) < 14)
-          .sort((a, b) => dist(a, p) - dist(b, p))[0];
-        p.preyId = prey?.id || null;
-      } else if (style?.id !== 'hunter') p.preyId = null;
+      p.preyId = null;
       const zone = this.currentSector();
       w.hazardClock -= dt;
       if (zone.kind === 'fire' && w.hazardClock <= 0 && !s.purifying) {
@@ -377,7 +371,7 @@
         h.life -= dt;
         if (h.life <= 0) {
           if (s.sectors[h.zone].kind === 'fire' && dist(h, p) < h.radius)
-            this.hitPlayer((10 + s.time * 0.02) * (style?.id === 'vanguard' ? 0.6 : 1));
+            this.hitPlayer((10 + s.time * 0.02) * 1);
           this.effect('burst', h.x, h.z, {
             skillId: 'inferno',
             enemy: true,
@@ -418,7 +412,7 @@
     proto.updateStyleFields = function (dt) {
       const s = this.s,
         p = s.player;
-      if (this.style()?.id === 'guardian') p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.01 * dt);
+
       p.chargeTrail = Math.max(0, (p.chargeTrail || 0) - dt);
       if (p.chargeTrail > 0 && p.dashLeft > 0)
         for (const enemy of s.enemies)

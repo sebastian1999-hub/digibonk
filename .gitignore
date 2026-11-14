@@ -6,6 +6,7 @@
 !/desktop/
 !/tests/
 !/docs/
+!/scripts/
 !/preview-server.cjs
 !/supabase/
 !/README.md

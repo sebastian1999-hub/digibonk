@@ -297,3 +297,85 @@ test('weakness also reduces Devimon special fan projectiles at their source', ()
   assert.equal(r.s.hostile.length, 5);
   assert.ok(r.s.hostile.every((shot) => Math.abs(shot.damage - 14.4) < 1e-8));
 });
+
+test('five effective seconds of control grant five seconds of immunity without double counting simultaneous states', () => {
+  let r = fresh(),
+    e = enemy();
+  r.s.enemies = [e];
+  e.slowLeft = 20;
+  e.statuses = {
+    freeze: { left: 20 },
+    root: { left: 20 },
+    burn: { left: 3, clock: 0.5, power: 1 },
+  };
+  r.updateEnemyControl(e, 2.5);
+  assert.equal(e.controlTime, 2.5);
+  assert.equal(e.uncontrollable, undefined);
+  r = new C.Run(null, { saved: r.snapshot() });
+  e = r.s.enemies[0];
+  r.updateEnemyControl(e, 2.5);
+  assert.equal(e.uncontrollable, true);
+  assert.equal(e.slowLeft, 0);
+  assert.equal(e.statuses.freeze, undefined);
+  assert.equal(e.statuses.root, undefined);
+  assert.ok(e.statuses.burn);
+  for (const id of ['freeze', 'shock', 'root', 'chill'])
+    assert.equal(r.addEnemyStatus(e, id), false);
+  assert.equal(r.slowEnemy(e, 100), false);
+  assert.equal(r.enemyStatusBlocked(e), false);
+  assert.equal(r.enemyStatusMovement(e), 1);
+  assert.ok(r.addEnemyStatus(e, 'poison', 10));
+  assert.ok(new C.Run(null, { saved: r.snapshot() }).s.enemies[0].uncontrollable);
+  r.updateEnemyControl(e, 2);
+  r = new C.Run(null, { saved: r.snapshot() });
+  e = r.s.enemies[0];
+  assert.equal(e.uncontrollableLeft, 3);
+  r.s.choice = r.choices();
+  r.update(0.05);
+  assert.equal(e.uncontrollableLeft, 3);
+  r.s.choice = null;
+  r.updateEnemyControl(e, 2.95);
+  assert.equal(r.slowEnemy(e, 10), false);
+  r.updateEnemyControl(e, 0.05);
+  assert.equal(e.uncontrollable, false);
+  assert.equal(e.controlTime, 0);
+  assert.equal(r.addEnemyStatus(e, 'freeze'), true);
+  assert.equal(r.slowEnemy(e, 10), true);
+  r.updateEnemyControl(e, 5);
+  assert.equal(e.uncontrollableLeft, 5);
+  assert.equal(e.uncontrollable, true);
+});
+
+test('control exposure counts only affected time and survives gaps, but paused menus add no time', () => {
+  const r = fresh(),
+    e = enemy();
+  r.s.enemies = [e];
+  e.slowLeft = 0.3;
+  r.updateEnemyControl(e, 1);
+  assert.equal(e.controlTime, 0.3);
+  e.slowLeft = 0;
+  r.updateEnemyControl(e, 10);
+  assert.equal(e.controlTime, 0.3);
+  r.slowEnemy(e, 10);
+  r.s.choice = r.choices();
+  for (let i = 0; i < 120; i++) r.update(0.05);
+  assert.equal(e.controlTime, 0.3);
+  r.s.choice = null;
+  for (let i = 0; i < 94; i++) r.update(0.05);
+  assert.equal(e.uncontrollable, true);
+});
+
+test('root fields and boss slows count towards immunity, while damage and world return grace remain', () => {
+  const r = fresh(),
+    e = enemy({ boss: true });
+  r.s.enemies = [e];
+  r.s.styleFields = [{ kind: 'roots', x: e.x, z: e.z, radius: 5, life: 10, tick: 10 }];
+  assert.equal(r.enemyWorldSpeed(e), 0.7);
+  r.updateEnemyControl(e, 5);
+  assert.equal(r.enemyWorldSpeed(e), r.portalReturnSpeed());
+  assert.equal(r.addEnemyStatus(e, 'shock'), false);
+  assert.ok(r.addEnemyStatus(e, 'burn', 100));
+  const tower = enemy({ tower: true });
+  r.updateEnemyControl(tower, 10);
+  assert.equal(tower.uncontrollable, undefined);
+});

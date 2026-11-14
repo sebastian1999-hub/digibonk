@@ -11,7 +11,7 @@ const C = require('../game/run-core').create(
   require('../game/skill-system'),
 );
 function fresh() {
-  const r = new C.Run('Botamon', { seed: 123, id: 'chest-test' });
+  const r = new C.Run('Zurumon', { seed: 123, id: 'chest-test' });
   r.s.hatch = 0;
   r.random = () => 0;
   r.s.choice = r.chestChoices();
@@ -32,22 +32,24 @@ test('carousel outcome survives reload, cannot be collected during spin, and sta
   assert.equal(copy.choose(id), false);
   assert.equal(copy.s.relics[0].rank, 1);
 });
-test('epic outcome has maximum actual rank and no gamble; a fully maxed build recycles bits', () => {
+test('epic rewards grant three copies and remain available at higher ranks', () => {
   const r = fresh();
   r.random = () => 0.97;
   r.s.choice = r.chestChoices();
   assert.equal(r.s.choice.cards[0].quality, 3);
   reveal(r);
-  assert.equal(r.canRiskChest(), false);
+  assert.equal(r.canRiskChest(), true);
   assert.ok(r.choose(r.s.choice.cards[0].id));
   assert.equal(r.s.relics[0].rank, 3);
   r.s.relics = require('../game/loot').relics.map((x) => ({ id: x.id, rank: 3 }));
   r.s.buddies = require('../game/loot').companions.map((x) => ({ species: x.id, clock: 0 }));
   r.s.choice = r.chestChoices();
   reveal(r);
-  const before = r.s.coins;
-  assert.ok(r.choose(r.s.choice.cards[0].id));
-  assert.equal(r.s.coins, before + 10);
+  const card = r.chestPool().find((item) => item.quality === 3);
+  r.s.choice.cards = [card];
+  assert.equal(card.rank, 6);
+  assert.ok(r.choose(card.id));
+  assert.equal(r.relicRank(card.item), 6);
 });
 
 test('Wizardmon removes a technique without charging and saves the result', () => {
@@ -113,14 +115,18 @@ test('chests offer and award new relics beyond four and old chest prices rise to
   assert.equal(r.poiCost(chest), 100);
 });
 
-test('gamble is disabled and the original reward remains collectible', () => {
-  const r = fresh();
-  reveal(r);
-  const before = structuredClone(r.s.choice);
-  assert.equal(r.canRiskChest(), false);
-  assert.equal(r.riskChest(), false);
-  assert.deepEqual(r.s.choice, before);
-  assert.ok(r.choose(before.cards[0].id));
+test('one gamble upgrades below 20% and loses the reward at 20%', () => {
+  for (const n of [0.199, 0.2]) {
+    const r = fresh();
+    reveal(r);
+    const quality = r.s.choice.cards[0].quality;
+    r.random = () => n;
+    assert.ok(r.riskChest());
+    assert.ok(reveal(r));
+    assert.equal(r.riskChest(), false);
+    assert.equal(r.s.choice.roll.empty, n >= 0.2);
+    if (n < 0.2) assert.ok(r.s.choice.cards[0].quality > quality);
+  }
 });
 test('fortune charm increases actual legendary odds by two points per rank', () => {
   const r = fresh(),

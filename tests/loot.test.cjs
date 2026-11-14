@@ -65,14 +65,19 @@ test('chests offer dedicated relics and real companions, charge once and preserv
   assert.equal(r.interact().ok, false);
   assert.equal(r.s.coins, 5);
 });
-test('unlimited relic slots retain maximum quality rank and three companions', () => {
+test('relic copies accumulate beyond rank three alongside companions', () => {
   const r = fresh();
   for (const id of ['vacuum', 'thorns', 'finisher', 'boss-hunter']) grant(r, id);
   assert.equal(r.s.relics.length, 4);
   for (let i = 0; i < 4; i++) grant(r, 'vacuum');
-  assert.equal(r.relicRank('vacuum'), 3);
-  for (const card of r.chestChoices().cards)
-    if (card.type === 'artifact') assert.ok(card.rank <= 3);
+  assert.equal(r.relicRank('vacuum'), 5);
+  assert.deepEqual(
+    r
+      .chestPool()
+      .filter((c) => c.item === 'vacuum')
+      .map((c) => c.rank),
+    [6, 7, 8],
+  );
   grant(r, 'Terriermon', 'companion');
   grant(r, 'Salamon', 'companion');
   assert.deepEqual(

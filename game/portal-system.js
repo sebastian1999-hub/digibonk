@@ -395,7 +395,8 @@
     proto.spawnRealmMob = function (wave, token) {
       const s = this.s,
         r = s.realm;
-      if (!r || s.enemies.filter((e) => e.hp > 0).length >= 150) return false;
+      if (!r || s.enemies.filter((e) => e.hp > 0).length >= 150 + this.enemyCapBonus())
+        return false;
       const pressure = r.pressure,
         baseStage = B.realm(pressure, wave).stage,
         stage = baseStage,

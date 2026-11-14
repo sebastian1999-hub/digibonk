@@ -1,5 +1,9 @@
 (function (root) {
   'use strict';
+  const EGG_PASSIVES =
+    typeof module !== 'undefined' && module.exports
+      ? require('./egg-passives.js')
+      : root.DigibonkEggPassives;
   const DIFFICULTY =
     typeof module !== 'undefined' && module.exports
       ? require('./difficulty-system.js')
@@ -270,8 +274,8 @@
     unit.navWaypoint = best ? { x: best.x, z: best.z } : null;
     return best ? { x: best.x - unit.x, z: best.z - unit.z } : { x: 0, z: 0 };
   }
-  function xpNeeded(level) {
-    if (level >= 400) return Infinity;
+  function xpNeeded(level, maxLevel = 400) {
+    if (level >= maxLevel) return Infinity;
     return (
       6 +
       level * 3 +
@@ -346,9 +350,18 @@
       rare: true,
     },
     {
+      id: 'ricochet',
+      title: 'Rebote digital',
+      text: '+1 rebote de proyectil entre enemigos. Cada rebote conserva el 80 % del daño.',
+      stat: 'ricochets',
+      amount: 1,
+      minQuality: 2,
+      rare: true,
+    },
+    {
       id: 'orbit',
       title: 'Satélite de datos',
-      text: 'Añade un orbe que busca experiencia y la trae al Digimon',
+      text: 'Añade un recolector de experiencia. Cada 3 se fusionan en uno más rápido',
       stat: 'orbits',
       amount: 1,
       rare: true,
@@ -571,6 +584,7 @@
           defender.shieldRatio = 0.25 + Math.max(0, defender.armor || 0) * 0.1;
         }
         delete defender.armor;
+        defender.ricochets ??= 0;
         defender.shield ??= defender.maxHp * defender.shieldRatio;
         defender.shieldDelay ??= 0;
         this.s.relics ??= [];
@@ -600,8 +614,9 @@
         this.map = mapFor(this.s.mapSeed);
         this.events = [];
         this.initializeWorld();
-        this.s.level = Math.min(400, Math.max(1, this.s.level));
-        if (this.s.level === 400) this.s.xp = 0;
+        this.initializeEggPassive(!!saved);
+        this.s.level = Math.min(this.maxLevel(), Math.max(1, this.s.level));
+        if (this.s.level === this.maxLevel()) this.s.xp = 0;
         if (this.s.techniqueRevision !== 1) {
           const p = this.s.player,
             id = skills.signatureIds[p.species];
@@ -622,8 +637,14 @@
           }
           this.s.techniqueRevision = 1;
         }
-        if (this.s.choice?.kind === 'shop' && !this.s.choice.roll)
-          this.s.choice = this.removalChoices();
+        if (this.s.choice?.kind === 'shop' && !this.s.choice.roll) {
+          const savedMarket =
+            this.s.egg === 'Mokumon' &&
+            this.s.choice.cards.some(
+              (card) => card.type === 'market-weapon' || card.id === 'leave-market',
+            );
+          if (!savedMarket) this.s.choice = this.choices('shop');
+        }
         if (this.s.choice?.kind === 'evolution') {
           const target = this.s.player.stage + 1;
           const options = evolutionOptions(this.s.player.species, this.s.eggTraining);
@@ -647,9 +668,9 @@
           !Number.isFinite(s.player.hp)
         )
           throw Error('Partida no compatible');
-        s.enemies = s.enemies.slice(0, 220);
+        s.enemies = s.enemies.slice(0, 220 + (s.egg === 'Yuramon' ? Math.min(400, s.level) : 0));
         s.shots = s.shots.slice(0, 180);
-        s.gems = s.gems.slice(0, 250);
+        s.gems = s.gems.filter((gem, index) => gem.dataCard || index < 250);
         s.fx = s.fx.slice(0, 100);
       }
       random() {
@@ -790,10 +811,8 @@
       upgradeAvailable(u) {
         const p = this.s.player;
         return !{
-          projectile: p.projectileBonus >= 5,
-          orbit: p.orbits >= 6,
           speed: p.speed >= 15,
-          crit: p.crit >= 0.85,
+
           magnet: p.magnet >= 24,
         }[u.id];
       }
@@ -945,6 +964,29 @@
         }
         return { kind: 'chest', title: 'Un cofre. Una decisión.', cards };
       }
+      bounceShot(shot, target) {
+        shot.hitTargets ??= [];
+        shot.hitTargets.push(target.id);
+        if (shot.bouncesLeft <= 0) return;
+        const next = this.s.enemies
+          .filter(
+            (e) =>
+              e.hp > 0 &&
+              !e.shielded &&
+              !shot.hitTargets.includes(e.id) &&
+              distance(e, target) <= 12 * this.s.player.area,
+          )
+          .sort((a, b) => distance(a, target) - distance(b, target))[0];
+        if (!next) return;
+        shot.bouncesLeft--;
+        shot.target = next.id;
+        shot.damage *= 0.8;
+        shot.x = target.x;
+        shot.z = target.z;
+        shot.ox = target.x;
+        shot.oz = target.z;
+        shot.life = 2.8;
+      }
       updateCollectors(dt) {
         const s = this.s,
           p = s.player,
@@ -954,10 +996,13 @@
           s.collectorScene = scene;
         }
         s.collectors ??= [];
-        s.collectors.length = Math.min(s.collectors.length, p.orbits);
-        while (s.collectors.length < p.orbits) s.collectors.push({ x: p.x, z: p.z });
+        const evolved = Math.floor(p.orbits / 3),
+          count = evolved + (p.orbits % 3);
+        s.collectors.length = Math.min(s.collectors.length, count);
+        while (s.collectors.length < count) s.collectors.push({ x: p.x, z: p.z });
         const reserved = new Set(s.collectors.map((o) => o.target).filter((id) => id != null));
         for (const [i, orb] of s.collectors.entries()) {
+          orb.evolved = i < evolved;
           let gem = s.gems.find((g) => g.id === orb.target);
           if (!gem) {
             orb.target = null;
@@ -970,14 +1015,14 @@
               reserved.add(gem.id);
             }
           }
-          const angle = s.time * 2.5 + (i * Math.PI * 2) / Math.max(1, p.orbits);
+          const angle = s.time * 2.5 + (i * Math.PI * 2) / Math.max(1, count);
           const target = gem
             ? orb.returning
               ? p
               : gem
             : { x: p.x + Math.cos(angle) * 3.4, z: p.z + Math.sin(angle) * 3.4 };
           const d = distance(orb, target),
-            step = Math.min(d, (24 + p.speed) * dt);
+            step = Math.min(d, (p.speed + (orb.evolved ? 24 : 5)) * dt);
           orb.x += ((target.x - orb.x) / (d || 1)) * step;
           orb.z += ((target.z - orb.z) / (d || 1)) * step;
           if (gem && !orb.returning && distance(orb, gem) < 0.6) orb.returning = true;
@@ -1047,8 +1092,8 @@
       }
       maybeLevel() {
         const s = this.s;
-        if (s.level >= 400) {
-          s.level = 400;
+        if (s.level >= this.maxLevel()) {
+          s.level = this.maxLevel();
           s.xp = 0;
           return;
         }
@@ -1059,12 +1104,12 @@
           s.done ||
           s.realm?.phase === 'cleared' ||
           s.pendingRealmReturn ||
-          s.xp < xpNeeded(s.level)
+          s.xp < xpNeeded(s.level, this.maxLevel())
         )
           return;
-        s.xp -= xpNeeded(s.level);
+        s.xp -= xpNeeded(s.level, this.maxLevel());
         s.level++;
-        if (s.level === 400) s.xp = 0;
+        if (s.level === this.maxLevel()) s.xp = 0;
         s.score += 40;
         const p = s.player,
           target = p.stage + 1;
@@ -1175,7 +1220,7 @@
           if (card.stat === 'armor') p.shieldRatio += (card.amount || 0) * 0.1;
           else if (card.factor) p[card.stat] *= card.factor;
           else p[card.stat] += card.amount;
-          p.crit = Math.min(0.85, p.crit);
+
           p.speed = Math.min(15, p.speed);
           p.magnet = Math.min(24, p.magnet);
           if ((card.baseId || card.id) === 'heart')
@@ -1197,15 +1242,15 @@
                 ? amount
                 : amount *
                     this.elementDamageMultiplier(enemy, skillId) *
-                    (this.style()?.id === 'hunter' && p.preyId === enemy.id ? 1.15 : 1) *
-                    (crit ? 1.8 + this.relicRank('critical-lens') * 0.15 : 1) *
+                    (crit ? this.criticalMultiplier() : 1) *
                     (enemy.hp / enemy.maxHp < 0.3 ? 1 + this.relicRank('finisher') * 0.15 : 1) *
                     (enemy.boss || enemy.elite ? 1 + this.relicRank('boss-hunter') * 0.12 : 1),
             ),
           );
         enemy.hp = Math.max(0, enemy.hp - damage);
         enemy.hit = 0.16;
-        if (crit && this.relicRank('frost')) enemy.slowLeft = 1 + this.relicRank('frost') * 0.5;
+        if (crit && this.relicRank('frost'))
+          this.slowEnemy(enemy, 1 + this.relicRank('frost') * 0.5);
         this.effect('hit', enemy.x, enemy.z, {
           text: String(damage),
           crit,
@@ -1219,6 +1264,7 @@
             return;
           }
           s.kills++;
+          this.dropDataCard(enemy);
           this.dropEnemyChest(enemy);
           const battery = this.relicRank('battery');
           if (battery && s.kills % (24 - battery * 4) === 0 && (s.relicClocks.battery || 0) <= 0) {
@@ -1245,8 +1291,9 @@
             heal: !enemy.boss && this.random() < 0.035,
           });
           if (s.gems.length > 240) {
-            const a = s.gems.shift();
-            s.gems[0].value += a.value;
+            const index = s.gems.findIndex((g) => !g.dataCard);
+            const target = s.gems.find((g, i) => i !== index && !g.dataCard);
+            if (index >= 0 && target) target.value += s.gems.splice(index, 1)[0].value;
           }
           this.emit(enemy.boss ? 'boss-ko' : 'ko');
         }
@@ -1293,7 +1340,8 @@
             ? Math.min(4, Math.max(1, Math.floor(s.time / 150) + 1))
             : BALANCE.mainStage(s.time),
           pool = catalog.filter((c) => c.stage === stage && c.id !== 'Devimon');
-        if (s.enemies.filter((e) => e.hp > 0).length >= (boss ? 219 : 210)) return;
+        if (s.enemies.filter((e) => e.hp > 0).length >= (boss ? 219 : 210) + this.enemyCapBonus())
+          return;
         for (let tries = 0; tries < 24; tries++) {
           const angle = this.random() * Math.PI * 2,
             r = 38 + this.random() * 12,
@@ -1420,6 +1468,13 @@
         const s = this.s,
           p = s.player;
         this.events = [];
+        this.syncEggPhase();
+        if (this.s.egg === 'Punimon' && this._specialistCount !== p.weapons.length) {
+          this.removeSpecialist();
+          this.applySpecialist();
+          this._specialistCount = p.weapons.length;
+          p.hp = Math.min(p.hp, p.maxHp);
+        }
         s.droppedChests = s.droppedChests.filter(
           (c) => c.expires > s.time && !s.usedPois.includes(c.id),
         );
@@ -1437,6 +1492,7 @@
             p.species = s.egg;
             p.stage = -1;
             this.addWeapon('bubble');
+            this.syncEggPhase();
             this.emit('hatch');
           }
           return;
@@ -1514,13 +1570,17 @@
         s.fx = s.fx.filter((e) => e.life > 0);
         if (!s.realm) {
           s.spawnClock -= dt;
-          if (s.spawnClock <= 0 && s.enemies.filter((e) => e.hp > 0).length < 210) {
+          if (
+            s.spawnClock <= 0 &&
+            s.enemies.filter((e) => e.hp > 0).length < 210 + this.enemyCapBonus()
+          ) {
             const density = BALANCE.main(s.time, p.stage);
             s.spawnClock = Math.max(
               0.18,
               density.interval * (0.8 + this.random() * 0.4) * (s.challenge ? 0.65 : 1),
             );
-            for (let i = 0; i < density.batch; i++) this.spawn();
+            for (let i = 0; i < density.batch && s.enemies.length < 210 + this.enemyCapBonus(); i++)
+              this.spawn();
           }
           if (s.time >= s.nextBoss) {
             s.nextBoss += 90;
@@ -1594,6 +1654,7 @@
         }
 
         for (const shot of s.shots) {
+          shot.bouncesLeft ??= p.ricochets;
           shot.prevX = shot.x;
           shot.prevZ = shot.z;
           shot.life -= dt;
@@ -1617,6 +1678,7 @@
               radius: shot.area || 0.6 * (shot.visualScale || 1),
               visualScale: shot.visualScale || 1,
             });
+            this.bounceShot(shot, target);
           } else {
             shot.x += ((target.x - shot.x) / (d || 1)) * shot.speed * dt;
             shot.z += ((target.z - shot.z) / (d || 1)) * shot.speed * dt;
@@ -1629,6 +1691,7 @@
           if (e.hp <= 0) continue;
           e.hit = Math.max(0, e.hit - dt);
           if (e.tower) continue;
+          this.updateEnemyControl(e, dt);
           if (this.enemyStatusBlocked(e)) {
             e.slowLeft = Math.max(0, (e.slowLeft || 0) - dt);
             continue;
@@ -1640,13 +1703,25 @@
           }
           const chase = e.finalBoss && Math.hypot(p.x, p.z) > 40 ? { x: 0, z: 0 } : p;
           if (e.finalBoss && chase !== p && distance(e, chase) < 1) continue;
-          const direction = crowdDirection(e, enemyDirection(e, chase, s.mapSeed), crowd);
+          // Large hordes share the navigation field and stagger route decisions.
+          // Collision and separation still run every frame; timers persist in saves.
+          let pursuit;
+          if (alive.length > 220) {
+            e.navThink = (e.navThink || 0) - dt;
+            if (!e.navAim || e.navThink <= 0 || distance(e, e.navAim) < 0.4) {
+              const next = enemyDirection(e, chase, s.mapSeed);
+              e.navAim = { x: e.x + next.x, z: e.z + next.z };
+              e.navThink = 0.09 + (e.id % 7) * 0.012;
+            }
+            pursuit = { x: e.navAim.x - e.x, z: e.navAim.z - e.z };
+          } else pursuit = enemyDirection(e, chase, s.mapSeed);
+          const direction = crowdDirection(e, pursuit, crowd);
           this.move(
             e,
             direction.x,
             direction.z,
             e.speed *
-              (e.slowLeft > 0 ? 0.65 : 1) *
+              (e.slowLeft > 0 && !e.uncontrollable ? 0.65 : 1) *
               this.enemyWorldSpeed(e) *
               this.enemyStatusMovement(e),
             dt,
@@ -1777,6 +1852,7 @@
     PATTERNS.install(result, skills);
     STATUSES.install(result, skills);
     DIFFICULTY.install(result);
+    EGG_PASSIVES.install(result, skills);
     return result;
   }
   const api = {

@@ -171,15 +171,19 @@ test('time keeps scaling a portal while entry level and enemy stages remain fixe
   r.enterPortal(r.s.world.portals[0].id);
   assert.equal(r.s.realm.pressure.level, 30);
 });
-test('saved revealed chests cannot be gambled and preserve coins and reward', () => {
+test('a chest gamble survives save and cannot be retried', () => {
   const r = fresh();
+  r.s.egg = 'Zurumon';
   r.s.choice = r.chestChoices();
+  r.s.choice.cards[0].quality = 1;
   r.revealChest(r.s.choice.roll.id + ':0');
-  const before = JSON.stringify(r.s.choice),
-    coins = r.s.coins;
-  assert.equal(r.riskChest(), false);
-  assert.equal(JSON.stringify(r.s.choice), before);
-  assert.equal(r.s.coins, coins);
+  r.random = () => 0.2;
+  assert.ok(r.riskChest());
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.ok(copy.revealChest(copy.s.choice.roll.id + ':1'));
+  assert.equal(copy.s.choice.cards.length, 0);
+  assert.equal(copy.riskChest(), false);
+  assert.equal(copy.s.coins, r.s.coins);
 });
 
 test('old ambient mobs catch up to current base strength rather than retaining their weak starting stats', () => {

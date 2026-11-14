@@ -16,7 +16,9 @@ export function drawEnemyStatuses(renderer, enemy, s, time) {
   const states = Object.entries(enemy.statuses || {})
     .filter(([id, v]) => v.left > 0 && window.DigibonkStatusRules.effects[id])
     .sort((a, b) => priority.indexOf(a[0]) - priority.indexOf(b[0]));
-  if (enemy.slowLeft > 0 && !states.some(([id]) => id === 'chill'))
+  if (enemy.uncontrollable)
+    states.unshift(['uncontrollable', { left: enemy.uncontrollableLeft ?? 5, max: 5 }]);
+  if (!enemy.uncontrollable && enemy.slowLeft > 0 && !states.some(([id]) => id === 'chill'))
     states.push(['chill', { left: enemy.slowLeft, max: 3 }]);
   if (!states.length) return;
   const ground = window.DigibonkCore.heightAt(enemy.x, enemy.z, s.mapSeed),

@@ -187,8 +187,9 @@
       icon: '♧',
       theme: 'gold',
       legendary: true,
-      description: () =>
-        'Una vez por partida, evita un golpe mortal y recupera el 50 % de tu vida. Invulnerabilidad: 3 s. El uso se conserva al guardar.',
+      description: (r) =>
+        r +
+        ' resurrecciones por partida. Cada una recupera el 50 % de vida con 3 s de invulnerabilidad. El uso se conserva al guardar.',
     },
     {
       id: 'meteor-core',
@@ -196,8 +197,7 @@
       icon: '☄',
       theme: 'coral',
       legendary: true,
-      description: () =>
-        'Cada 12 s cae un meteorito sobre el enemigo más cercano: 250 % de tu daño en 5 m.',
+      description: (r) => 'Cada 12 s cae un meteorito: ' + 250 * r + ' % de tu daño en 5 m.',
     },
     {
       id: 'time-core',
@@ -205,8 +205,10 @@
       icon: '◷',
       theme: 'ice',
       legendary: true,
-      description: () =>
-        'Cada 20 s destruye proyectiles enemigos a 12 m y ralentiza a los rivales cercanos un 35 % durante 5 s.',
+      description: (r) =>
+        'Cada 20 s destruye proyectiles y ralentiza enemigos durante 5 s en ' +
+        (12 + 2 * (r - 1)) +
+        ' m.',
     },
     {
       id: 'void-core',
@@ -214,8 +216,10 @@
       icon: '◎',
       theme: 'mint',
       legendary: true,
-      description: () =>
-        'Cada 12 bajas atrae toda la experiencia y libera una explosión del 200 % de tu daño a 6 m. Recarga: 8 s.',
+      description: (r) =>
+        'Cada 12 bajas atrae experiencia y explota con ' +
+        200 * r +
+        ' % de daño a 6 m. Recarga: 8 s.',
     },
     {
       id: 'storm-core',
@@ -223,8 +227,8 @@
       icon: 'ϟ',
       theme: 'gold',
       legendary: true,
-      description: () =>
-        'Un crítico encadena rayos a hasta 3 enemigos cercanos: 90 % de tu daño por objetivo. Recarga: 1,5 s.',
+      description: (r) =>
+        'Un crítico encadena rayos a 3 enemigos: ' + 90 * r + ' % de daño. Recarga: 1,5 s.',
     },
   ];
   relics.push({
@@ -342,7 +346,7 @@
     },
   ];
   const icon = (id) => 'assets/loot/' + (relics.find((r) => r.id === id)?.art || id) + '.png';
-  const api = { relics, companions, icon, maxRelics: Infinity, maxRank: 3 };
+  const api = { relics, companions, icon, maxRelics: Infinity, maxRank: Infinity };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DigibonkLoot = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -3871,3 +3871,135 @@ dialog,
 .choice-card.stat-card.quality-4:hover:not(:disabled) {
   filter: brightness(1.12) drop-shadow(0 0 8px #ff980099) drop-shadow(0 0 18px #ffb52f44);
 }
+
+/* Diamond map frame: all map coordinates are projected into the same diamond. */
+#map-panel > .minimap-device {
+  aspect-ratio: 1 / 1;
+}
+.minimap-device::after,
+.diamond-map-device::after {
+  background-image: url('assets/map-diamond.png');
+}
+#map-panel .minimap-device canvas#minimap {
+  left: 16%;
+  top: 17%;
+  width: 68%;
+  height: 68%;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+#map-panel .minimap-device .map-title {
+  display: none;
+}
+.diamond-map-device {
+  position: relative;
+  width: min(100%, 65vh);
+  aspect-ratio: 1 / 1;
+  margin: auto;
+}
+.diamond-map-device::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+.diamond-map-device #world-map {
+  position: absolute;
+  left: 16%;
+  top: 17%;
+  width: 68%;
+  height: 68%;
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.egg-passive-info {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #c6fff0;
+  max-width: 680px;
+}
+.pod-preview .egg-passive-info {
+  grid-column: 1 / -1;
+}
+.egg-passive-icon {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.precision-wheel-wrap {
+  position: relative;
+  width: min(36vh, 280px);
+  aspect-ratio: 1;
+  margin: 18px auto;
+}
+.precision-wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 8px solid #a8f8ea;
+  box-shadow: 0 0 24px #35e8d880;
+}
+.wheel-pointer {
+  position: absolute;
+  top: -22px;
+  left: calc(50% - 12px);
+  color: white;
+  font-size: 30px;
+  text-shadow: 0 2px 3px black;
+}
+
+.pod-preview {
+  flex-wrap: wrap;
+}
+.pod-preview .egg-passive-info {
+  flex: 0 0 100%;
+}
+
+.egg-selection .pod-grid {
+  bottom: 31%;
+}
+.selected-egg-passive {
+  position: absolute;
+  top: 69%;
+  left: 8%;
+  width: 84%;
+  margin: 0;
+  color: #d2fff4;
+  font-size: clamp(10px, 1.3cqw, 15px);
+  line-height: 1.35;
+  text-align: center;
+}
+.egg-selection .pod-actions {
+  top: 82%;
+}
+
+#patch-notes-dialog {
+  width: min(780px, 92vw);
+  max-height: 85dvh;
+  overflow: auto;
+}
+.patch-entry {
+  border-top: 1px solid #76d9d64d;
+  margin-top: 20px;
+  padding-top: 8px;
+}
+.patch-entry h3 {
+  color: #a7f5e4;
+}
+.patch-entry li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+.patch-pending {
+  border: 1px solid #e5bd63;
+  padding: 12px 18px;
+  border-radius: 10px;
+}
+.patch-pending h3 {
+  color: #ffdc90;
+}

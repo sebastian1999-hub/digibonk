@@ -1,3 +1,4 @@
+import { renderPatchNotes } from './patch-notes-view.js';
 import { renderIncubatorMenu } from './incubator-menu.js';
 import { applyAccountRewards } from './account-rewards.js';
 import { renderBook } from './technique-book.js';
@@ -427,7 +428,7 @@ function openGear() {
     if (!def) continue;
     article(
       list,
-      def.name + ' · ' + (def.legendary ? 'Legendario' : relic.rank + '/3'),
+      def.name + ' · ' + (def.legendary ? 'Legendario · ×' + relic.rank : '×' + relic.rank),
       def.description(relic.rank),
       DigibonkLoot.icon(def.id),
     );
@@ -442,7 +443,7 @@ function openGear() {
   if (!companions.children.length) companions.textContent = 'Sin compañeros.';
   $('#gear-species').textContent = p.species;
   $('#gear-stage').textContent = stageNames[p.stage] + ' · NIVEL ' + s.level;
-  $('#gear-passive').textContent = run.style()?.passive || '';
+  $('#gear-passive').textContent = run.passiveInfo();
   const techniques = $('#gear-techniques');
   renderTechniqueDevice(techniques, p);
   const numberStat = (v) => Number(v.toFixed(2)).toLocaleString('es-ES');
@@ -453,7 +454,11 @@ function openGear() {
       'Probabilidad de crítico',
       numberStat(Math.min(0.85, p.crit + (p.focusLeft > 0 ? 0.15 : 0)) * 100) + ' %',
     ],
-    ['Daño crítico', numberStat((1.8 + run.relicRank('critical-lens') * 0.15) * 100) + ' %'],
+    [
+      'Crítico sobrante convertido',
+      numberStat(Math.max(0, p.crit - 0.85) * 100) + ' puntos de daño crítico',
+    ],
+    ['Daño crítico', numberStat(run.criticalMultiplier() * 100) + ' %'],
     ['Escudo', numberStat(p.shield) + ' / ' + numberStat(p.maxHp * p.shieldRatio)],
     ['Velocidad de movimiento', numberStat(p.speed * run.playerWorldSpeed())],
     [
@@ -465,14 +470,13 @@ function openGear() {
             (p.relicHasteLeft > 0 ? 1 + run.relicRank('dash-drive') * 0.1 : 1),
         ),
     ],
-    [
-      'Regeneración',
-      numberStat(p.regen + (run.style()?.id === 'guardian' ? p.maxHp * 0.01 : 0)) + ' / s',
-    ],
+    ['Regeneración', numberStat(p.regen) + ' / s'],
     ['Área de técnicas', numberStat(p.area * 100) + ' %'],
     ['Experiencia', '×' + numberStat(p.xpMult)],
     ['Radio de recogida', numberStat(p.magnet) + ' m'],
     ['Proyectiles extra', String(p.projectileBonus)],
+    ['Rebotes de proyectil', String(p.ricochets)],
+    ['Recolectores', Math.floor(p.orbits / 3) + ' evolucionados · ' + (p.orbits % 3) + ' básicos'],
     ['Cofre de enemigo normal', numberStat(run.chestDropChance({}) * 100) + ' %'],
     ['Precio del próximo cofre', numberStat(run.chestPrice()) + ' bits'],
   ];
@@ -823,10 +827,9 @@ for (const [id, target] of [
   ['menu-help', 'help-toggle'],
 ])
   $('#' + id).onclick = () => $('#' + target).click();
-$('#menu-league').onclick = () => {
-  homeTab = 'menu';
-  makeEggs();
-  $('#home-aside').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+$('#menu-patch-notes').onclick = () => {
+  renderPatchNotes($('#patch-notes-content'), window.DigibonkPatchNotes);
+  $('#patch-notes-dialog').showModal();
 };
 
 showHome();
@@ -876,11 +879,19 @@ function refreshHud() {
     Math.ceil(shieldMax) +
     (p.shieldDelay > 0 ? ' · ' + Math.ceil(p.shieldDelay) + ' s' : '');
   $('#xp-fill').style.width =
-    (s.level >= 400 ? 100 : Math.min(100, (s.xp / C.xpNeeded(s.level)) * 100)) + '%';
+    (s.level >= run.maxLevel()
+      ? 100
+      : Math.min(100, (s.xp / C.xpNeeded(s.level, run.maxLevel())) * 100)) + '%';
   $('#level-label').textContent =
-    s.level >= 400
-      ? 'NIVEL 400 · MÁXIMO'
-      : 'NIVEL ' + s.level + ' · ' + Math.floor(s.xp) + ' / ' + C.xpNeeded(s.level) + ' EXP';
+    s.level >= run.maxLevel()
+      ? 'NIVEL ' + run.maxLevel() + ' · MÁXIMO'
+      : 'NIVEL ' +
+        s.level +
+        ' · ' +
+        Math.floor(s.xp) +
+        ' / ' +
+        C.xpNeeded(s.level, run.maxLevel()) +
+        ' EXP';
   $('#run-clock').textContent = clock(s.time);
   $('#run-wave').textContent = s.realm
     ? s.realm.phase === 'waves'
@@ -974,7 +985,7 @@ function refreshWorldHud() {
     ? 'ESTILO · ' + style.name.toUpperCase()
     : 'ESTILO AÚN LATENTE';
   $('#style-passive').textContent = style
-    ? style.passive
+    ? run.passiveInfo()
     : 'Digievoluciona a Rookie para desbloquear una acción propia.';
   $('#style-panel').style.setProperty('--style-color', style?.color || '#a3c4ae');
   $('#style-activate').textContent = style
@@ -986,7 +997,12 @@ function refreshWorldHud() {
   $('#style-activate').disabled =
     !style || p.styleCooldown > 0 || paused || !!s.choice || !!s.evolution || s.hatch > 0;
   $('#style-activate').title = style?.description || '';
-  const ready = style ? Math.max(0, Math.min(1, 1 - p.styleCooldown / style.cooldown)) : 0;
+  const ready = style
+    ? Math.max(
+        0,
+        Math.min(1, 1 - p.styleCooldown / (p.styleCooldownDuration || run.styleCooldownDuration())),
+      )
+    : 0;
   const dashReady = Math.max(0, Math.min(1, 1 - p.dash / 3.2));
   $('#dash-recharge-fill').style.width = dashReady * 100 + '%';
   $('#dash-recharge').setAttribute('aria-valuenow', String(Math.round(dashReady * 100)));
@@ -1060,6 +1076,21 @@ function riskChest() {
   showChoice();
 }
 function showChoice() {
+  let refresh = document.getElementById('refresh-level');
+  if (!refresh) {
+    refresh = document.createElement('button');
+    refresh.id = 'refresh-level';
+    $('#choice-cards').before(refresh);
+    refresh.onclick = () => {
+      if (run.refreshLevel()) {
+        save();
+        overlayKey = '';
+        showChoice();
+      }
+    };
+  }
+  refresh.hidden = !run.canRefreshLevel();
+  refresh.textContent = 'Renovar tarjetas · ' + run.s.eggPassive.refresh + ' cargas';
   if (run.s.choice.roll) {
     const choice = run.s.choice;
     $('#choice-kicker').textContent =
@@ -1068,7 +1099,7 @@ function showChoice() {
       choice.roll.source === 'shop' ? 'La calidad de tu mejora' : 'Tu próxima recompensa';
     $('#choice-subtitle').textContent =
       choice.roll.source === 'shop'
-        ? 'La compra ya está pagada. Recógela o arriésgala por una calidad superior.'
+        ? 'La compra ya está pagada. Recoge tu mejora.'
         : 'Reliquias comunes, raras, épicas y legendarias; compañeros para tu equipo.';
     $('#choice-cards').hidden = true;
     $('#choice-hint').hidden = true;
@@ -1084,6 +1115,13 @@ function showChoice() {
         choice,
         {
           claim: choose,
+          stop: (token, position) => {
+            if (run.stopChestWheel(token, position)) {
+              save();
+              overlayKey = '';
+              showChoice();
+            }
+          },
           risk: riskChest,
           canRisk: () => run.canRiskChest(),
           discard: () => $('#skip-chest').onclick(),
@@ -1113,7 +1151,7 @@ function showChoice() {
     choice.kind === 'evolution'
       ? 'LA SIGUIENTE FORMA DE TU LEYENDA'
       : choice.kind === 'shop'
-        ? 'WIZARDMON · QUITAR TÉCNICAS'
+        ? 'WIZARDMON · MERCADO NEGRO'
         : choice.kind === 'chest'
           ? 'TESORO DIGITAL · ELIGE UNA RECOMPENSA'
           : 'CONSTRUYE TU PROPIA RUN';
@@ -1126,11 +1164,11 @@ function showChoice() {
         : choice.kind === 'replace'
           ? 'Selecciona una de tus cuatro técnicas para reemplazarla, o conserva tu equipo actual.'
           : choice.kind === 'shop'
-            ? 'Compra una técnica nueva. Si llevas cuatro, elige cuál sustituir. Quitar una técnica es gratis. Con menos de cuatro, puedes encontrar técnicas nuevas al subir de nivel. Precio de compra: ' +
+            ? 'Compra una técnica nueva. Si llevas cuatro, elige cuál sustituir. Precio de compra: ' +
               run.shopPrice() +
               ' bits.'
             : choice.kind === 'chest'
-              ? 'Reliquias sin límite de cantidad, de rango 1–3 y 3 compañeros distintos. Los compañeros se suman a tu grupo. Puedes cerrar sin elegir; el cofre queda consumido.'
+              ? 'Reliquias sin límite de copias y 3 compañeros distintos. Los compañeros se suman a tu grupo. Puedes cerrar sin elegir; el cofre queda consumido.'
               : 'Combina técnicas y mejoras. Todo el poder de esta build dura esta partida.';
   $('#choice-cards').replaceChildren(
     ...choice.cards.map((card, i) => {
@@ -1171,6 +1209,7 @@ function showChoice() {
                   wisdom: '◇',
                   projectile: '»',
                   orbit: '◉',
+                  ricochet: '↪',
                   magnet: '⊕',
                 }[card.id] || '✧';
         button.append(symbol);
@@ -1261,7 +1300,7 @@ function end() {
   $('#result-history').textContent = [s.egg, ...s.history.map((e) => e.to)].join(' → ');
   $('#result-build').textContent = [
     ...s.relics.map(
-      (r) => DigibonkLoot.relics.find((d) => d.id === r.id)?.name + ' ' + r.rank + '/3',
+      (r) => DigibonkLoot.relics.find((d) => d.id === r.id)?.name + ' ' + '×' + r.rank,
     ),
     ...s.buddies.map((b) => 'Compañero: ' + b.species),
   ]
@@ -1664,6 +1703,7 @@ function loop(now) {
         audio.play('evolution');
       }
       if (event.type === 'purify-cancel') toast('Purificación interrumpida: vuelve junto al nodo.');
+      if (event.type === 'data-card') toast(event.text);
       if (event.type === 'style') audio.play('pick');
       if (event.type === 'end') end();
     }

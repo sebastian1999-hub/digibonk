@@ -274,27 +274,36 @@
       h = canvas.height,
       margin = large ? 20 : 12,
       scale = (Math.min(w, h) - margin * 2) / (world * 2),
-      project = (x, z) => ({ x: w / 2 + x * scale, y: h / 2 + z * scale });
+      project = (x, z) => ({ x: w / 2 + ((x - z) * scale) / 2, y: h / 2 + ((x + z) * scale) / 2 });
     c.clearRect(0, 0, w, h);
-    c.fillStyle = '#1a292e';
-    c.fillRect(0, 0, w, h);
-    c.strokeStyle = '#85928f';
-    c.lineWidth = 1;
-    c.strokeRect(margin - 3, margin - 3, w - margin * 2 + 6, h - margin * 2 + 6);
-    c.strokeStyle = '#82938a24';
+    c.save();
+    c.beginPath();
+    c.moveTo(w / 2, margin);
+    c.lineTo(w - margin, h / 2);
+    c.lineTo(w / 2, h - margin);
+    c.lineTo(margin, h / 2);
+    c.closePath();
+    c.fillStyle = '#102c3c';
+    c.fill();
+    c.strokeStyle = '#67cbcf';
+    c.stroke();
+    c.clip();
+    c.strokeStyle = '#6bcbdc28';
     for (let i = 1; i < 6; i++) {
-      const x = margin + ((w - margin * 2) * i) / 6,
-        y = margin + ((h - margin * 2) * i) / 6;
-      c.beginPath();
-      c.moveTo(x, margin);
-      c.lineTo(x, h - margin);
-      c.moveTo(margin, y);
-      c.lineTo(w - margin, y);
-      c.stroke();
+      const value = -world + (2 * world * i) / 6;
+      for (const points of [
+        [project(value, -world), project(value, world)],
+        [project(-world, value), project(world, value)],
+      ]) {
+        c.beginPath();
+        c.moveTo(points[0].x, points[0].y);
+        c.lineTo(points[1].x, points[1].y);
+        c.stroke();
+      }
     }
     for (const pond of ponds) {
       const q = project(pond.x, pond.z),
-        r = pond.r * scale;
+        r = (pond.r * scale) / Math.sqrt(2);
       c.strokeStyle = '#a8b7af77';
       c.beginPath();
       c.arc(q.x, q.y, r, 0, Math.PI * 2);
@@ -322,14 +331,16 @@
         q.x,
         q.y,
         item.type === 'player' ? size * 1.2 : size,
-        item.angle || 0,
+        (item.angle || 0) + (item.type === 'player' ? Math.PI / 4 : 0),
         item.locked,
       );
     }
     c.fillStyle = '#eff1e1';
     c.font = 'bold ' + (large ? 12 : 9) + 'px Segoe UI';
     c.textAlign = 'center';
-    c.fillText('N', w / 2, large ? 13 : 9);
+    c.restore();
+    const north = project(0, -world);
+    c.fillText('N', north.x, north.y - 5);
     return list;
   }
   const api = { names, colors, markers, symbol, draw };

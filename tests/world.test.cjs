@@ -55,13 +55,13 @@ test('vanguard charges collide once, hunter fires a burst, tide pushes and slows
   assert.ok(w.s.enemies[0].x > 2);
   assert.equal(w.s.enemies[0].slowLeft, 2.5);
 });
-test('guardian heals within its seal and reflects at most three enemy projectiles', () => {
+test('guardian retains its active seal and reflects at most three enemy projectiles', () => {
   const r = fresh('Angemon', 2);
   r.s.enemies = [mob(6)];
   r.s.player.hp = 50;
   r.castStyle();
   r.updateStyleFields(0.5);
-  assert.equal(r.s.player.hp, 50.5);
+  assert.equal(r.s.player.hp, 50);
   for (let i = 0; i < 4; i++) {
     const shot = { x: 0, z: 0, life: 2 };
     assert.equal(r.reflectProjectile(shot), i < 3);
@@ -87,12 +87,12 @@ test('controller slows only enemies in the garden; artillery strikes after its w
   assert.ok(a.s.enemies[0].hp < 200);
   assert.equal(a.s.styleFields.length, 0);
 });
-test('flood and glitch have explicit effects, water forms ignore flood, old saves migrate safely', () => {
+test('flood and glitch have explicit effects, all forms obey flood, old saves migrate safely', () => {
   const r = fresh();
   r.currentSector().kind = 'flood';
   assert.equal(r.playerWorldSpeed(), 0.85);
   r.s.player.species = 'Gomamon';
-  assert.equal(r.playerWorldSpeed(), 1);
+  assert.equal(r.playerWorldSpeed(), 0.85);
   r.currentSector().kind = 'glitch';
   assert.equal(r.enemyWorldSpeed(mob(0)), 1.18);
   const old = r.snapshot();
@@ -364,30 +364,30 @@ test('wave kills damage the tower proportionally and saving preserves the damage
   assert.equal(r.s.realm.phase, 'waves');
 });
 
-test('passives work while moving without stationary timers or active fields', () => {
+test('evolution styles no longer grant passive bonuses', () => {
   const v = fresh('Greymon', 2);
   v.s.player.stillTime = 0;
   v.s.player.moveMomentum = 0;
-  assert.equal(v.incomingStyleDamage(), 0.8);
+  assert.equal(v.incomingStyleDamage(), 1);
   const a = fresh('MetalGreymon', 3);
   a.s.player.stillTime = 0;
-  assert.equal(a.styleRangeMultiplier(), 1.2);
+  assert.equal(a.styleRangeMultiplier(), 1);
   const h = fresh('Garurumon', 2);
   h.s.player.moveMomentum = 0;
-  assert.equal(h.playerWorldSpeed(), 1.15);
+  assert.equal(h.playerWorldSpeed(), 1);
   h.s.enemies = [mob(4)];
   h.updateWorld(0.05, {});
-  assert.equal(h.s.player.preyId, 90);
+  assert.equal(h.s.player.preyId, null);
   const g = fresh('Angemon', 2);
   g.s.player.hp = 50;
   g.s.player.x = 10;
   g.updateStyleFields(1);
-  assert.equal(g.s.player.hp, 51);
+  assert.equal(g.s.player.hp, 50);
   g.s.player.hp = 100;
   g.updateStyleFields(1);
   assert.equal(g.s.player.hp, 100);
   const c = fresh('Kabuterimon', 2);
-  assert.equal(c.enemyWorldSpeed(mob(4)), 0.85);
+  assert.equal(c.enemyWorldSpeed(mob(4)), 1);
   assert.equal(c.enemyWorldSpeed(mob(20)), 1);
   for (const style of Object.values(W.styles))
     assert.ok(!/quieto|moverte|dentro de tu sello|tu jardín/i.test(style.passive));
@@ -601,4 +601,113 @@ test('full build chooses evolution technique after animation, can keep or replac
   assert.equal(restored.s.player.weapons[2].id, technique);
   assert.equal(restored.s.player.weapons.length, 4);
   assert.deepEqual(restored.s.player.weapons[0], original[0]);
+});
+
+test('ricochet starts at rare, scales by quality beyond the previous cap', () => {
+  const r = fresh(),
+    base = { id: 'ricochet', stat: 'ricochets', amount: 1, minQuality: 2 };
+  assert.deepEqual(
+    r.shopQualityPool(base, 4).map((c) => [c.quality, c.amount]),
+    [
+      [2, 1],
+      [3, 2],
+      [4, 3],
+    ],
+  );
+  r.rollUpgradeQuality = () => 1;
+  assert.equal(r.levelUpgradeCard(base), null);
+  r.rollUpgradeQuality = () => 2;
+  assert.equal(r.levelUpgradeCard(base).quality, 2);
+  r.s.player.ricochets = 6;
+  assert.equal(r.shopQualityPool(base, 4).length, 3);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(copy.s.player.ricochets, 6);
+});
+test('projectile impacts bounce once to a different target and preserve damage falloff', () => {
+  const r = fresh(),
+    p = r.s.player;
+  p.ricochets = 1;
+  p.weapons = [];
+  p.basicClock = 100;
+  const a = mob(5),
+    b = { ...mob(7), id: 91 };
+  r.s.enemies = [a, b];
+  r.s.shots = [
+    {
+      id: 999,
+      x: 5,
+      z: 0,
+      target: a.id,
+      speed: 24,
+      damage: 10,
+      area: 0,
+      life: 2.8,
+      skillId: 'energy-bolt',
+    },
+  ];
+  r.update(0.05);
+  assert.equal(r.s.shots[0].target, 91);
+  assert.equal(r.s.shots[0].damage, 8);
+  assert.equal(r.s.shots[0].bouncesLeft, 0);
+  for (let i = 0; i < 8; i++) r.update(0.05);
+  assert.equal(r.s.shots.length, 0);
+  assert.equal(a.hp, 190);
+  assert.equal(b.hp, 192);
+});
+test('each three collectors fuse and evolved collectors fly faster without losing gems', () => {
+  const r = fresh(),
+    p = r.s.player;
+  p.orbits = 2;
+  r.s.gems = [{ id: 901, x: 50, z: 0, value: 8 }];
+  r.updateCollectors(0.05);
+  const basic = r.s.collectors[0].x;
+  p.orbits = 3;
+  r.updateCollectors(0.05);
+  assert.equal(r.s.collectors.length, 1);
+  assert.equal(r.s.collectors[0].evolved, true);
+  assert.ok(r.s.collectors[0].x - basic > basic);
+  assert.equal(r.s.gems[0].value, 8);
+  p.orbits = 4;
+  r.updateCollectors(0.05);
+  assert.deepEqual(
+    r.s.collectors.map((c) => c.evolved),
+    [true, false],
+  );
+  p.orbits = 6;
+  r.updateCollectors(0.05);
+  assert.deepEqual(
+    r.s.collectors.map((c) => c.evolved),
+    [true, true],
+  );
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  copy.updateCollectors(0.05);
+  assert.deepEqual(
+    copy.s.collectors.map((c) => c.evolved),
+    [true, true],
+  );
+});
+
+test('every Digimon Q cooldown has a 2.5-second floor including haste buffs and save/resume', () => {
+  for (const species of [
+    'Greymon',
+    'Garurumon',
+    'Angemon',
+    'Kabuterimon',
+    'MetalGreymon',
+    'Gomamon',
+  ]) {
+    for (const haste of [1, 10, 100]) {
+      const r = fresh(species, 2);
+      r.s.enemies = [mob(4)];
+      r.s.player.haste = haste;
+      r.s.player.hasteLeft = 10;
+      assert.ok(r.castStyle());
+      const expected = Math.max(2.5, r.style().cooldown / (haste * 1.2));
+      assert.equal(r.s.player.styleCooldown, expected);
+      assert.equal(r.s.player.styleCooldownDuration, expected);
+      const copy = new C.Run(null, { saved: r.snapshot() });
+      assert.equal(copy.s.player.styleCooldown, expected);
+      assert.equal(copy.castStyle(), false);
+    }
+  }
 });

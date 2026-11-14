@@ -11,6 +11,8 @@ $out=Join-Path $project "release\Digibonk-PC-$version"
 $build=Join-Path $project '.build'
 New-Item -ItemType Directory -Force "$out\game",$build | Out-Null
 Copy-Item "$project\game\*" "$out\game" -Recurse -Force
+& node "$project\scripts\sync-patch-notes.cjs" --published "--output=$out\game\patch-notes.js"
+if($LASTEXITCODE -ne 0){throw 'Faltan las notas de la versión o no se pudo generar Info parche.'}
 $homePath=Join-Path $out 'game\index.html'
 $homeHtml=Get-Content -LiteralPath $homePath -Raw -Encoding UTF8
 $versionPattern='(<span id="build-version" class="build-version">)[^<]*'

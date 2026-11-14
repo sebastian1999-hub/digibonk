@@ -813,23 +813,47 @@ export class Renderer3D {
     const pool = this.pools.get(type) || [];
     item = pool.pop();
     if (!item) {
-      const geom = type.includes('ring')
-          ? this.geo.ring
-          : type.includes('gem') || type.includes('ice')
-            ? this.geo.gem
-            : type.includes('fire')
-              ? this.geo.sphere
-              : type.includes('beam')
-                ? this.geo.beam
-                : this.geo.sphere,
-        material = new THREE.MeshBasicMaterial({
-          color,
-          transparent: true,
-          opacity: 0.85,
-          depthWrite: false,
-          toneMapped: false,
-        });
-      item = { mesh: new THREE.Mesh(geom, material), type };
+      if (type.startsWith('collector-') || type.startsWith('data-card-')) {
+        this.collectorTextures ??= {};
+        if (!this.collectorTextures[type]) {
+          const texture = new THREE.TextureLoader().load(
+            'assets/' + type + (type.startsWith('data-card-') ? '.svg' : '.png'),
+          );
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.magFilter = THREE.NearestFilter;
+          texture.minFilter = THREE.NearestFilter;
+          this.collectorTextures[type] = texture;
+        }
+        item = {
+          mesh: new THREE.Sprite(
+            new THREE.SpriteMaterial({
+              map: this.collectorTextures[type],
+              transparent: true,
+              depthWrite: false,
+              toneMapped: false,
+            }),
+          ),
+          type,
+        };
+      } else {
+        const geom = type.includes('ring')
+            ? this.geo.ring
+            : type.includes('gem') || type.includes('ice')
+              ? this.geo.gem
+              : type.includes('fire')
+                ? this.geo.sphere
+                : type.includes('beam')
+                  ? this.geo.beam
+                  : this.geo.sphere,
+          material = new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: 0.85,
+            depthWrite: false,
+            toneMapped: false,
+          });
+        item = { mesh: new THREE.Mesh(geom, material), type };
+      }
     }
     item.keep = true;
     item.category = this.opacityCategory;
@@ -1100,11 +1124,15 @@ export class Renderer3D {
     for (const gem of s?.gems || []) {
       const color = gem.heal ? 0xff9986 : gem.value > 15 ? 0xffd165 : 0x32ffff,
         y = C.heightAt(gem.x, gem.z, seed) + 0.8 + Math.sin(time * 3 + gem.id) * 0.13,
-        mesh = this.pooled('gem-' + gem.id, 'gem', color).mesh;
+        mesh = this.pooled(
+          'gem-' + gem.id,
+          gem.dataCard ? 'data-card-' + gem.dataCard : 'gem',
+          gem.dataCard ? 0xffffff : color,
+        ).mesh;
       mesh.position.set(gem.x, y, gem.z);
-      mesh.scale.setScalar(gem.value > 15 ? 0.82 : 0.56);
+      mesh.scale.setScalar(gem.dataCard ? 1.3 : gem.value > 15 ? 0.82 : 0.56);
       mesh.material.opacity = 1;
-      mesh.rotation.set(0, time * 1.8, Math.PI * 0.12);
+      if (!gem.dataCard) mesh.rotation.set(0, time * 1.8, Math.PI * 0.12);
       const halo = this.pooled('gem-halo-' + gem.id, 'ring', color).mesh;
       halo.position.set(gem.x, C.heightAt(gem.x, gem.z, seed) + 0.08, gem.z);
       halo.rotation.x = -Math.PI / 2;
@@ -1152,14 +1180,17 @@ export class Renderer3D {
       }
     }
     this.opacityCategory = 'player';
-    for (let i = 0; i < (p.orbits || 0); i++) {
-      const a = time * 2.5 + (i * Math.PI * 2) / p.orbits,
-        x = s.collectors?.[i]?.x ?? p.x + Math.cos(a) * 3.4,
-        z = s.collectors?.[i]?.z ?? p.z + Math.sin(a) * 3.4,
-        mesh = this.pooled('orbit-' + i, 'gem', 0xdde6a5).mesh;
-      mesh.position.set(x, C.heightAt(x, z, seed) + 1.1, z);
-      mesh.scale.setScalar(0.55);
-      mesh.rotation.y = time * 4;
+    for (const [i, orb] of (s?.collectors || []).entries()) {
+      const type = orb.evolved ? 'collector-evolved' : 'collector-basic';
+      const mesh = this.pooled('collector-' + i + '-' + type, type, 0xffffff).mesh;
+      mesh.position.set(
+        orb.x,
+        C.heightAt(orb.x, orb.z, seed) + 1.5 + Math.sin(time * 9 + i) * 0.08,
+        orb.z,
+      );
+      const size = orb.evolved ? 1.65 : 1.35;
+      mesh.scale.set(size, size, 1);
+      mesh.material.opacity = 1;
     }
     for (const effect of s?.fx || []) {
       const custom = this.attackEffects.impact(effect, s, time);

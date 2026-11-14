@@ -45,7 +45,7 @@
           player[stat] *= (1 + n * r) / (1 + n * old);
         }
         if (item.id === 'vitality-chip') player.hp = Math.min(player.maxHp, player.hp + 15 * delta);
-        player.crit = Math.min(0.85, player.crit);
+
         player.speed = Math.min(15, player.speed);
         player.magnet = Math.min(24, player.magnet);
       }
@@ -82,7 +82,7 @@
           for (const e of s.enemies
             .filter((e) => e !== enemy && e.hp > 0 && !e.shielded && dist(e, enemy) < 7)
             .slice(0, 3)) {
-            this.hurt(e, p.damage * 0.9, 'energy-bolt');
+            this.hurt(e, p.damage * 0.9 * rank('storm-core'), 'energy-bolt');
             this.effect('burst', e.x, e.z, {
               skillId: 'energy-bolt',
               size: 1,
@@ -99,7 +99,7 @@
           if (rank('void-core') && s.kills % 12 === 0 && !(c.void > 0)) {
             c.void = 8;
             for (const g of s.gems) g.attracted = true;
-            this.relicBurst(p, 6, 2, 'nightmare');
+            this.relicBurst(p, 6, 2 * rank('void-core'), 'nightmare');
           }
         }
       } finally {
@@ -110,7 +110,11 @@
       const s = this.s,
         p = s.player,
         c = s.relicClocks;
-      if (p.hp <= 0 && this.relicRank('phoenix-core') && !s.phoenixUsed) {
+      if (
+        p.hp <= 0 &&
+        this.relicRank('phoenix-core') > (s.phoenixUses ?? Number(!!s.phoenixUsed))
+      ) {
+        s.phoenixUses = (s.phoenixUses ?? Number(!!s.phoenixUsed)) + 1;
         s.phoenixUsed = true;
         p.hp = p.maxHp * 0.5;
         p.invulnerable = 3;
@@ -137,7 +141,7 @@
             x: target.x,
             z: target.z,
             radius: 5,
-            damage: p.damage * 2.5,
+            damage: p.damage * 2.5 * this.relicRank('meteor-core'),
             skillId: 'magma-bomb',
             left: 0.4,
           });
@@ -153,9 +157,12 @@
       }
       if (this.relicRank('time-core') && !(c.time > 0)) {
         c.time = 20;
-        s.hostile = s.hostile.filter((shot) => dist(shot, p) >= 12);
+        s.hostile = s.hostile.filter(
+          (shot) => dist(shot, p) >= 12 + 2 * (this.relicRank('time-core') - 1),
+        );
         for (const e of s.enemies)
-          if (e.hp > 0 && !e.tower && dist(e, p) < 12) e.slowLeft = Math.max(e.slowLeft || 0, 5);
+          if (e.hp > 0 && !e.tower && dist(e, p) < 12 + 2 * (this.relicRank('time-core') - 1))
+            this.slowEnemy(e, 5);
         this.effect('burst', p.x, p.z, { skillId: 'ice-breath', size: 4 });
       }
       p.relicHasteLeft = Math.max(0, (p.relicHasteLeft || 0) - dt);

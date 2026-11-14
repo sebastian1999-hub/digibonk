@@ -24,6 +24,7 @@ http
       '.html': 'text/html; charset=utf-8',
       '.js': 'text/javascript; charset=utf-8',
       '.png': 'image/png',
+      '.svg': 'image/svg+xml',
       '.mp3': 'audio/mpeg',
       '.json': 'application/json',
       '.css': 'text/css',

@@ -70,7 +70,7 @@
         <nav id="main-menu" aria-label="Menú principal">
           <button id="tab-play" class="primary">Jugar</button>
           <button id="menu-information">Información</button>
-          <button id="menu-league">Liga y cuenta</button>
+          <button id="menu-patch-notes">Info parche</button>
           <button id="menu-settings">Ajustes</button>
         </nav>
         <nav id="information-menu" aria-label="Información" hidden>
@@ -357,7 +357,14 @@
       <form method="dialog"><button class="close" aria-label="Cerrar mapa">×</button></form>
       <div class="eyebrow">PARTIDA EN PAUSA · <span data-control="map">M</span> PARA CERRAR</div>
       <h2 id="map-dialog-title">Mapa</h2>
-      <canvas id="world-map" width="680" height="680" aria-label="Mapa ampliado del mundo"></canvas>
+      <div class="diamond-map-device">
+        <canvas
+          id="world-map"
+          width="680"
+          height="680"
+          aria-label="Mapa ampliado del mundo"
+        ></canvas>
+      </div>
       <div id="map-full-legend"></div>
       <p>
         Los símbolos indican qué hay en cada punto. Una marca de verificación indica un portal
@@ -455,10 +462,24 @@
         <form method="dialog"><button class="primary">Listo</button></form>
       </div>
     </dialog>
+    <dialog id="patch-notes-dialog" aria-labelledby="patch-notes-title">
+      <form method="dialog">
+        <button class="close" aria-label="Cerrar información del parche">×</button>
+      </form>
+      <div class="eyebrow">NOVEDADES Y CORRECCIONES</div>
+      <h2 id="patch-notes-title">Info parche</h2>
+      <div id="patch-notes-content"></div>
+    </dialog>
     <dialog id="help-dialog">
       <form method="dialog"><button class="close" aria-label="Cerrar controles">×</button></form>
       <div class="eyebrow">CÓMO SOBREVIVIR</div>
       <h2>Muévete. Recoge. Evoluciona.</h2>
+      <p>
+        Tras acumular 5 segundos bajo stun, raíces o ralentización, un enemigo se vuelve
+        <b>incontrolable</b> durante 5 segundos: el escudo naranja indica su inmunidad temporal.
+        Después el contador se reinicia. Tu habilidad Q nunca tiene menos de 2,5 segundos de
+        recarga.
+      </p>
       <p>
         Movimiento: <b data-control="up"></b>, <b data-control="left"></b>,
         <b data-control="down"></b>, <b data-control="right"></b>. También puedes hacer clic en el
@@ -637,6 +658,8 @@
     <script src="status-system.js"></script>
     <script src="difficulty-system.js"></script>
     <script src="progression.js"></script>
+    <script src="patch-notes.js"></script>
+    <script src="egg-passives.js"></script>
     <script src="run-core.js"></script>
     <script src="vendor/supabase-2.118.0.js"></script>
     <script src="cloud-config.js"></script>

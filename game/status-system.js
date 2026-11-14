@@ -4,9 +4,53 @@
   function install(C, S) {
     const p = C.Run.prototype,
       fields = p.updatePatternFields;
+    p.slowEnemy = function (enemy, duration) {
+      if (enemy.uncontrollable || enemy.hp <= 0 || enemy.tower) return false;
+      enemy.slowLeft = Math.max(enemy.slowLeft || 0, duration);
+      return true;
+    };
+    p.updateEnemyControl = function (enemy, dt) {
+      if (enemy.hp <= 0 || enemy.tower) return;
+      if (enemy.uncontrollable) {
+        enemy.uncontrollableLeft = Math.max(0, (enemy.uncontrollableLeft ?? 5) - Math.max(0, dt));
+        if (enemy.uncontrollableLeft <= 1e-8) {
+          enemy.uncontrollableLeft = 0;
+          enemy.uncontrollable = false;
+          enemy.controlTime = 0;
+        }
+        return;
+      }
+      const states = enemy.statuses || {};
+      let remaining = Math.max(
+        enemy.slowLeft || 0,
+        ...['freeze', 'shock', 'root', 'chill'].map((id) => states[id]?.left || 0),
+      );
+      for (const field of this.s.styleFields || []) {
+        if (
+          field.kind === 'roots' &&
+          field.life > 0 &&
+          Math.hypot(field.x - enemy.x, field.z - enemy.z) < field.radius
+        )
+          remaining = Math.max(remaining, field.life);
+      }
+      if (remaining <= 0) return;
+      enemy.controlTime = Math.min(
+        5,
+        (enemy.controlTime || 0) + Math.min(Math.max(0, dt), remaining),
+      );
+      if (enemy.controlTime < 5 - 1e-8) return;
+      enemy.controlTime = 5;
+      enemy.uncontrollable = true;
+      enemy.uncontrollableLeft = 5;
+      enemy.slowLeft = 0;
+      enemy.controlGuardLeft = 0;
+      for (const id of ['freeze', 'shock', 'root', 'chill']) delete states[id];
+      this.effect('hit', enemy.x, enemy.z, { text: 'INCONTROLABLE', life: 1, maxLife: 1 });
+    };
     p.addEnemyStatus = function (enemy, id, damage = 0) {
       const def = R.effects[id];
       if (!def || enemy.hp <= 0 || enemy.tower || enemy.shielded) return false;
+      if (enemy.uncontrollable && (def.control || id === 'chill')) return false;
       enemy.statuses ??= {};
       if (def.control) {
         if (enemy.boss || enemy.finalBoss) return this.addEnemyStatus(enemy, 'chill');
@@ -21,7 +65,7 @@
         clock: old?.clock ?? 0.5,
         power: Math.max(old?.power || 0, power),
       };
-      if (id === 'chill') enemy.slowLeft = Math.max(enemy.slowLeft || 0, def.duration);
+      if (id === 'chill') this.slowEnemy(enemy, def.duration);
       if (id === 'poison') {
         enemy.poisonLeft = enemy.statuses.poison.left;
         enemy.poisonClock = enemy.statuses.poison.clock;
@@ -36,9 +80,11 @@
           this.addEnemyStatus(enemy, spec.id, damage);
     };
     p.enemyStatusBlocked = function (enemy) {
+      if (enemy.uncontrollable) return false;
       return !!(enemy.statuses?.freeze?.left > 0 || enemy.statuses?.shock?.left > 0);
     };
     p.enemyStatusMovement = function (enemy) {
+      if (enemy.uncontrollable) return 1;
       return this.enemyStatusBlocked(enemy) || enemy.statuses?.root?.left > 0 ? 0 : 1;
     };
     p.enemyStatusAttack = function (enemy) {

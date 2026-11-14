@@ -39,7 +39,7 @@ function enemy(id = 99, x = 2, z = 0) {
     ranged: false,
   };
 }
-test('48 distinct relics include nine legendary unique drops with real PNG icons', () => {
+test('48 distinct relics include nine legendary drops with real PNG icons', () => {
   assert.equal(loot.relics.length, 48);
   assert.equal(new Set(loot.relics.map((r) => r.id)).size, 48);
   assert.equal(loot.relics.filter((r) => r.legendary).length, 9);
@@ -52,7 +52,7 @@ test('48 distinct relics include nine legendary unique drops with real PNG icons
     assert.equal(png.subarray(1, 4).toString(), 'PNG');
   }
   grant(r, 'phoenix-core');
-  assert.ok(!r.chestPool().some((c) => c.item === 'phoenix-core'));
+  assert.equal(r.chestPool().find((c) => c.item === 'phoenix-core').rank, 2);
 });
 test('passive critical and haste upgrades apply their rank difference exactly once across saves', () => {
   const r = fresh();
@@ -216,7 +216,7 @@ test('critical lens changes damage, dash drive changes cooldown and panic shield
   r.random = () => 0;
   const e = enemy();
   r.hurt(e, 100);
-  assert.equal(e.hp, 9775);
+  assert.equal(e.hp, 9595);
   const d = fresh();
   grant(d, 'dash-drive', 3);
   d.s.enemies = [enemy()];

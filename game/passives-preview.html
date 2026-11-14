@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Digibonk · Prueba local de pasivas</title
+  ><link rel="stylesheet" href="style.css" /><style>
+    body {
+      overflow: auto;
+      padding: 24px;
+      background: #041628;
+      color: #d4fff3;
+      font-family: system-ui;
+    }
+    main {
+      max-width: 960px;
+      margin: auto;
+    }
+    #icons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    article {
+      padding: 12px;
+      background: #102b40;
+      border: 1px solid #3cd8dc;
+    }
+    article img {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+    }
+    #demo {
+      margin: 20px auto;
+      max-width: 650px;
+      padding: 20px;
+      border: 1px solid #80ded1;
+    }
+    #sprites img {
+      height: 56px;
+      image-rendering: pixelated;
+      margin: 12px;
+    }
+    button {
+      margin: 8px;
+    }
+    h1 {
+      font-size: 24px;
+      letter-spacing: normal;
+      line-height: 1.4;
+      text-shadow: none;
+    }
+    @media (max-width: 600px) {
+      #icons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+  <main>
+    <h1>Pasivas de huevo · revisión local</h1>
+    <p>Prueba aislada: no usa tu cuenta ni modifica tu partida.</p>
+    <button id="wheel">Probar Pulso preciso</button
+    ><button id="refresh">Probar Segunda mano</button>
+    <div id="demo"></div>
+    <h2>Iconos de pasivas</h2>
+    <div id="icons"></div>
+    <h2>Cartas y recolectores</h2>
+    <div id="sprites"></div>
+    <p id="assets">Comprobando recursos…</p>
+  </main>
+  <script src="species-catalog.js"></script>
+  <script src="evolution-routes.js"></script>
+  <script src="status-rules.js"></script>
+  <script src="skill-system.js"></script>
+  <script src="loot.js"></script>
+  <script src="world-rules.js"></script>
+  <script src="balance.js"></script>
+  <script src="portal-system.js"></script>
+  <script src="world-system.js"></script>
+  <script src="chest-system.js"></script>
+  <script src="relic-effects.js"></script>
+  <script src="pattern-combat.js"></script>
+  <script src="status-system.js"></script>
+  <script src="difficulty-system.js"></script>
+  <script src="egg-passives.js"></script>
+  <script src="run-core.js"></script>
+  <script type="module" src="passives-preview.js"></script>
+</html>

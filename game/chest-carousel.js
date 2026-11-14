@@ -6,6 +6,7 @@ export class ChestCarousel {
   }
   clear() {
     this.animation?.cancel();
+    cancelAnimationFrame(this.wheelFrame);
     this.animation = null;
     this.key = '';
     this.host.replaceChildren();
@@ -42,11 +43,60 @@ export class ChestCarousel {
     if (key === this.key) return;
     this.clear();
     this.key = key;
-    const chance = roll.riskUsed ? (roll.riskChance ?? 0.6) : DigibonkChest.riskSuccess,
+    const chance = roll.riskChance ?? DigibonkChest.riskSuccess,
       success = Math.round(chance * 100),
       failure = 100 - success;
     const winner = choice.cards[0] || roll.pool.find((c) => c.type === 'empty'),
       spinning = roll.phase === 'spinning';
+    if (roll.precision && spinning) {
+      const wrap = document.createElement('div');
+      wrap.className = 'precision-wheel-wrap';
+      const wheel = document.createElement('div');
+      wheel.className = 'precision-wheel';
+      const colors = ['', '#8ed238', '#15e3ef', '#d332ed', '#ff9e18'];
+      let total = 0;
+      wheel.style.background =
+        'conic-gradient(' +
+        roll.odds
+          .map((o) => {
+            const start = total;
+            total += o.chance * 100;
+            return colors[o.quality] + ' ' + start + '% ' + total + '%';
+          })
+          .join(',') +
+        ')';
+      const pointer = document.createElement('div');
+      pointer.className = 'wheel-pointer';
+      pointer.textContent = '▼';
+      wrap.append(wheel, pointer);
+      this.host.append(wrap);
+      const legend = document.createElement('p');
+      legend.textContent = roll.odds
+        .map(
+          (o) => DigibonkChest.qualities[o.quality].name + ' ' + Math.round(o.chance * 100) + '%',
+        )
+        .join(' · ');
+      this.host.append(legend);
+      const stop = document.createElement('button');
+      stop.className = 'primary';
+      stop.textContent = 'Detener';
+      this.host.append(stop);
+      const started = performance.now();
+      let rotation = 0;
+      const frame = (now) => {
+        if (this.key !== key) return;
+        rotation = (((now - started) / 1000) * roll.wheelSpeed) % 1;
+        wheel.style.transform = 'rotate(' + rotation * 360 + 'deg)';
+        this.wheelFrame = requestAnimationFrame(frame);
+      };
+      this.wheelFrame = requestAnimationFrame(frame);
+      stop.onclick = () => {
+        stop.disabled = true;
+        cancelAnimationFrame(this.wheelFrame);
+        callbacks.stop(roll.id + ':' + roll.revision, (1 - rotation) % 1);
+      };
+      return;
+    }
     const viewport = document.createElement('div'),
       track = document.createElement('div');
     viewport.className = 'chest-window';
@@ -139,6 +189,8 @@ export class ChestCarousel {
       if (primary) b.className = 'primary';
       buttons.append(b);
     };
+    if (!spinning && callbacks.canRisk())
+      button('Arriesgar · ' + success + ' % mejorar / ' + failure + ' % perder', callbacks.risk);
     if (choice.cards.length) button('1 · Quedármelo', () => callbacks.claim(winner.id), true);
     button(choice.cards.length ? 'Cerrar sin recoger' : 'Continuar', callbacks.discard);
     if (!spinning && (winner.quality === 4 || (winner.quality === 3 && roll.source === 'shop'))) {

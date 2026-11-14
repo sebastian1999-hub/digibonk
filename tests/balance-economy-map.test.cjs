@@ -48,12 +48,7 @@ test('level upgrades remain useful after capped attributes and maxed techniques'
     r.s.choice = r.choices();
     const cards = r.s.choice.cards;
     assert.equal(cards.length, 3);
-    assert.ok(
-      cards.every(
-        (c) =>
-          c.type === 'stat' && !['speed', 'crit', 'magnet', 'projectile', 'orbit'].includes(c.id),
-      ),
-    );
+    assert.ok(cards.every((c) => c.type === 'stat' && !['speed', 'magnet'].includes(c.id)));
     const card = cards[0],
       before = r.s.player[card.stat];
     assert.ok(r.choose(card.id));

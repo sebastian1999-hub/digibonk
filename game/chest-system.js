@@ -22,7 +22,8 @@
           area: 'área de las técnicas',
           shieldRatio: 'vida máxima como escudo',
           projectileBonus: 'golpes o proyectiles extra en todas las técnicas ofensivas',
-          orbits: 'orbes recolectores de experiencia',
+          ricochets: 'rebotes de proyectil (80 % de daño por rebote)',
+          orbits: 'recolectores de experiencia (cada 3 se fusionan)',
         },
         icons = {
           damage: 'finisher',
@@ -36,13 +37,21 @@
           area: 'frost',
           shieldRatio: 'thorns',
           projectileBonus: 'dash-burst',
+          ricochets: 'dash-burst',
           orbits: 'battery',
         },
-        caps = { speed: 15, crit: 0.85, magnet: 24, projectileBonus: 5, orbits: 6 },
+        caps = {
+          speed: 15,
+          crit: Infinity,
+          magnet: 24,
+          projectileBonus: Infinity,
+          orbits: Infinity,
+          ricochets: Infinity,
+        },
         cards = [];
       let last = -1;
       for (
-        let q = base.stat === 'projectileBonus' ? 3 : 1;
+        let q = base.stat === 'projectileBonus' ? 3 : base.minQuality || 1;
         q <= (base.stat === 'projectileBonus' ? 3 : maxQuality);
         q++
       ) {
@@ -62,7 +71,8 @@
           delta = card.factor - 1;
         } else {
           card.amount = Math.min(
-            base.amount * (base.stat === 'projectileBonus' ? 1 : q),
+            base.amount *
+              (base.stat === 'projectileBonus' ? 1 : base.stat === 'ricochets' ? q - 1 : q),
             cap - current,
           );
           delta = card.amount;
@@ -146,18 +156,12 @@
       for (const item of L.relics) {
         const owned = s.relics.find((r) => r.id === item.id),
           rank = owned?.rank || 0;
-        if (
-          rank >= L.maxRank ||
-          (item.legendary && owned) ||
-          (!owned && s.relics.length >= L.maxRelics)
-        )
-          continue;
-        for (let q = item.legendary ? 4 : rank + 1; q <= (item.legendary ? 4 : L.maxRank); q++)
+        for (let q = item.legendary ? 4 : 1; q <= (item.legendary ? 4 : 3); q++)
           cards.push({
             id: 'relic-' + item.id + '-q' + q,
             type: 'artifact',
             item: item.id,
-            rank: item.legendary ? 1 : q,
+            rank: rank + (item.legendary ? 1 : q),
             quality: q,
             icon: item.icon,
             iconPath: L.icon(item.id),
@@ -165,12 +169,12 @@
             title: item.name,
             rarity: qualities[q].name,
             text:
-              item.description(item.legendary ? 1 : q) +
-              (item.legendary
-                ? ' Legendario único. Sin límite de reliquias.'
-                : owned
-                  ? ' Mejora tu rango ' + rank + ' → ' + q + '.'
-                  : ' Rango ' + q + '/3. Sin límite de reliquias.'),
+              item.description(rank + (item.legendary ? 1 : q)) +
+              ' Acumulación ' +
+              rank +
+              ' → ' +
+              (rank + (item.legendary ? 1 : q)) +
+              '. Sin límite de copias.',
           });
       }
       if (s.buddies.length < 3)
@@ -223,6 +227,13 @@
       }
       return structuredClone(candidates.at(-1));
     };
+    p.precisionWheelOdds = function (pool) {
+      // Timing sectors retain their readable ordering, independently of luck relics.
+      const available = [1, 2, 3, 4].filter((q) => pool.some((c) => c.quality === q));
+      const weight = (q) => qualities[q].weight * (this.s.realm ? [0, 1, 1.12, 1.2, 1.25][q] : 1);
+      const total = available.reduce((n, q) => n + weight(q), 0);
+      return available.map((quality) => ({ quality, chance: weight(quality) / total }));
+    };
     p.chestChoices = function () {
       let pool = this.chestPool();
       if (!pool.length)
@@ -250,7 +261,12 @@
           riskUsed: false,
           empty: false,
           pool,
-          odds: this.chestOdds(pool),
+          odds: this.hasEggPassive('YukimiBotamon')
+            ? this.precisionWheelOdds(pool)
+            : this.chestOdds(pool),
+          riskChance: this.riskChance(),
+          precision: this.hasEggPassive('YukimiBotamon'),
+          wheelSpeed: 2.4 * (1 - 0.25 * Math.max(0, Math.min(1, (this.s.level - 1) / 399))),
         },
       };
     };
@@ -263,12 +279,65 @@
         token !== c.roll.id + ':' + c.roll.revision
       )
         return false;
+      if (c.roll.precision) return false;
       c.roll.phase = 'revealed';
       return true;
     };
-    // Keep compatibility with old saved/UI callers, without allowing new gambles.
-    p.canRiskChest = () => false;
-    p.riskChest = () => false;
+    p.stopChestWheel = function (token, position) {
+      const c = this.s.choice;
+      if (
+        !c?.roll?.precision ||
+        c.roll.phase !== 'spinning' ||
+        token !== c.roll.id + ':' + c.roll.revision ||
+        !Number.isFinite(position)
+      )
+        return false;
+      let total = 0;
+      const point = ((position % 1) + 1) % 1;
+      const quality =
+        c.roll.odds.find((o) => (total += o.chance) > point)?.quality ?? c.roll.odds.at(-1).quality;
+      const pool = c.roll.pool.filter((card) => card.quality === quality);
+      c.cards = [structuredClone(pool[Math.floor(this.random() * pool.length)])];
+      c.roll.position = point;
+      c.roll.phase = 'revealed';
+      return true;
+    };
+    p.canRiskChest = function () {
+      const c = this.s.choice;
+      return !!(
+        this.hasEggPassive('Zurumon') &&
+        c?.kind === 'chest' &&
+        c.roll?.phase === 'revealed' &&
+        c.roll.source !== 'shop' &&
+        !c.roll.riskUsed &&
+        c.cards[0] &&
+        this.riskPool().some((x) => x.quality > c.cards[0].quality)
+      );
+    };
+    p.riskChest = function () {
+      if (!this.canRiskChest()) return false;
+      const c = this.s.choice,
+        pool = this.riskPool().filter((x) => x.quality > c.cards[0].quality);
+      c.roll.riskUsed = true;
+      c.roll.riskChance = this.riskChance();
+      c.roll.revision++;
+      c.roll.phase = 'spinning';
+      c.roll.pool = [
+        ...pool,
+        {
+          id: 'empty-chest',
+          type: 'empty',
+          quality: 0,
+          title: 'Cofre vacío',
+          iconPath: L.icon('empty'),
+          rarity: 'Sin recompensa',
+        },
+      ];
+      const card = this.random() < this.riskChance() ? this.rollChestCard(pool) : null;
+      c.cards = card ? [card] : [];
+      c.roll.empty = !card;
+      return true;
+    };
   }
   const api = { install, qualities, riskSuccess };
   if (typeof module !== 'undefined') module.exports = api;

@@ -11,7 +11,7 @@
       ability: 'Embestida ígnea',
       cooldown: 10,
       color: '#ffab67',
-      passive: 'Recibes un 20 % menos de daño.',
+      passive: 'La pasiva depende del huevo elegido.',
       description:
         'Habilidad: embiste en tu dirección de movimiento, golpeando y empujando a los enemigos que atraviesas. Recarga base: 10 s.',
     },
@@ -21,7 +21,7 @@
       ability: 'Caza en cadena',
       cooldown: 8,
       color: '#91dce7',
-      passive: '+15 % de velocidad y +15 % de daño al enemigo marcado.',
+      passive: 'La pasiva depende del huevo elegido.',
       description:
         'Habilidad: dispara tres ataques rápidos más tus proyectiles adicionales a un enemigo cercano. El enemigo más cercano se marca automáticamente. Recarga base: 8 s.',
     },
@@ -31,7 +31,7 @@
       ability: 'Sello sagrado',
       cooldown: 16,
       color: '#ffe7a1',
-      passive: 'Recuperas un 1 % de vida por segundo.',
+      passive: 'La pasiva depende del huevo elegido.',
       description:
         'Habilidad: crea un sello de 5 m durante 5 s, que reduce el daño un 25 % y devuelve 3 proyectiles más tus proyectiles adicionales. Recarga base: 16 s.',
     },
@@ -41,7 +41,7 @@
       ability: 'Jardín de datos',
       cooldown: 14,
       color: '#a6e28b',
-      passive: 'Los enemigos a menos de 8 m se mueven un 15 % más despacio.',
+      passive: 'La pasiva depende del huevo elegido.',
       description:
         'Habilidad: planta un campo de 5 m cerca de un enemigo; ralentiza un 55 % (30 % a jefes) e inflige daño durante 6 s. Recarga base: 14 s.',
     },
@@ -51,7 +51,7 @@
       ability: 'Bombardeo orbital',
       cooldown: 14,
       color: '#e7c18c',
-      passive: 'Tus técnicas tienen un 20 % más de alcance.',
+      passive: 'La pasiva depende del huevo elegido.',
       description:
         'Habilidad: señala hasta tres enemigos más tus proyectiles adicionales y bombardea sus posiciones tras 1 s. Recarga base: 14 s.',
     },
@@ -61,7 +61,7 @@
       ability: 'Onda de choque',
       cooldown: 11,
       color: '#7edbf0',
-      passive: 'Las inundaciones digitales no reducen tu velocidad.',
+      passive: 'La pasiva depende del huevo elegido.',
       description:
         'Habilidad: libera una ola de 7 m que daña, empuja y ralentiza a los enemigos durante 2,5 s. Recarga base: 11 s.',
     },
@@ -79,7 +79,7 @@
       name: 'Inundación',
       symbol: 'A',
       color: '#5ed2f1',
-      rule: 'El agua digital reduce tu velocidad un 15 %. Marea es inmune.',
+      rule: 'El agua digital reduce tu velocidad un 15 %.',
     },
     glitch: {
       id: 'glitch',

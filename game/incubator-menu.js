@@ -55,6 +55,15 @@ export function renderIncubatorMenu(host, ctx) {
         el('small', 'pod-lock', owned ? '' : 'Bloqueado'),
       );
       const tooltip = el('span', 'pod-preview');
+      const passive = C.eggPassives?.[egg.id];
+      if (passive) {
+        const info = el('span', 'egg-passive-info', passive.join(' · '));
+        const icon = el('img', 'egg-passive-icon');
+        icon.src = 'assets/passives/' + egg.id + '.svg';
+        icon.alt = '';
+        info.prepend(icon);
+        tooltip.append(info);
+      }
       tooltip.setAttribute('role', 'tooltip');
       tooltip.id = 'egg-preview-' + egg.id;
       pod.setAttribute('aria-describedby', tooltip.id);
@@ -69,6 +78,14 @@ export function renderIncubatorMenu(host, ctx) {
       pods.append(pod);
     }
     host.append(pods);
+    if (confirmed && C.eggPassives?.[selected]) {
+      const detail = el('p', 'selected-egg-passive', C.eggPassives[selected].join(' · '));
+      const icon = el('img', 'egg-passive-icon');
+      icon.src = 'assets/passives/' + selected + '.svg';
+      icon.alt = '';
+      detail.prepend(icon);
+      host.append(detail);
+    }
     const actions = el('div', 'pod-actions');
     actions.hidden = !confirmed;
     for (const [id, label, action] of [

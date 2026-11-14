@@ -6,7 +6,7 @@
     c.save();
     c.translate(x, y);
     c.fillStyle = '#172e38ed';
-    c.strokeStyle = R.effects[id]?.color || '#fff';
+    c.strokeStyle = id === 'uncontrollable' ? '#ffad4c' : R.effects[id]?.color || '#fff';
     c.lineWidth = 1.6;
     c.beginPath();
     c.arc(0, 0, r, 0, Math.PI * 2);
@@ -21,7 +21,19 @@
     c.lineCap = 'round';
     c.lineJoin = 'round';
     c.beginPath();
-    if (['burn', 'poison', 'wet', 'bleed'].includes(id)) {
+    if (id === 'uncontrollable') {
+      c.moveTo(0, -8);
+      c.lineTo(7, -5);
+      c.lineTo(5, 4);
+      c.lineTo(0, 8);
+      c.lineTo(-5, 4);
+      c.lineTo(-7, -5);
+      c.closePath();
+      c.stroke();
+      c.moveTo(-4, 4);
+      c.lineTo(4, -4);
+      c.stroke();
+    } else if (['burn', 'poison', 'wet', 'bleed'].includes(id)) {
       c.moveTo(0, -7);
       c.bezierCurveTo(-1, -3, -6, 0, -5, 4);
       c.bezierCurveTo(-4, 8, 5, 8, 5, 3);

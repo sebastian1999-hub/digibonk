@@ -68,7 +68,7 @@ test('quality scales actual stat gains and the saved card preserves its value', 
     assert.ok(Math.abs(saved.s.player.damage - before * card.factor) < 1e-8);
   }
 });
-test('projectile card is epic only, grants one extra hit and respects the cap', () => {
+test('projectile card is epic only, grants one extra hit and stacks past five', () => {
   const r = fresh(),
     base = { id: 'projectile', stat: 'projectileBonus', amount: 1 };
   for (const n of [0, 0.7, 0.929, 0.999]) {
@@ -83,7 +83,7 @@ test('projectile card is epic only, grants one extra hit and respects the cap', 
   r.s.choice = { kind: 'level', cards: [card] };
   assert.ok(r.choose(card.id));
   assert.equal(r.s.player.projectileBonus, 5);
-  assert.equal(r.levelUpgradeCard(base), null);
+  assert.equal(r.levelUpgradeCard(base).amount, 1);
 });
 test('higher quality technique cards grant multiple ranks without exceeding rank nine', () => {
   const r = fresh();
