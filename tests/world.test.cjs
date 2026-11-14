@@ -20,6 +20,34 @@ function fresh(name = 'Agumon', stage = 1) {
 function mob(x = 2, z = 0) {
   return { id: 90, x, z, hp: 200, maxHp: 200, hit: 0, speed: 0, shotClock: 100, stage: 1 };
 }
+
+test('red collectors switch roles, scale shots and preserve mode and cooldown on save', () => {
+  let r = fresh();
+  const p = r.s.player;
+  assert.equal(r.toggleCollectors(), false);
+  Object.assign(p, { orbits: 4, damage: 100, haste: 2, area: 2, projectileBonus: 2, ricochets: 3 });
+  r.s.enemies = [mob(p.x + 5, p.z)];
+  r.s.gems = [{ id: 700, x: p.x + 2, z: p.z, value: 1 }];
+  r.updateCollectors(0);
+  assert.equal(r.toggleCollectors(), true);
+  r.updateCollectors(0.1);
+  assert.equal(r.s.shots.length, 3);
+  assert.equal(r.s.shots[0].damage, 45);
+  assert.equal(r.s.shots[0].area, 1.3);
+  assert.equal(r.s.shots[0].bouncesLeft, 3);
+  assert.equal(r.s.collectors[0].fireClock, 0.75);
+  assert.equal(r.s.collectors[0].target, null);
+  assert.equal(r.s.collectors[1].target, 700);
+  r = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(r.s.player.collectorMode, 'attack');
+  assert.equal(r.s.collectors[0].fireClock, 0.75);
+  assert.equal(r.toggleCollectors(), true);
+  assert.equal(r.toggleCollectors(), true);
+  r.updateCollectors(0.1);
+  assert.equal(r.s.shots.length, 3, 'switching does not reset the firing cooldown');
+  r.s.choice = r.choices();
+  assert.equal(r.toggleCollectors(), false);
+});
 test('evolution branches unlock materially different styles including mechanical Greymon', () => {
   for (const [name, stage, expected] of [
     ['Botamon', -1, null],

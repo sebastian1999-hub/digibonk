@@ -5,6 +5,18 @@ const fs = require('node:fs'),
 const { parseNotes } = require('../scripts/sync-patch-notes.cjs');
 const source =
   '## Pendiente de publicación\n- Borrador\n## 1.9.0 · Anterior\n- Corrección\n## 1.10.0 · Actual\n- Novedad\n## Pendiente de publicación: más\n- Otro borrador';
+test('patch pages retain long notes in readable fragments and version order', async () => {
+  const { pathToFileURL } = require('node:url');
+  const { patchPages } = await import(
+    pathToFileURL(require.resolve('../game/patch-notes-view.js'))
+  );
+  const text = Array(160).fill('novedad').join(' ');
+  const pages = patchPages({ releases: [{ version: '1.38.1', title: 'Nuevo', changes: [text] }] });
+  assert.ok(pages.length > 1);
+  assert.ok(pages.every((p) => p.text.length <= 320));
+  assert.equal(pages.map((p) => p.text).join(' '), text);
+  assert.equal(pages.at(-1).part, pages.length);
+});
 test('patch history sorts versions numerically and keeps drafts separate', () => {
   const data = parseNotes(source, '1.10.0');
   assert.deepEqual(data.pending, ['Borrador', 'Otro borrador']);
@@ -14,10 +26,17 @@ test('patch history sorts versions numerically and keeps drafts separate', () =>
   );
   assert.deepEqual(parseNotes(source, '1.10.0', false).pending, []);
   assert.throws(() => parseNotes(source, '1.11.0'), /Añade los cambios/);
-  const legacy = parseNotes('## 1.18.0 · Nueva\n- Nuevo\n# Digibonk 1.17.0\n- Antiguo\n## Sin versión\n- Excluido', '1.18.0');
-  assert.deepEqual(legacy.releases.map(r => [r.version, r.changes]), [
-    ['1.18.0', ['Nuevo']], ['1.17.0', ['Antiguo']],
-  ]);
+  const legacy = parseNotes(
+    '## 1.18.0 · Nueva\n- Nuevo\n# Digibonk 1.17.0\n- Antiguo\n## Sin versión\n- Excluido',
+    '1.18.0',
+  );
+  assert.deepEqual(
+    legacy.releases.map((r) => [r.version, r.changes]),
+    [
+      ['1.18.0', ['Nuevo']],
+      ['1.17.0', ['Antiguo']],
+    ],
+  );
 });
 test('shipped local history matches release notes and the current installed version', () => {
   const read = (name) => fs.readFileSync(require.resolve('../' + name), 'utf8');

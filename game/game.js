@@ -981,6 +981,11 @@ function refreshWorldHud() {
     p = s.player,
     style = run.style();
   $('#style-panel').hidden = !active || s.done;
+  $('#collector-mode').hidden = p.orbits < 3;
+  $('#collector-mode').textContent =
+    keys.label('collectors') +
+    ' · RECOLECTORES: ' +
+    (p.collectorMode === 'attack' ? 'ATAQUE' : 'RECOGIDA');
   $('#style-name').textContent = style
     ? 'ESTILO · ' + style.name.toUpperCase()
     : 'ESTILO AÚN LATENTE';
@@ -1519,6 +1524,18 @@ document.addEventListener('keydown', (event) => {
   }
   if (!active || run.s.done || !action) return;
   event.preventDefault();
+  if (action === 'collectors') {
+    if (!event.repeat && !paused && run.toggleCollectors()) {
+      toast(
+        run.s.player.collectorMode === 'attack'
+          ? 'RECOLECTORES ROJOS · ATAQUE'
+          : 'RECOLECTORES ROJOS · RECOGIDA',
+      );
+      save();
+      refreshHud();
+    }
+    return;
+  }
   if (action === 'special') {
     if (!event.repeat && !paused && !run.s.choice && !run.s.evolution) specialQueued = true;
     return;

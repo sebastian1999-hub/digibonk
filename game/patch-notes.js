@@ -1,8 +1,17 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.38.0",
+  "currentVersion": "1.38.1",
   "pending": [],
   "releases": [
+    {
+      "version": "1.38.1",
+      "title": "Recolectores de combate e Info parche",
+      "changes": [
+        "Info parche se recorre con flechas Anterior/Siguiente, sin scroll, con novedades divididas en páginas.",
+        "La tecla R alterna todos los recolectores rojos entre recogida y ataque. Se puede reasignar en Ajustes y el modo se conserva al guardar.",
+        "Los rojos disparan con el 45 % de tu daño y escalan con cadencia, crítico, área, proyectiles adicionales y rebotes. Los recolectores básicos siguen recogiendo experiencia."
+      ]
+    },
     {
       "version": "1.38.0",
       "title": "Pasivas de huevo y novedades de combate",

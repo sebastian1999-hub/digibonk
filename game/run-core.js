@@ -987,6 +987,17 @@
         shot.oz = target.z;
         shot.life = 2.8;
       }
+      toggleCollectors() {
+        const s = this.s;
+        if (s.done || s.choice || s.evolution || s.hatch > 0 || s.player.orbits < 3) return false;
+        s.player.collectorMode = s.player.collectorMode === 'attack' ? 'collect' : 'attack';
+        for (const orb of s.collectors || []) {
+          if (!orb.evolved) continue;
+          orb.target = null;
+          orb.returning = false;
+        }
+        return true;
+      }
       updateCollectors(dt) {
         const s = this.s,
           p = s.player,
@@ -1003,6 +1014,46 @@
         const reserved = new Set(s.collectors.map((o) => o.target).filter((id) => id != null));
         for (const [i, orb] of s.collectors.entries()) {
           orb.evolved = i < evolved;
+          orb.fireClock = Math.max(0, (orb.fireClock || 0) - dt);
+          if (orb.evolved && p.collectorMode === 'attack') {
+            orb.target = null;
+            orb.returning = false;
+            const angle = s.time * 2.5 + (i * Math.PI * 2) / Math.max(1, count);
+            const tx = p.x + Math.cos(angle) * 3.4,
+              tz = p.z + Math.sin(angle) * 3.4;
+            const d = Math.hypot(tx - orb.x, tz - orb.z),
+              step = Math.min(d, (p.speed + 24) * dt);
+            orb.x += ((tx - orb.x) / (d || 1)) * step;
+            orb.z += ((tz - orb.z) / (d || 1)) * step;
+            if (orb.fireClock <= 0) {
+              const enemy = s.enemies
+                .filter((e) => e.hp > 0 && !e.shielded && distance(e, orb) < 16 * p.area)
+                .sort((a, b) => distance(a, orb) - distance(b, orb))[0];
+              if (enemy) {
+                for (let n = 0; n < Math.min(180, 1 + (p.projectileBonus || 0)); n++) {
+                  s.shots.push({
+                    id: s.nextId++,
+                    x: orb.x,
+                    z: orb.z,
+                    ox: orb.x,
+                    oz: orb.z,
+                    target: enemy.id,
+                    speed: 24,
+                    damage: p.damage * 0.45,
+                    area: 0.65 * p.area,
+                    visualScale: p.area,
+                    life: 2.8,
+                    skillId: 'air-shot',
+                    color: '#ff5868',
+                    bouncesLeft: p.ricochets || 0,
+                  });
+                }
+                orb.fireClock = Math.max(0.2, 1.5 / (p.haste * (p.hasteLeft > 0 ? 1.2 : 1)));
+                if (s.shots.length > 180) s.shots.splice(0, s.shots.length - 180);
+              }
+            }
+            continue;
+          }
           let gem = s.gems.find((g) => g.id === orb.target);
           if (!gem) {
             orb.target = null;

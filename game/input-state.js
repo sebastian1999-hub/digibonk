@@ -8,6 +8,7 @@
     dash: [' ', ''],
     interact: ['e', ''],
     special: ['q', ''],
+    collectors: ['r', ''],
     pause: ['p', ''],
     map: ['m', ''],
   };
@@ -19,6 +20,7 @@
     dash: 'Esquivar',
     interact: 'Interactuar',
     special: 'Habilidad de evolución',
+    collectors: 'Recolectores: recoger / atacar',
     pause: 'Pausar',
     map: 'Abrir / cerrar mapa',
   };
@@ -58,6 +60,17 @@
           ];
         }
         let valid = true;
+        if (!saved.collectors) {
+          const occupied = new Set(
+            Object.entries(candidate)
+              .filter(([a]) => a !== 'collectors')
+              .flatMap(([, pair]) => (Array.isArray(pair) ? pair : [])),
+          );
+          candidate.collectors = [
+            ['r', 't', 'y', 'u', 'i', 'o', '0', '9'].find((k) => !occupied.has(k)) || 'numpad0',
+            '',
+          ];
+        }
         for (const action of Object.keys(defaults)) {
           const pair = candidate[action];
           if (!Array.isArray(pair) || pair.length !== 2 || !pair[0]) {

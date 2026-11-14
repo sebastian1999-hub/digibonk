@@ -3980,8 +3980,38 @@ dialog,
 
 #patch-notes-dialog {
   width: min(780px, 92vw);
-  max-height: 85dvh;
-  overflow: auto;
+  max-height: 96dvh;
+  overflow: hidden;
+}
+.patch-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+}
+.patch-entry p {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+@media (max-height: 600px) {
+  #patch-notes-dialog {
+    padding: 12px 24px;
+    font-size: 12px;
+  }
+  #patch-notes-dialog h2 {
+    margin: 4px 0;
+    font-size: 20px;
+  }
+  #patch-notes-dialog .patch-entry {
+    margin-top: 4px;
+  }
+  #patch-notes-dialog .patch-entry h3 {
+    margin: 4px 0;
+  }
+  .patch-navigation {
+    margin-top: 6px;
+  }
 }
 .patch-entry {
   border-top: 1px solid #76d9d64d;

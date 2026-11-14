@@ -20,16 +20,17 @@ function fresh() {
   r.s.nextBoss = 1000;
   return r;
 }
-test('default E interacts, Q casts and R/F no longer trigger actions', () => {
+test('default E interacts, Q casts and R switches collectors', () => {
   const k = new Input();
   assert.equal(k.actionFor({ code: 'KeyE' }), 'interact');
   assert.equal(k.actionFor({ code: 'KeyQ' }), 'special');
-  assert.equal(k.actionFor({ code: 'KeyR' }), null);
+  assert.equal(k.actionFor({ code: 'KeyR' }), 'collectors');
   assert.equal(k.actionFor({ code: 'KeyF' }), null);
 });
 test('custom movement and action bindings survive serialization and preserve held movement only', () => {
   const k = new Input();
   assert.ok(k.bind('down', 0, { code: 'KeyK' }).ok);
+  assert.ok(k.bind('collectors', 0, { code: 'KeyT' }).ok);
   assert.ok(k.bind('special', 0, { code: 'KeyR' }).ok);
   assert.ok(k.bind('interact', 1, { code: 'KeyF' }).ok);
   const loaded = new Input(JSON.parse(JSON.stringify(k.bindings)));
@@ -43,6 +44,15 @@ test('custom movement and action bindings survive serialization and preserve hel
   assert.equal(loaded.label('interact'), 'E / F');
   loaded.up({ code: 'KeyK', key: 'K' });
   assert.equal(loaded.pressed('down'), false);
+});
+
+test('old bindings using R keep their action and get a free collector key', () => {
+  const legacy = new Input().bindings;
+  delete legacy.collectors;
+  legacy.special = ['r', ''];
+  const k = new Input(legacy);
+  assert.equal(k.actionFor({ code: 'KeyR' }), 'special');
+  assert.equal(k.actionFor({ code: 'KeyT' }), 'collectors');
 });
 test('duplicate keys and reserved shortcuts are rejected, secondary keys can be cleared and defaults restored', () => {
   const k = new Input();

@@ -1,3 +1,9 @@
+## 1.38.1 · Recolectores de combate e Info parche
+
+- Info parche se recorre con flechas Anterior/Siguiente, sin scroll, con novedades divididas en páginas.
+- La tecla R alterna todos los recolectores rojos entre recogida y ataque. Se puede reasignar en Ajustes y el modo se conserva al guardar.
+- Los rojos disparan con el 45 % de tu daño y escalan con cadencia, crítico, área, proyectiles adicionales y rebotes. Los recolectores básicos siguen recogiendo experiencia.
+
 ## 1.38.0 · Pasivas de huevo y novedades de combate
 
 - Doce pasivas propias de cada huevo, persistentes al evolucionar, con nuevos iconos y cartas de rareza.
