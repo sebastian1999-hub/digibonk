@@ -270,6 +270,13 @@
         },
       };
     };
+    p.prepareInstantChest = function () {
+      const c = this.s.choice;
+      if (this.s.done || c?.kind !== 'chest' || !c.roll) return false;
+      if (c.roll.phase === 'revealed') return true;
+      if (c.roll.precision) return false;
+      return this.revealChest(c.roll.id + ':' + c.roll.revision);
+    };
     p.revealChest = function (token) {
       const c = this.s.choice;
       if (

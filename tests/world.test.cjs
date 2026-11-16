@@ -20,6 +20,43 @@ function fresh(name = 'Agumon', stage = 1) {
 function mob(x = 2, z = 0) {
   return { id: 90, x, z, hp: 200, maxHp: 200, hit: 0, speed: 0, shotClock: 100, stage: 1 };
 }
+test('automatic chest mode requires the egg level cap and opens only affordable nearby chests once', () => {
+  const r = fresh();
+  assert.equal(r.toggleAutoPlay(), false);
+  r.s.level = 400;
+  assert.equal(r.toggleAutoPlay(), true);
+  const p = r.s.player;
+  r.s.autoPlay = true;
+  r.update(0.01, { x: 1, z: 0 });
+  assert.equal(r.s.autoPlay, false, 'manual movement cancels automatic movement');
+  r.s.autoPlay = true;
+  r.map = {
+    ...r.map,
+    pois: [
+      { id: 'merchant-near', type: 'merchant', x: p.x, z: p.z },
+      { id: 'expensive', type: 'chest', x: p.x, z: p.z },
+    ],
+  };
+  r.s.coins = 0;
+  r.s.droppedChests = [
+    { id: 'drop-chest-auto', type: 'chest', x: p.x + 1, z: p.z, expires: r.s.time + 60 },
+  ];
+  r.autoChestInput();
+  assert.ok(r.s.choice?.roll);
+  assert.deepEqual(r.s.usedPois, ['drop-chest-auto']);
+  const score = r.s.score;
+  r.autoChestInput();
+  assert.equal(r.s.score, score);
+  assert.equal(r.s.coins, 0);
+  r.s.choice = null;
+  assert.deepEqual(r.autoChestInput(), { x: 0, z: 0 });
+  assert.equal(new C.Run(null, { saved: r.snapshot() }).s.autoPlay, false);
+  r.s.egg = 'Petitmon';
+  r.s.autoPlay = false;
+  assert.equal(r.toggleAutoPlay(), false);
+  r.s.level = 450;
+  assert.equal(r.toggleAutoPlay(), true);
+});
 test('enemies differ from the player in spawns, evolutions, saved scenes and final bosses', () => {
   const r = fresh();
   r.spawn();

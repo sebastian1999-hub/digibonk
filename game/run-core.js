@@ -615,6 +615,7 @@
         this.events = [];
         this.initializeWorld();
         this.initializeEggPassive(!!saved);
+        this.s.autoPlay = false;
         this.separateEnemySpecies();
         this.s.level = Math.min(this.maxLevel(), Math.max(1, this.s.level));
         if (this.s.level === this.maxLevel()) this.s.xp = 0;
@@ -1485,6 +1486,70 @@
         this.s.droppedChests.push(chest);
         return true;
       }
+      toggleAutoPlay() {
+        if (
+          this.s.level < this.maxLevel() ||
+          this.s.done ||
+          this.s.choice ||
+          this.s.evolution ||
+          this.s.hatch > 0
+        )
+          return false;
+        this.s.autoPlay = !this.s.autoPlay;
+        return true;
+      }
+      autoChestInput() {
+        const s = this.s;
+        if (
+          !s.autoPlay ||
+          s.level < this.maxLevel() ||
+          s.done ||
+          s.choice ||
+          s.evolution ||
+          s.hatch > 0 ||
+          s.pendingRealmReturn
+        )
+          return { x: 0, z: 0 };
+        const target = [...this.map.pois, ...s.droppedChests]
+          .filter(
+            (p) =>
+              p.type === 'chest' &&
+              !s.usedPois.includes(p.id) &&
+              (p.expires == null || p.expires > s.time) &&
+              this.poiCost(p) <= s.coins,
+          )
+          .sort((a, b) => distance(a, s.player) - distance(b, s.player))[0];
+        if (!target) return { x: 0, z: 0 };
+        if (distance(target, s.player) < 4.5) {
+          this.openChest(target);
+          return { x: 0, z: 0 };
+        }
+        return enemyDirection(s.player, target, s.mapSeed);
+      }
+      openChest(poi) {
+        const s = this.s,
+          p = s.player;
+        if (
+          poi?.type !== 'chest' ||
+          s.choice ||
+          s.evolution ||
+          s.done ||
+          s.hatch > 0 ||
+          s.usedPois.includes(poi.id) ||
+          distance(poi, p) >= 4.5 ||
+          (poi.expires != null && poi.expires <= s.time)
+        )
+          return false;
+        const cost = this.poiCost(poi);
+        if (s.coins < cost) return false;
+        s.coins -= cost;
+        if (!poi.id.startsWith('drop-chest-')) s.chestsOpened++;
+        s.usedPois.push(poi.id);
+        p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.05 * this.relicRank('rations'));
+        s.choice = this.chestChoices();
+        s.score += 50;
+        return true;
+      }
       nearestPoi() {
         const s = this.s;
         return (
@@ -1518,13 +1583,9 @@
           s.challenge = { id: poi.id, x: poi.x, z: poi.z, progress: 0 };
           return { ok: true, message: 'Resiste 8 segundos dentro del círculo del santuario.' };
         }
+        if (poi.type === 'chest') return { ok: this.openChest(poi) };
         s.coins -= cost;
-        if (poi.type === 'chest') {
-          if (!poi.id.startsWith('drop-chest-')) s.chestsOpened++;
-          s.usedPois.push(poi.id);
-          p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.05 * this.relicRank('rations'));
-          s.choice = this.chestChoices();
-        } else {
+        {
           s.shopPurchases++;
           s.choice = this.choices('shop');
         }
@@ -1591,6 +1652,11 @@
         }
         this.maybeLevel();
         if (s.choice) return;
+        if (input.x || input.z) s.autoPlay = false;
+        if (s.autoPlay) {
+          input = { ...input, ...this.autoChestInput() };
+          if (s.choice) return;
+        }
         s.time += dt;
         p.hp = Math.min(p.maxHp, p.hp + p.regen * dt);
         const shieldMax = p.maxHp * p.shieldRatio;

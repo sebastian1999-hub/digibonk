@@ -1,8 +1,16 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.38.2",
+  "currentVersion": "1.38.3",
   "pending": [],
   "releases": [
+    {
+      "version": "1.38.3",
+      "title": "Cofres rápidos y juego automático",
+      "changes": [
+        "Tecla configurable de juego automático (T por defecto), disponible al nivel máximo: busca y abre el cofre más cercano que puedas pagar. Respeta pausas y menús; moverte manualmente lo desactiva. Se inicia desactivado al cargar una partida.",
+        "Nuevo ajuste para recibir automáticamente el premio de los cofres sin animación ni gacha. Muestra el objeto obtenido y conserva la parada manual de la ruleta de YukimiBotamon."
+      ]
+    },
     {
       "version": "1.38.2",
       "title": "Mejoras opcionales y enemigos distinguibles",

@@ -68,6 +68,11 @@ let bindingCapture = null,
   settingsWasPaused = false;
 const keyLabel = (action) => keys.label(action);
 bindUiScale(settings, () => store(SETTINGS_KEY, settings));
+$('#instant-chests').checked = settings.instantChests === true;
+$('#instant-chests').onchange = (event) => {
+  settings.instantChests = event.target.checked;
+  store(SETTINGS_KEY, settings);
+};
 
 function read(key, fallback) {
   try {
@@ -981,6 +986,10 @@ function refreshWorldHud() {
     p = s.player,
     style = run.style();
   $('#style-panel').hidden = !active || s.done;
+  $('#auto-play-status').textContent =
+    run.s.level >= run.maxLevel()
+      ? keyLabel('autoPlay') + ' · AUTOMÁTICO: ' + (s.autoPlay ? 'ACTIVO' : 'DESACTIVADO')
+      : 'Automático disponible en nivel ' + run.maxLevel();
   $('#collector-mode').hidden = p.orbits < 3;
   $('#collector-mode').textContent =
     keys.label('collectors') +
@@ -1088,6 +1097,17 @@ function riskChest() {
   showChoice();
 }
 function showChoice() {
+  if (settings.instantChests && run.prepareInstantChest()) {
+    const card = run.s.choice.cards[0];
+    if (card) {
+      choose(card.id);
+      toast('OBTENIDO · ' + card.title + (card.rarity ? ' · ' + card.rarity : ''));
+    } else {
+      if (run.skipChest()) finishSkippedChoice();
+      toast('Cofre vacío');
+    }
+    return;
+  }
   $('#skip-level').hidden = run.s.choice?.kind !== 'level' || !!run.s.choice?.roll;
   let refresh = document.getElementById('refresh-level');
   if (!refresh) {
@@ -1541,6 +1561,17 @@ document.addEventListener('keydown', (event) => {
       );
       save();
       refreshHud();
+    }
+    return;
+  }
+  if (action === 'autoPlay') {
+    if (!event.repeat && !paused) {
+      if (run.toggleAutoPlay()) {
+        moveTarget = null;
+        toast(run.s.autoPlay ? 'AUTOMÁTICO · Buscando cofres' : 'AUTOMÁTICO DESACTIVADO');
+        refreshHud();
+      } else if (run.s.level < run.maxLevel())
+        toast('Disponible al alcanzar el nivel ' + run.maxLevel());
     }
     return;
   }

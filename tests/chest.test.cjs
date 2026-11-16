@@ -20,6 +20,23 @@ function fresh() {
 function reveal(r) {
   return r.revealChest(r.s.choice.roll.id + ':' + r.s.choice.roll.revision);
 }
+test('instant chest keeps the saved prize and grants it once; precision wheel still needs stopping', () => {
+  const r = fresh();
+  const prize = structuredClone(r.s.choice.cards[0]);
+  const loaded = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(loaded.prepareInstantChest(), true);
+  assert.deepEqual(loaded.s.choice.cards[0], prize);
+  assert.equal(loaded.choose(prize.id), true);
+  assert.equal(loaded.prepareInstantChest(), false);
+  assert.equal(loaded.choose(prize.id), false);
+  const wheel = new C.Run('YukimiBotamon', { seed: 123 });
+  wheel.s.hatch = 0;
+  wheel.s.choice = wheel.chestChoices();
+  assert.equal(wheel.prepareInstantChest(), false);
+  const roll = wheel.s.choice.roll;
+  wheel.stopChestWheel(roll.id + ':' + roll.revision, 0.2);
+  assert.equal(wheel.prepareInstantChest(), true);
+});
 test('carousel outcome survives reload, cannot be collected during spin, and stale reveal tokens fail', () => {
   const r = fresh(),
     id = r.s.choice.cards[0].id;

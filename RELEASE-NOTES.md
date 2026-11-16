@@ -1,3 +1,9 @@
+## 1.38.3 · Cofres rápidos y juego automático
+
+- Tecla configurable de juego automático (T por defecto), disponible al nivel máximo: busca y abre el cofre más cercano que puedas pagar. Respeta pausas y menús; moverte manualmente lo desactiva. Se inicia desactivado al cargar una partida.
+
+- Nuevo ajuste para recibir automáticamente el premio de los cofres sin animación ni gacha. Muestra el objeto obtenido y conserva la parada manual de la ruleta de YukimiBotamon.
+
 ## 1.38.2 · Mejoras opcionales y enemigos distinguibles
 
 - Al subir de nivel puedes saltar la mejora sin añadir técnicas ni modificar tus estadísticas. Conservas el nivel ganado.

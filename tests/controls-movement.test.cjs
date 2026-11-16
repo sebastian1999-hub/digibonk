@@ -30,7 +30,7 @@ test('default E interacts, Q casts and R switches collectors', () => {
 test('custom movement and action bindings survive serialization and preserve held movement only', () => {
   const k = new Input();
   assert.ok(k.bind('down', 0, { code: 'KeyK' }).ok);
-  assert.ok(k.bind('collectors', 0, { code: 'KeyT' }).ok);
+  assert.ok(k.bind('collectors', 0, { code: 'KeyY' }).ok);
   assert.ok(k.bind('special', 0, { code: 'KeyR' }).ok);
   assert.ok(k.bind('interact', 1, { code: 'KeyF' }).ok);
   const loaded = new Input(JSON.parse(JSON.stringify(k.bindings)));
@@ -49,6 +49,7 @@ test('custom movement and action bindings survive serialization and preserve hel
 test('old bindings using R keep their action and get a free collector key', () => {
   const legacy = new Input().bindings;
   delete legacy.collectors;
+  delete legacy.autoPlay;
   legacy.special = ['r', ''];
   const k = new Input(legacy);
   assert.equal(k.actionFor({ code: 'KeyR' }), 'special');

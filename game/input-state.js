@@ -9,6 +9,7 @@
     interact: ['e', ''],
     special: ['q', ''],
     collectors: ['r', ''],
+    autoPlay: ['t', ''],
     pause: ['p', ''],
     map: ['m', ''],
   };
@@ -21,6 +22,7 @@
     interact: 'Interactuar',
     special: 'Habilidad de evolución',
     collectors: 'Recolectores: recoger / atacar',
+    autoPlay: 'Juego automático (nivel máximo)',
     pause: 'Pausar',
     map: 'Abrir / cerrar mapa',
   };
@@ -63,11 +65,23 @@
         if (!saved.collectors) {
           const occupied = new Set(
             Object.entries(candidate)
-              .filter(([a]) => a !== 'collectors')
+              .filter(([a]) => a !== 'collectors' && (a !== 'autoPlay' || saved.autoPlay))
               .flatMap(([, pair]) => (Array.isArray(pair) ? pair : [])),
           );
           candidate.collectors = [
             ['r', 't', 'y', 'u', 'i', 'o', '0', '9'].find((k) => !occupied.has(k)) || 'numpad0',
+            '',
+          ];
+        }
+        if (!saved.autoPlay) {
+          const occupied = new Set(
+            Object.entries(candidate)
+              .filter(([a]) => a !== 'autoPlay')
+              .flatMap(([, pair]) => (Array.isArray(pair) ? pair : [])),
+          );
+          candidate.autoPlay = [
+            ['t', 'y', 'u', 'i', 'o', '0', '9', 'numpad1'].find((k) => !occupied.has(k)) ||
+              'numpad2',
             '',
           ];
         }
