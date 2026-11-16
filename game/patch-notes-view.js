@@ -3,26 +3,7 @@ export function patchPages(data) {
     ...(data.pending?.length ? [{ title: 'En preparación', changes: data.pending }] : []),
     ...(data.releases || []).map((r) => ({ ...r, title: r.version + ' · ' + r.title })),
   ];
-  return entries.flatMap((entry) => {
-    const chunks = [];
-    for (const change of entry.changes) {
-      let part = '';
-      for (const word of change.split(/\s+/)) {
-        if (part.length + word.length > 320) {
-          chunks.push(part);
-          part = '';
-        }
-        part += (part ? ' ' : '') + word;
-      }
-      if (part) chunks.push(part);
-    }
-    return chunks.map((text, i) => ({
-      title: entry.title,
-      text,
-      part: i + 1,
-      total: chunks.length,
-    }));
-  });
+  return entries;
 }
 export function renderPatchNotes(host, data) {
   host.replaceChildren();
@@ -49,17 +30,25 @@ export function renderPatchNotes(host, data) {
   back.type = next.type = 'button';
   nav.append(back, label, next);
   host.append(article, nav);
+  const dialog = host.closest('dialog');
+  const fit = () => {
+    if (!dialog?.open) return;
+    dialog.style.zoom = '1';
+    dialog.style.zoom = String(Math.min(1, (window.innerHeight - 32) / dialog.scrollHeight));
+  };
+  if (host.patchResize) window.removeEventListener('resize', host.patchResize);
+  host.patchResize = fit;
+  window.addEventListener('resize', fit);
   let index = 0;
   const draw = () => {
     const page = pages[index];
-    article.replaceChildren(
-      node('h3', page.title),
-      node('small', 'Novedad ' + page.part + ' de ' + page.total),
-      node('p', page.text),
-    );
-    label.textContent = index + 1 + ' / ' + pages.length;
+    const list = node('ul', '');
+    for (const change of page.changes) list.append(node('li', change));
+    article.replaceChildren(node('h3', page.title), list);
+    label.textContent = 'Versión ' + (index + 1) + ' / ' + pages.length;
     back.disabled = index === 0;
     next.disabled = index === pages.length - 1;
+    requestAnimationFrame(fit);
   };
   back.onclick = () => {
     if (index > 0) {

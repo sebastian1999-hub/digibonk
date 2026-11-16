@@ -1,8 +1,15 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.38.3",
+  "currentVersion": "1.38.4",
   "pending": [],
   "releases": [
+    {
+      "version": "1.38.4",
+      "title": "Historial por versión",
+      "changes": [
+        "Info parche muestra todos los cambios de una versión en cada página. Las flechas pasan entre versiones y el panel se ajusta a la pantalla sin scroll."
+      ]
+    },
     {
       "version": "1.38.3",
       "title": "Cofres rápidos y juego automático",

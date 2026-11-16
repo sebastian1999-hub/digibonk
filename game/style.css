@@ -3979,7 +3979,7 @@ dialog,
 }
 
 #patch-notes-dialog {
-  width: min(780px, 92vw);
+  width: min(1000px, 92vw);
   max-height: 96dvh;
   overflow: hidden;
 }
@@ -4022,8 +4022,8 @@ dialog,
   color: #a7f5e4;
 }
 .patch-entry li {
-  margin: 8px 0;
-  line-height: 1.5;
+  margin: 6px 0;
+  line-height: 1.35;
 }
 .patch-pending {
   border: 1px solid #e5bd63;

@@ -5,17 +5,21 @@ const fs = require('node:fs'),
 const { parseNotes } = require('../scripts/sync-patch-notes.cjs');
 const source =
   '## Pendiente de publicación\n- Borrador\n## 1.9.0 · Anterior\n- Corrección\n## 1.10.0 · Actual\n- Novedad\n## Pendiente de publicación: más\n- Otro borrador';
-test('patch pages retain long notes in readable fragments and version order', async () => {
+test('patch pages group all changes by version without splitting long notes', async () => {
   const { pathToFileURL } = require('node:url');
   const { patchPages } = await import(
     pathToFileURL(require.resolve('../game/patch-notes-view.js'))
   );
   const text = Array(160).fill('novedad').join(' ');
-  const pages = patchPages({ releases: [{ version: '1.38.1', title: 'Nuevo', changes: [text] }] });
-  assert.ok(pages.length > 1);
-  assert.ok(pages.every((p) => p.text.length <= 320));
-  assert.equal(pages.map((p) => p.text).join(' '), text);
-  assert.equal(pages.at(-1).part, pages.length);
+  const pages = patchPages({
+    releases: [
+      { version: '1.18.0', title: 'Nuevo', changes: [text, 'Corrección'] },
+      { version: '1.17.0', title: 'Anterior', changes: ['Otra mejora'] },
+    ],
+  });
+  assert.equal(pages.length, 2);
+  assert.deepEqual(pages[0].changes, [text, 'Corrección']);
+  assert.equal(pages[1].version, '1.17.0');
 });
 test('patch history sorts versions numerically and keeps drafts separate', () => {
   const data = parseNotes(source, '1.10.0');

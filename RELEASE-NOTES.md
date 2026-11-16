@@ -1,3 +1,7 @@
+## 1.38.4 · Historial por versión
+
+- Info parche muestra todos los cambios de una versión en cada página. Las flechas pasan entre versiones y el panel se ajusta a la pantalla sin scroll.
+
 ## 1.38.3 · Cofres rápidos y juego automático
 
 - Tecla configurable de juego automático (T por defecto), disponible al nivel máximo: busca y abre el cofre más cercano que puedas pagar. Respeta pausas y menús; moverte manualmente lo desactiva. Se inicia desactivado al cargar una partida.
