@@ -1061,16 +1061,23 @@ function choose(id) {
   refreshHud();
 }
 
-$('#skip-chest').onclick = () => {
-  if (!run?.skipChest()) return;
+function finishSkippedChoice() {
   chestCarousel.clear();
+  paused = false;
   keys.resumeMovement();
   specialQueued = false;
+  moveTarget = null;
   overlayKey = '';
   $('#choice-overlay').hidden = true;
   $('#world').focus({ preventScroll: true });
   save();
   refreshHud();
+}
+$('#skip-level').onclick = () => {
+  if (run?.skipLevel()) finishSkippedChoice();
+};
+$('#skip-chest').onclick = () => {
+  if (run?.skipChest()) finishSkippedChoice();
 };
 const chestCarousel = new ChestCarousel($('#chest-carousel'));
 const fitChoices = installChoiceFitter($('#choice-overlay'));
@@ -1081,6 +1088,7 @@ function riskChest() {
   showChoice();
 }
 function showChoice() {
+  $('#skip-level').hidden = run.s.choice?.kind !== 'level' || !!run.s.choice?.roll;
   let refresh = document.getElementById('refresh-level');
   if (!refresh) {
     refresh = document.createElement('button');

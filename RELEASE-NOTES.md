@@ -1,3 +1,9 @@
+## 1.38.2 · Mejoras opcionales y enemigos distinguibles
+
+- Al subir de nivel puedes saltar la mejora sin añadir técnicas ni modificar tus estadísticas. Conservas el nivel ganado.
+- Punimon deja de recibir técnicas de apoyo en las ofertas de nivel, incluidas sus mejoras de rango.
+- Los enemigos no comparten especie con tu Digimon actual. Se aplica a invasores, portales e invocaciones; al evolucionar o continuar una partida se sustituyen las coincidencias conservando sus atributos y recompensas.
+
 ## 1.38.1 · Recolectores de combate e Info parche
 
 - Info parche se recorre con flechas Anterior/Siguiente, sin scroll, con novedades divididas en páginas.

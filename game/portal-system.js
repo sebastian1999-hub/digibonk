@@ -152,6 +152,7 @@
       s.world.lastZ = s.player.z;
       s.world.hazardClock = 6;
       s.sceneSerial++;
+      this.separateEnemySpecies();
     };
     proto.configureRealmMap = function (realm) {
       const s = this.s,
@@ -400,7 +401,9 @@
       const pressure = r.pressure,
         baseStage = B.realm(pressure, wave).stage,
         stage = baseStage,
-        pool = [...C.species.values()].filter((c) => c.stage === stage && c.id !== 'Devimon');
+        pool = [...C.species.values()].filter(
+          (c) => c.stage === stage && c.id !== 'Devimon' && c.id !== s.player.species,
+        );
       for (let i = 0; i < 32; i++) {
         const a = this.random() * Math.PI * 2,
           radius = 38 + this.random() * 12,

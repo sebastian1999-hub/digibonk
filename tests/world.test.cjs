@@ -20,6 +20,35 @@ function fresh(name = 'Agumon', stage = 1) {
 function mob(x = 2, z = 0) {
   return { id: 90, x, z, hp: 200, maxHp: 200, hit: 0, speed: 0, shotClock: 100, stage: 1 };
 }
+test('enemies differ from the player in spawns, evolutions, saved scenes and final bosses', () => {
+  const r = fresh();
+  r.spawn();
+  assert.ok(r.s.enemies.length);
+  const original = r.s.enemies[0].species;
+  r.s.player.species = original;
+  r.s.enemies = [];
+  for (let i = 0; i < 10; i++) r.spawn(i % 2 === 0);
+  assert.ok(r.s.enemies.length);
+  assert.ok(r.s.enemies.every((e) => e.species !== original));
+  const e = r.s.enemies[0];
+  r.s.player.species = e.species;
+  const before = { ...e };
+  const loaded = new C.Run(null, { saved: r.snapshot() });
+  assert.notEqual(loaded.s.enemies[0].species, loaded.s.player.species);
+  assert.deepEqual({ ...loaded.s.enemies[0], species: before.species }, before);
+  r.separateEnemySpecies();
+  assert.notEqual(e.species, r.s.player.species);
+  r.s.player.species = 'Devimon';
+  r.spawnDevimon();
+  const boss = r.s.enemies.find((e) => e.finalBoss);
+  assert.ok(boss);
+  assert.notEqual(boss.species, 'Devimon');
+  r.s.player.species = 'DemiDevimon';
+  boss.summonClock = 0;
+  boss.engaged = true;
+  r.updateDevimon(boss, 0.05);
+  assert.ok(r.s.enemies.every((e) => e.species !== 'DemiDevimon'));
+});
 
 test('red collectors switch roles, scale shots and preserve mode and cooldown on save', () => {
   let r = fresh();

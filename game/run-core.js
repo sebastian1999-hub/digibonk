@@ -615,6 +615,7 @@
         this.events = [];
         this.initializeWorld();
         this.initializeEggPassive(!!saved);
+        this.separateEnemySpecies();
         this.s.level = Math.min(this.maxLevel(), Math.max(1, this.s.level));
         if (this.s.level === this.maxLevel()) this.s.xp = 0;
         if (this.s.techniqueRevision !== 1) {
@@ -856,6 +857,7 @@
             .filter(Boolean);
         for (const w of p.weapons) {
           if (kind === 'shop' || w.rank >= 9) continue;
+          if (this.hasEggPassive('Punimon') && skills.skills[w.id]?.kind !== 'damage') continue;
           const quality = this.rollUpgradeQuality(),
             ranks = Math.min(quality, 9 - w.rank),
             target = w.rank + ranks;
@@ -879,7 +881,9 @@
           const known = new Set(p.weapons.map((w) => w.id));
           for (const skill of skills
             .available({ isEgg: false, species: p.species, stage: p.stage })
-            .filter((k) => !known.has(k.id)))
+            .filter(
+              (k) => !known.has(k.id) && (!this.hasEggPassive('Punimon') || k.kind === 'damage'),
+            ))
             pool.push({
               id: 'learn-' + skill.id,
               type: 'weapon',
@@ -1178,6 +1182,12 @@
         } else s.choice = this.choices();
         this.emit('level');
       }
+      skipLevel() {
+        if (this.s.choice?.kind !== 'level' || this.s.choice.roll || this.s.done) return false;
+        this.s.choice = null;
+        this.emit('pick');
+        return true;
+      }
       skipChest() {
         if (this.s.choice?.kind !== 'chest' || this.s.done) return false;
         this.s.choice = null;
@@ -1237,6 +1247,7 @@
         } else if (card.type === 'evolution') {
           const from = p.species;
           p.species = card.species;
+          this.separateEnemySpecies();
           p.stage = species.get(p.species).stage;
           p.maxHp = Math.round(p.maxHp * 1.12 + 10);
           p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.18);
@@ -1384,13 +1395,28 @@
           this.emit('end');
         }
       }
+      distinctEnemySpecies(id, stage) {
+        if (id !== this.s.player.species) return id;
+        const alternatives = catalog.filter(
+          (c) => c.stage === stage && c.id !== id && c.id !== 'Devimon',
+        );
+        return (alternatives[0] || catalog.find((c) => c.stage >= 1 && c.id !== id)).id;
+      }
+      separateEnemySpecies() {
+        for (const enemy of this.s.enemies) {
+          if (!enemy.tower && !enemy.structure && enemy.hp > 0)
+            enemy.species = this.distinctEnemySpecies(enemy.species, enemy.stage);
+        }
+      }
       spawn(boss = false) {
         const s = this.s,
           p = s.player,
           stage = boss
             ? Math.min(4, Math.max(1, Math.floor(s.time / 150) + 1))
             : BALANCE.mainStage(s.time),
-          pool = catalog.filter((c) => c.stage === stage && c.id !== 'Devimon');
+          pool = catalog.filter(
+            (c) => c.stage === stage && c.id !== 'Devimon' && c.id !== p.species,
+          );
         if (s.enemies.filter((e) => e.hp > 0).length >= (boss ? 219 : 210) + this.enemyCapBonus())
           return;
         for (let tries = 0; tries < 24; tries++) {
@@ -1519,6 +1545,7 @@
         const s = this.s,
           p = s.player;
         this.events = [];
+        this.separateEnemySpecies();
         this.syncEggPhase();
         if (this.s.egg === 'Punimon' && this._specialistCount !== p.weapons.length) {
           this.removeSpecialist();

@@ -28,6 +28,48 @@ function copy(r) {
 }
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-8, `${a} != ${b}`);
 
+test('skipping a saved level choice preserves Punimon bonuses, equipment and earned level', () => {
+  let r = fresh('Punimon');
+  grant(r, { type: 'stat', stat: 'damage', amount: 10 });
+  r.s.level = 12;
+  r.s.choice = r.choices();
+  r = copy(r);
+  const player = structuredClone(r.s.player),
+    passive = structuredClone(r.s.eggPassive);
+  assert.equal(r.skipLevel(), true);
+  assert.equal(r.s.choice, null);
+  assert.equal(r.s.level, 12);
+  assert.deepEqual(r.s.player, player);
+  assert.deepEqual(r.s.eggPassive, passive);
+  assert.equal(copy(r).s.choice, null);
+  assert.equal(r.skipLevel(), false);
+  for (const kind of ['shop', 'chest', 'evolution', 'relic']) {
+    r.s.choice = { kind, cards: [] };
+    assert.equal(r.skipLevel(), false);
+    assert.equal(r.s.choice.kind, kind);
+  }
+});
+
+test('Punimon offers exclude support across stages but other eggs retain support', () => {
+  const skills = require('../game/skill-system').skills;
+  let otherHasSupport = false;
+  for (const egg of ['Punimon', 'Botamon']) {
+    const r = fresh(egg);
+    r.s.player.weapons.push({ id: 'heal', rank: 1, clock: 0 });
+    for (let stage = 1; stage <= 4; stage++) {
+      Object.assign(r.s.player, { species: 'Agumon', stage });
+      for (let n = 0; n < 100; n++) {
+        for (const card of r.choices().cards) {
+          if (!card.weapon) continue;
+          if (egg === 'Punimon') assert.equal(skills[card.weapon].kind, 'damage');
+          else if (skills[card.weapon].kind !== 'damage') otherHasSupport = true;
+        }
+      }
+    }
+  }
+  assert.equal(otherHasSupport, true);
+});
+
 test('Choromon banks phase charges and refreshes only once per level across reloads', () => {
   let r = fresh('Choromon');
   r.s.choice = r.choices();
