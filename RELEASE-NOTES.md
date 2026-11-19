@@ -1,3 +1,7 @@
+## Pendiente de publicación
+
+- La velocidad de ataque sigue aumentando el daño por segundo cuando los ataques alcanzan su intervalo mínimo. El excedente aumenta el daño de cada golpe, técnica ofensiva o disparo de recolector rojo. El menú Equipo muestra el DPS básico sin críticos.
+
 ## 1.38.4 · Historial por versión
 
 - Info parche muestra todos los cambios de una versión en cada página. Las flechas pasan entre versiones y el panel se ajusta a la pantalla sin scroll.

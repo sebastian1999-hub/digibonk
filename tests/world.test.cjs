@@ -20,6 +20,35 @@ function fresh(name = 'Agumon', stage = 1) {
 function mob(x = 2, z = 0) {
   return { id: 90, x, z, hp: 200, maxHp: 200, hit: 0, speed: 0, shotClock: 100, stage: 1 };
 }
+
+test('attack speed above the cooldown floor still increases sustained offensive damage', () => {
+  function simulate(haste, dt) {
+    const r = fresh();
+    const p = r.s.player;
+    Object.assign(p, { haste, weapons: [{ id: 'bubble', rank: 1, clock: 0 }] });
+    r.s.enemies = [mob(p.x + 1, p.z)];
+    let basic = 0,
+      technique = 0,
+      casts = 0;
+    r.hurt = (_enemy, damage, skill) => {
+      if (skill === 'claw') basic += damage;
+    };
+    r.castTechnique = (_skill, _rank, _enemy, damage) => {
+      technique += damage;
+      casts++;
+    };
+    for (let i = 0; i < 18 / dt; i++) r.update(dt);
+    return { basic, technique, casts };
+  }
+  for (const dt of [0.025, 0.05]) {
+    const normal = simulate(36, dt),
+      faster = simulate(72, dt);
+    assert.ok(normal.basic > 0 && normal.technique > 0);
+    assert.equal(faster.casts, normal.casts);
+    assert.equal(faster.technique, normal.technique * 2);
+    assert.equal(faster.basic, normal.basic * 2);
+  }
+});
 test('automatic chest mode requires the egg level cap and opens only affordable nearby chests once', () => {
   const r = fresh();
   assert.equal(r.toggleAutoPlay(), false);

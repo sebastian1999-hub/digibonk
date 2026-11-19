@@ -466,14 +466,10 @@ function openGear() {
     ['Daño crítico', numberStat(run.criticalMultiplier() * 100) + ' %'],
     ['Escudo', numberStat(p.shield) + ' / ' + numberStat(p.maxHp * p.shieldRatio)],
     ['Velocidad de movimiento', numberStat(p.speed * run.playerWorldSpeed())],
+    ['Velocidad de ataque', '×' + numberStat(run.attackHaste())],
     [
-      'Velocidad de ataque',
-      '×' +
-        numberStat(
-          p.haste *
-            (p.hasteLeft > 0 ? 1.2 : 1) *
-            (p.relicHasteLeft > 0 ? 1 + run.relicRank('dash-drive') * 0.1 : 1),
-        ),
+      'DPS básico sin críticos',
+      numberStat(p.damage * (p.rallyLeft > 0 ? 1.25 : 1) * 1.5 * run.attackHaste()),
     ],
     ['Regeneración', numberStat(p.regen) + ' / s'],
     ['Área de técnicas', numberStat(p.area * 100) + ' %'],

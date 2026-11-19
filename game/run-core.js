@@ -1003,6 +1003,20 @@
         }
         return true;
       }
+      attackHaste() {
+        const p = this.s.player;
+        return (
+          p.haste *
+          (p.hasteLeft > 0 ? 1.2 : 1) *
+          (p.relicHasteLeft > 0 ? 1 + this.relicRank('dash-drive') * 0.1 : 1)
+        );
+      }
+      attackCadence(baseInterval, minimumInterval, haste = this.attackHaste()) {
+        const requested = baseInterval / haste;
+        const interval = Math.max(minimumInterval, requested);
+        // Once attacks cannot fire faster, preserve their theoretical damage per second.
+        return { interval, damageScale: interval / requested };
+      }
       updateCollectors(dt) {
         const s = this.s,
           p = s.player,
@@ -1019,7 +1033,7 @@
         const reserved = new Set(s.collectors.map((o) => o.target).filter((id) => id != null));
         for (const [i, orb] of s.collectors.entries()) {
           orb.evolved = i < evolved;
-          orb.fireClock = Math.max(0, (orb.fireClock || 0) - dt);
+          orb.fireClock = orb.fireClock > 0 ? orb.fireClock - dt : 0;
           if (orb.evolved && p.collectorMode === 'attack') {
             orb.target = null;
             orb.returning = false;
@@ -1035,6 +1049,7 @@
                 .filter((e) => e.hp > 0 && !e.shielded && distance(e, orb) < 16 * p.area)
                 .sort((a, b) => distance(a, orb) - distance(b, orb))[0];
               if (enemy) {
+                const cadence = this.attackCadence(1.5, 0.2);
                 for (let n = 0; n < Math.min(180, 1 + (p.projectileBonus || 0)); n++) {
                   s.shots.push({
                     id: s.nextId++,
@@ -1044,7 +1059,7 @@
                     oz: orb.z,
                     target: enemy.id,
                     speed: 24,
-                    damage: p.damage * 0.45,
+                    damage: p.damage * 0.45 * cadence.damageScale,
                     area: 0.65 * p.area,
                     visualScale: p.area,
                     life: 2.8,
@@ -1053,7 +1068,7 @@
                     bouncesLeft: p.ricochets || 0,
                   });
                 }
-                orb.fireClock = Math.max(0.2, 1.5 / (p.haste * (p.hasteLeft > 0 ? 1.2 : 1)));
+                orb.fireClock += cadence.interval;
                 if (s.shots.length > 180) s.shots.splice(0, s.shots.length - 180);
               }
             }
@@ -1670,7 +1685,7 @@
         p.shieldLeft = Math.max(0, p.shieldLeft - dt);
         p.focusLeft = Math.max(0, p.focusLeft - dt);
         p.hasteLeft = Math.max(0, (p.hasteLeft || 0) - dt);
-        p.basicClock -= dt;
+        p.basicClock = p.basicClock > 0 ? p.basicClock - dt : 0;
         for (const id of Object.keys(s.relicClocks))
           s.relicClocks[id] = Math.max(0, s.relicClocks[id] - dt);
         if (this.updateWorld(dt, input) || s.done) return;
@@ -1733,21 +1748,20 @@
         }
         const alive = s.enemies.filter((e) => e.hp > 0),
           nearest = this.combatTargets(alive)[0];
-        const effectiveHaste =
-            p.haste *
-            (p.hasteLeft > 0 ? 1.2 : 1) *
-            (p.relicHasteLeft > 0 ? 1 + this.relicRank('dash-drive') * 0.1 : 1),
+        const effectiveHaste = this.attackHaste(),
           damageMultiplier = p.damage * (p.rallyLeft > 0 ? 1.25 : 1);
         if (nearest && distance(nearest, p) < 2.7 && p.basicClock <= 0) {
-          p.basicClock = 0.5 / effectiveHaste;
+          const cadence = this.attackCadence(0.5, 0.05, effectiveHaste);
+          p.basicClock += cadence.interval;
           p.attackAt = s.time;
           p.lastDX = nearest.x - p.x;
           p.lastDZ = nearest.z - p.z;
           p.lastSkill = 'claw';
-          this.hurt(nearest, damageMultiplier * 0.75, 'claw');
+          this.hurt(nearest, damageMultiplier * 0.75 * cadence.damageScale, 'claw');
           this.effect('slash', p.x, p.z, { skillId: 'claw' });
         }
         for (const w of p.weapons) {
+          const wasReady = w.clock <= 0;
           w.clock -= dt;
           if (w.clock > 0) continue;
           const skill = skills.skills[w.id];
@@ -1768,16 +1782,19 @@
             distance(nearest, p) > (skill.range / 22) * p.area * this.styleRangeMultiplier()
           )
             continue;
-          w.clock = Math.max(
+          const cadence = this.attackCadence(
+            (skill.cooldown * 0.48) / (1 + (w.rank - 1) * 0.045),
             0.18,
-            (skill.cooldown * 0.48) / (effectiveHaste * (1 + (w.rank - 1) * 0.045)),
+            effectiveHaste,
           );
+          w.clock = cadence.interval + (wasReady ? 0 : w.clock);
           p.attackAt = s.time;
           p.lastDX = nearest.x - p.x;
           p.lastDZ = nearest.z - p.z;
           p.lastSkill = skill.id;
           if (skill.stage >= 1) this.effect('cast', p.x, p.z, { skillId: skill.id });
-          const damage = damageMultiplier * skill.power * (1 + (w.rank - 1) * 0.15),
+          const damage =
+              damageMultiplier * skill.power * (1 + (w.rank - 1) * 0.15) * cadence.damageScale,
             area = (skill.stage >= 2 ? 1.7 : 0) * p.area * (1 + w.rank * 0.06);
           this.castTechnique(skill, w.rank, nearest, damage, area);
           const count =

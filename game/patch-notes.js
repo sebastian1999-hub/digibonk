@@ -1,7 +1,9 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
   "currentVersion": "1.38.4",
-  "pending": [],
+  "pending": [
+    "La velocidad de ataque sigue aumentando el daño por segundo cuando los ataques alcanzan su intervalo mínimo. El excedente aumenta el daño de cada golpe, técnica ofensiva o disparo de recolector rojo. El menú Equipo muestra el DPS básico sin críticos."
+  ],
   "releases": [
     {
       "version": "1.38.4",
