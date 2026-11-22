@@ -510,6 +510,13 @@ h1 span {
   border-radius: 9px;
   font-size: 12px;
 }
+#trial-room { width: min(580px, 90vw); max-height: 92vh; overflow: auto; text-align: center; color: #effff8; background: #102e35; border: 2px solid #83f2c6; border-radius: 16px; padding: 20px; }
+#trial-room::backdrop { background: #06181de8; }
+#trial-room h2 { margin: .4em; }
+#trial-count { color: #83f2c6; }
+#trial-board { display: block; width: 100%; max-height: 38vh; object-fit: contain; }
+#trial-room [hidden] { display: none; }
+#trial-directions button { margin: 3px; min-width: 44px; }
 #toast {
   position: fixed;
   left: 50%;
@@ -525,6 +532,29 @@ h1 span {
 }
 #toast:not(:empty) {
   padding: 11px 21px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#toast .toast-reward {
+  width: 76px;
+  border: 3px solid var(--reward-color, #8ed238);
+  border-radius: 12px;
+  background: #10202a;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--reward-color, #8ed238) 45%, transparent);
+}
+#toast .toast-reward.quality-2 {
+  --reward-color: #15e3ef;
+}
+#toast .toast-reward.quality-3 {
+  --reward-color: #d332ed;
+}
+#toast .toast-reward.quality-4 {
+  --reward-color: #ff9e18;
+}
+#toast .toast-reward .reward-icon {
+  width: 65%;
+  height: 65%;
 }
 .overlay {
   position: fixed;
@@ -3880,13 +3910,6 @@ dialog,
 .diamond-map-device::after {
   background-image: url('assets/map-diamond.png');
 }
-#map-panel .minimap-device canvas#minimap {
-  left: 16%;
-  top: 17%;
-  width: 68%;
-  height: 68%;
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
 #map-panel .minimap-device .map-title {
   display: none;
 }
@@ -3904,12 +3927,16 @@ dialog,
   background-repeat: no-repeat;
   pointer-events: none;
 }
+/* The opening is centered at (627, 638) in the 1254px frame.
+   Paint under its irregular inner edge so the island cannot show through. */
+#map-panel .minimap-device canvas#minimap,
 .diamond-map-device #world-map {
   position: absolute;
-  left: 16%;
-  top: 17%;
-  width: 68%;
-  height: 68%;
+  left: 12%;
+  top: 12.9%;
+  width: 76%;
+  height: 76%;
+  background: #102c3c;
   border-radius: 0;
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }

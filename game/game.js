@@ -5,6 +5,7 @@ import { renderBook } from './technique-book.js';
 import { frameTechnique, renderTechniqueDevice } from './technique-art.js';
 import { installChoiceFitter } from './choice-layout.js';
 import { bindUiScale } from './ui-scale.js';
+import { trialRoom } from './trial-room.js';
 import { ChestCarousel } from './chest-carousel.js';
 import { Cloud } from './cloud.js';
 
@@ -46,6 +47,7 @@ let renderer,
   hudClock = 0,
   overlayKey = '',
   toastLeft = 0,
+  toastCanvases = [],
   choiceCanvases = [],
   eggCanvases = [],
   evolutionCanvases = [],
@@ -101,8 +103,18 @@ const clock = (t) =>
       .padStart(2, '0'),
   number = (n) => Math.floor(n).toLocaleString('es-ES');
 
-function toast(text) {
-  $('#toast').textContent = text;
+function toast(text, reward = null) {
+  const host = $('#toast');
+  host.replaceChildren();
+  toastCanvases = [];
+  if (reward) {
+    const art = chestCarousel.rewardArt(reward, toastCanvases);
+    art.classList.add('toast-reward');
+    host.append(art);
+  }
+  const label = document.createElement('span');
+  label.textContent = text;
+  host.append(label);
   toastLeft = 4;
 }
 
@@ -965,13 +977,17 @@ function refreshPortalTimer() {
           ? '+' + clock(info.overdue)
           : clock(Math.ceil(info.remaining));
   $('#portal-timer-detail').textContent =
-    info.phase === 'inside'
-      ? 'Derrota las tres oleadas para destruir la torre.'
-      : info.phase === 'complete'
-        ? 'La dificultad sigue aumentando cada vez más rápido.'
-        : info.phase === 'overdue'
-          ? 'Enemigos muy potenciados. Entra en un portal cuanto antes.'
-          : 'Entra antes de cero: después, los enemigos se potencian.';
+    run.s.world.devimonDefeated
+      ? run.s.time >= (run.s.nextTrialAt || 0) ? 'Portal de pruebas abierto en el círculo central.' : 'Próximo portal de pruebas en ' + clock(Math.ceil(run.s.nextTrialAt - run.s.time))
+      : run.s.world.phase === 'seal'
+      ? 'Ve al círculo central para invocar a Devimon.'
+      : info.phase === 'inside'
+        ? 'Derrota las tres oleadas para destruir la torre.'
+        : info.phase === 'complete'
+          ? 'La dificultad sigue aumentando cada vez más rápido.'
+          : info.phase === 'overdue'
+            ? 'Enemigos muy potenciados. Entra en un portal cuanto antes.'
+            : 'Entra antes de cero: después, los enemigos se potencian.';
   $('#portal-timer-fill').style.width =
     info.phase === 'overdue' ? '100%' : Math.max(0, (info.remaining / 180) * 100) + '%';
 }
@@ -1035,6 +1051,9 @@ $('#style-activate').onclick = () => {
 };
 
 function choose(id) {
+  const reward = run?.s.choice?.kind === 'chest'
+    ? run.s.choice.cards.find((card) => card.id === id)
+    : null;
   if (!run?.choose(id)) return;
   if (run.s.choice?.roll) {
     keys.suspend();
@@ -1064,6 +1083,8 @@ function choose(id) {
     );
   save();
   refreshHud();
+  if (reward)
+    toast('OBTENIDO · ' + reward.title + (reward.rarity ? ' · ' + reward.rarity : ''), reward);
 }
 
 function finishSkippedChoice() {
@@ -1097,7 +1118,6 @@ function showChoice() {
     const card = run.s.choice.cards[0];
     if (card) {
       choose(card.id);
-      toast('OBTENIDO · ' + card.title + (card.rarity ? ' · ' + card.rarity : ''));
     } else {
       if (run.skipChest()) finishSkippedChoice();
       toast('Cofre vacío');
@@ -1437,7 +1457,7 @@ function interact() {
   }
   if (result.message) toast(result.message);
   if (result.ok) {
-    audio.play('pick');
+    audio.play(poi?.type === 'seal' ? 'boss' : 'pick');
     save();
   }
   refreshHud();
@@ -1448,6 +1468,7 @@ $('#interact').onclick = interact;
 document.addEventListener(
   'keydown',
   (event) => {
+    if (run?.s.trial) return;
     if (active && !event.target.matches('input,textarea,select,[contenteditable="true"]'))
       keys.track(event);
   },
@@ -1455,6 +1476,7 @@ document.addEventListener(
 );
 
 document.addEventListener('keydown', (event) => {
+  if (active && run?.s.trial) return;
   if (loading) {
     if (!event.target.matches('input,textarea,select')) event.preventDefault();
     return;
@@ -1667,13 +1689,18 @@ function drawPortraits(time) {
     if (run.s.hatch > 0) drawDigiEgg(ctx, 140, 140, 140, time, run.s.skin);
     else DigiSprites.drawGrounded(ctx, run.s.player.species, 'idle', 140, 240, 210, time);
   }
-  for (const { canvas, species } of choiceCanvases) {
+  for (const { canvas, species } of [...choiceCanvases, ...toastCanvases]) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     DigiSprites.drawGrounded(ctx, species, 'happy', 90, 128, 120, time);
   }
 }
 
+const trials = trialRoom(() => run, save, () => {
+  keys.resumeMovement();
+  $('#world').focus({ preventScroll: true });
+  refreshHud();
+});
 function loop(now) {
   if (loading) {
     last = now;
@@ -1682,6 +1709,12 @@ function loop(now) {
   }
   const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
   last = now;
+  if (active && run?.s.trial) {
+    keys.suspend();
+    trials.frame(document.hidden || window.DigibonkDesktopHidden ? 0 : dt);
+    requestAnimationFrame(loop);
+    return;
+  }
   if (
     active &&
     run &&
@@ -1744,10 +1777,6 @@ function loop(now) {
             run.s.world.target +
             ' zonas · +20 bits · +20 EXP',
         );
-      if (event.type === 'devimon-awakened') {
-        toast('DEVIMON HA DESPERTADO · Regresa al sello del centro');
-        audio.play('boss');
-      }
       if (event.type === 'devimon-engaged')
         toast('JEFE FINAL · Devimon · Evita sus orbes y los círculos oscuros');
       if (event.type === 'devimon-defeated') {
@@ -1776,12 +1805,15 @@ function loop(now) {
   }
   if (toastLeft > 0) {
     toastLeft -= dt;
-    if (toastLeft <= 0) $('#toast').textContent = '';
+    if (toastLeft <= 0) {
+      $('#toast').replaceChildren();
+      toastCanvases = [];
+    }
   }
   const devimonFight =
     active &&
     !run?.s.done &&
-    run?.s.enemies.find((e) => e.finalBoss && e.species === 'Devimon' && e.engaged && e.hp > 0);
+    run?.s.enemies.find((e) => e.finalBoss && e.engaged && e.hp > 0);
   music.tick(
     active && !paused && !document.hidden && !window.DigibonkDesktopHidden && !run?.s.done,
     !active && !document.hidden && !window.DigibonkDesktopHidden && !loading,

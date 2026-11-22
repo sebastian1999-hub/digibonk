@@ -393,7 +393,7 @@ test('three finite waves destroy the tower, reward once and defer safe return', 
   assert.equal(copy.s.world.portals.filter((p) => p.closed).length, 1);
   assert.equal(copy.enterPortal(copy.s.world.portals.find((p) => p.closed).id), false);
 });
-test('all six tower objectives spawn Devimon only after returning to the main map', () => {
+test('all six towers unlock a manual summoning ritual that resumes after saving', () => {
   const r = fresh('MetalGreymon', 3),
     main = r.s.mapSeed;
   for (let i = 0; i < 6; i++) {
@@ -410,11 +410,24 @@ test('all six tower objectives spawn Devimon only after returning to the main ma
     r.leaveRealm();
     assert.equal(r.s.realm, null);
     assert.equal(r.s.mapSeed, main);
-    assert.equal(r.s.enemies.filter((e) => e.finalBoss).length, i === 5 ? 1 : 0);
+    assert.equal(r.s.enemies.some((e) => e.finalBoss), false);
+    assert.equal(r.s.world.phase, i === 5 ? 'seal' : 'portals');
   }
-  assert.equal(r.s.world.phase, 'devimon');
-  assert.equal(r.spawnDevimon(), false);
+  Object.assign(r.s.player, { x: 40, z: 0 });
+  assert.notEqual(r.nearestPoi()?.type, 'seal');
+  r.s.player.x = 2;
+  r.updateWorld(5, {});
+  assert.equal(r.nearestPoi().type, 'seal');
+  assert.ok(r.interact().ok);
+  r.updateWorld(1, {});
+  assert.notEqual(r.nearestPoi()?.type, 'seal');
+  assert.equal(r.s.enemies.some((e) => e.finalBoss), false);
   const copy = new C.Run(null, { saved: r.snapshot() });
+  assert.equal(copy.s.world.summonTime, 1);
+  copy.updateWorld(W.SUMMON_DURATION - 1, {});
+  copy.updateWorld(1, {});
+  assert.equal(copy.s.enemies.filter((e) => e.finalBoss).length, 1);
+  assert.ok(copy.s.enemies.find((e) => e.finalBoss).engaged);
   assert.equal(copy.s.world.cleansed, 6);
   assert.equal(copy.s.enemies.find((e) => e.finalBoss).x, 0);
 });

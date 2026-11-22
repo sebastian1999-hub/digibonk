@@ -20,6 +20,51 @@
       if (s.portalCycle.overdue > 0) s.portalCycle.remaining = 0;
       s.pressureRefresh ??= 1;
     };
+    p.difficultyTime = function () {
+      return Math.max(0, this.s.time - (this.s.trialTimeDiscount || 0));
+    };
+    p.startTrials = function () {
+      const s = this.s;
+      if (!s.world.devimonDefeated || s.realm || s.trial || s.time < (s.nextTrialAt || 0)) return;
+      const pool = ['pulse', 'maze', 'memory', 'rain', 'circuit', 'echo', 'orbit'];
+      const first = pool.splice(Math.floor(this.random() * pool.length), 1)[0];
+      s.nextTrialAt = s.time + 600;
+      s.trial = {
+        games: [first, pool[Math.floor(this.random() * pool.length)]],
+        scores: [],
+        elapsed: 0,
+        round: 0,
+        step: 0,
+        x: 1,
+        y: 1,
+        pattern: Array.from({ length: 5 }, () => Math.floor(this.random() * 4)),
+        mirror: this.random() < 0.5,
+        started: false,
+      };
+    };
+    p.scoreTrial = function (score) {
+      const trial = this.s.trial;
+      if (!trial || trial.scores.length >= 2) return;
+      trial.scores.push(Math.max(0, Math.min(1, score)));
+      Object.assign(trial, { started: false, elapsed: 0, round: 0, step: 0, points: 0 });
+      if (trial.scores.length < 2) return;
+      const before = this.difficultyTime();
+      trial.before = B.timeGrowth(before);
+      const reduction = (trial.scores[0] + trial.scores[1]) / 8;
+      const target = 1 + (trial.before - 1) * (1 - reduction);
+      if (target < trial.before) {
+        let low = 0,
+          high = before;
+        for (let i = 0; i < 48; i++) {
+          const mid = (low + high) / 2;
+          if (B.timeGrowth(mid) < target) low = mid;
+          else high = mid;
+        }
+        this.s.trialTimeDiscount = this.s.time - high;
+        this.syncMainPressure();
+      }
+      trial.after = B.timeGrowth(this.difficultyTime());
+    };
     p.portalClockInfo = function () {
       const s = this.s,
         c = s.portalCycle;
@@ -34,16 +79,16 @@
                 : 'overdue',
         remaining: c.remaining,
         overdue: c.overdue,
-        growth: B.timeGrowth(s.time),
+        growth: B.timeGrowth(this.difficultyTime()),
       };
     };
     p.scaleEnemyDifficulty = function (e) {
       if (e.hp <= 0 || e.tower || e.realmMob) return;
       const s = this.s,
-        t = B.timeFactors(s.time),
-        target = B.factors(s.time, s.portalCycle.overdue, !!e.finalBoss);
+        t = B.timeFactors(this.difficultyTime()),
+        target = B.factors(this.difficultyTime(), s.portalCycle.overdue, !!e.finalBoss);
       if (e.basic === false && !e.finalBoss) {
-        const stats = B.main(s.time, e.stage, !!e.boss),
+        const stats = B.main(this.difficultyTime(), e.stage, !!e.boss),
           late = B.deadline(s.portalCycle.overdue),
           health = e.hp / e.maxHp;
         e.maxHp = stats.hp * (e.elite ? 1.8 : 1) * late.hp;
@@ -57,7 +102,7 @@
         return;
       }
       if (!e.pressureFactors) {
-        const stats = B.main(s.time, e.stage, !!e.boss);
+        const stats = B.main(this.difficultyTime(), e.stage, !!e.boss);
         e.pressureFactors = { hp: 1, damage: 1, speed: 1, projectile: 1, cadence: 1 };
         e.contactDamage ??= stats.contact / t.damage;
         e.shotDamage ??= stats.shot / t.damage;
@@ -83,13 +128,13 @@
     p.difficultyAttackFactor = function (e) {
       return (
         e.pressureFactors?.damage ??
-        B.factors(this.s.time, this.s.portalCycle.overdue, !!e.finalBoss).damage
+        B.factors(this.difficultyTime(), this.s.portalCycle.overdue, !!e.finalBoss).damage
       );
     };
     p.difficultyCadenceFactor = function (e) {
       return (
         e.pressureFactors?.cadence ??
-        B.factors(this.s.time, this.s.portalCycle.overdue, !!e.finalBoss).cadence
+        B.factors(this.difficultyTime(), this.s.portalCycle.overdue, !!e.finalBoss).cadence
       );
     };
     p.spawn = function (boss = false) {
@@ -98,8 +143,8 @@
         result = spawn.call(this, boss);
       for (const e of s.enemies)
         if (e.id >= before && !e.realmMob && !e.tower) {
-          const f = B.timeFactors(s.time),
-            stats = B.main(s.time, e.stage, !!e.boss);
+          const f = B.timeFactors(this.difficultyTime()),
+            stats = B.main(this.difficultyTime(), e.stage, !!e.boss);
           e.pressureFactors = f;
           e.contactDamage = stats.contact;
           e.shotDamage = stats.shot;

@@ -352,7 +352,7 @@
       // Give the player time to leave the arrival point before a fresh group appears.
       s.spawnClock = 1.5 + this.random() * 1.5;
       this.emit('portal-returned');
-      if (s.world.cleansed >= s.world.target) this.spawnDevimon();
+      this.unlockDevimonSeal();
       return true;
     };
     proto.collectClearedRealmExperience = function () {
@@ -533,6 +533,10 @@
         return false;
       }
       oldUpdate.call(this, dt, input);
+      if (!s.done && !s.realm && s.world.phase === 'summoning') {
+        s.world.summonTime = Math.min(W.SUMMON_DURATION, s.world.summonTime + dt);
+        if (s.world.summonTime >= W.SUMMON_DURATION) this.spawnDevimon();
+      }
       if (!s.done && s.realm) this.updateRealmWaves(dt);
       return false;
     };
@@ -580,6 +584,10 @@
                 : 'Fijar Torre Negra como objetivo',
           };
       } else {
+        if (W.trialOpen(s) && Math.hypot(p.x, p.z) < 5)
+          return { id: 'skill-trial', type: 'trial', name: 'Entrar al portal de pruebas', x: 0, z: 0, cost: 0 };
+        if (s.world.phase === 'seal' && Math.hypot(p.x, p.z) <= W.SEAL_RADIUS)
+          return { id: 'devimon-seal', type: 'seal', name: 'Invocar a Devimon', x: 0, z: 0, cost: 0 };
         const portal = s.world.portals
           .filter((p) => !p.closed && dist(p, s.player) < 4.2)
           .sort((a, b) => dist(a, s.player) - dist(b, s.player))[0];
@@ -602,6 +610,15 @@
       if (s.done || s.choice || s.evolution || s.hatch > 0 || s.realm?.phase === 'cleared')
         return { ok: false };
       if (poi?.type === 'portal') return { ok: this.enterPortal(poi.portalId), sceneChanged: true };
+      if (poi?.type === 'trial') {
+        this.startTrials();
+        return { ok: true };
+      }
+      if (poi?.type === 'seal') {
+        s.world.phase = 'summoning';
+        s.world.summonTime = 0;
+        return { ok: true, message: 'El sello se abre…' };
+      }
       if (poi?.type === 'realm-exit') return { ok: this.leaveRealm(), sceneChanged: true };
       if (poi?.type === 'tower-target') {
         const tower = s.enemies.find((e) => e.tower);

@@ -415,32 +415,43 @@ export class WorldVisuals {
 
     const centerY = C.heightAt(0, 0, seed),
       phase = s.world.phase,
-      sealColor = phase === 'endless' ? '#a6f1c3' : phase === 'devimon' ? '#df97fc' : '#b9a1d0';
-    const seal = add(r.geo.ring, sealColor, 0, centerY + 0.14, 0, [10, 10, 10], 0.6);
+      radius = W.SEAL_RADIUS,
+      sealColor = phase === 'endless' ? '#a6f1c3' : phase === 'portals' ? '#b9a1d0' : '#df97fc';
+    const seal = add(r.geo.ring, sealColor, 0, centerY + 0.14, 0, [radius, radius, radius], 0.6);
     seal.rotation.x = -Math.PI / 2;
     for (let i = 0; i < 8; i++) {
       const angle = (i * Math.PI) / 4,
         obelisk = add(
           r.geo.gem,
           sealColor,
-          Math.cos(angle) * 10,
+          Math.cos(angle) * radius,
           centerY + 0.65,
-          Math.sin(angle) * 10,
+          Math.sin(angle) * radius,
           [0.35, 0.8, 0.35],
           0.8,
         );
+      if (phase === 'summoning')
+        this.animated.push({ kind: 'ritual-shard', mesh: obelisk, angle, ground: centerY });
     }
+    if (phase === 'summoning') {
+      for (let i = 0; i < 3; i++) {
+        const ring = add(r.geo.ring, i === 1 ? '#ff659e' : '#ca8aff', 0, centerY, 0, null, 0.75);
+        this.animated.push({ kind: 'ritual-ring', mesh: ring, index: i, ground: centerY });
+      }
+    }
+    if (W.trialOpen(s)) return;
     this.label(
       phase === 'devimon'
         ? 'DEVIMON · JEFE FINAL'
         : phase === 'endless'
           ? 'DEVIMON DERROTADO'
           : 'SELLO DE DEVIMON',
-      phase === 'devimon'
-        ? 'ACÉRCATE AL SELLO CENTRAL'
-        : phase === 'endless'
-          ? 'MODO RÉCORD · SIGUE SOBREVIVIENDO'
-          : 'CIERRA LOS 6 PORTALES',
+      ({
+        seal: 'ACTIVA EL CÍRCULO',
+        summoning: 'INVOCACIÓN EN CURSO',
+        devimon: 'JEFE FINAL',
+        endless: 'MODO RÉCORD · SIGUE SOBREVIVIENDO',
+      })[phase] || 'CIERRA LOS 6 PORTALES',
       sealColor,
       0,
       centerY + 6,
@@ -453,7 +464,7 @@ export class WorldVisuals {
       seed = s.mapSeed;
 
     const portal = (p, returning = false) => {
-      const color = returning || p.closed ? '#93ffd0' : W.types[p.kind].color,
+      const color = p.trial || returning || p.closed ? '#93ffd0' : W.types[p.kind].color,
         h = C.heightAt(p.x, p.z, seed),
         g = new THREE.Group();
       g.position.set(p.x, h, p.z);
@@ -492,8 +503,8 @@ export class WorldVisuals {
       }
 
       this.label(
-        returning ? 'REGRESO' : p.closed ? 'PORTAL CERRADO' : 'PORTAL ' + p.name.toUpperCase(),
-        returning
+        p.trial ? 'PORTAL DE PRUEBAS' : returning ? 'REGRESO' : p.closed ? 'PORTAL CERRADO' : 'PORTAL ' + p.name.toUpperCase(),
+        p.trial ? 'ENTRAR AL CÍRCULO' : returning
           ? '[' + (this.r.bindings?.label('interact') || 'E') + '] MAPA PRINCIPAL'
           : p.closed
             ? 'TORRE DESTRUIDA · PURIFICADO'
@@ -509,6 +520,7 @@ export class WorldVisuals {
     };
 
     if (!s.realm) {
+      if (W.trialOpen(s)) portal({ x: 0, z: 0, trial: true });
       for (const p of s.world.portals) portal(p);
       return;
     }
@@ -584,6 +596,7 @@ export class WorldVisuals {
         ':' +
         (this.r.bindings?.label('interact') || 'E') +
         ':' +
+        W.trialOpen(s) +
         s.world.phase +
         ':' +
         s.world.portals.map((p) => p.closed).join('') +
@@ -630,6 +643,24 @@ export class WorldVisuals {
       this.tower.rotation.z = fall * 0.25;
     }
     for (const entry of this.animated) {
+      if (entry.kind === 'ritual-shard' || entry.kind === 'ritual-ring') {
+        const t = s.world.summonTime / W.SUMMON_DURATION,
+          mesh = entry.mesh;
+        if (entry.kind === 'ritual-shard') {
+          const angle = entry.angle + t * t * 5,
+            radius = W.SEAL_RADIUS * (1 - t * t);
+          mesh.position.set(Math.cos(angle) * radius, entry.ground + 0.65 + 5 * t, Math.sin(angle) * radius);
+          mesh.rotation.y = angle;
+          mesh.scale.y = 0.8 + Math.sin(Math.PI * t) * 1.8;
+        } else {
+          const wave = (t * 2 + entry.index / 3) % 1;
+          mesh.position.y = entry.ground + 0.2 + wave * 6;
+          mesh.rotation.set(-Math.PI / 2 + Math.sin(Math.PI * wave) * 0.35, 0, entry.index * 2 + t * 4);
+          mesh.scale.setScalar((1 - wave) * W.SEAL_RADIUS + 0.2);
+          mesh.material.opacity = Math.sin(Math.PI * wave) * 0.85;
+        }
+        continue;
+      }
       if (entry.kind === 'portal-ring') {
         entry.mesh.rotation.z = time * 0.25 + (entry.phase || 0);
         continue;

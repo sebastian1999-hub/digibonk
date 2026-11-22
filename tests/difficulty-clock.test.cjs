@@ -24,6 +24,37 @@ function tick(r, seconds) {
   r.s.time += seconds;
   r.updateWorld(seconds, {});
 }
+test('trial visits pause island time, resume a saved pair and discount only earned growth', () => {
+  const r = fresh();
+  Object.assign(r.s.player, { x: 1, z: 0 });
+  r.s.time = 1200;
+  assert.notEqual(r.nearestPoi()?.type, 'trial');
+  r.defeatDevimon();
+  assert.equal(r.nearestPoi().type, 'trial');
+  r.interact();
+  assert.equal(new Set(r.s.trial.games).size, 2);
+  r.update(0.05);
+  assert.equal(r.s.time, 1200);
+  r.scoreTrial(1);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  copy.scoreTrial(0);
+  const expected = 1 + (B.timeGrowth(1200) - 1) * 0.875;
+  assert.ok(Math.abs(copy.portalClockInfo().growth - expected) < 1e-8);
+  copy.scoreTrial(1);
+  assert.equal(copy.s.trial.scores.length, 2);
+  delete copy.s.trial;
+  copy.s.time = 1799;
+  assert.notEqual(copy.nearestPoi()?.type, 'trial');
+  copy.s.time++;
+  assert.equal(copy.nearestPoi().type, 'trial');
+  copy.s.time += 900;
+  copy.interact();
+  assert.equal(copy.s.nextTrialAt, 3300);
+  const discount = copy.s.trialTimeDiscount;
+  copy.scoreTrial(0);
+  copy.scoreTrial(0);
+  assert.equal(copy.s.trialTimeDiscount, discount);
+});
 test('each run gets 180 active seconds; overdue pressure starts at expiry and increases afterward', () => {
   const r = fresh();
   assert.equal(r.portalClockInfo().remaining, 180);

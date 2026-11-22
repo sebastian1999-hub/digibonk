@@ -1429,7 +1429,7 @@
           p = s.player,
           stage = boss
             ? Math.min(4, Math.max(1, Math.floor(s.time / 150) + 1))
-            : BALANCE.mainStage(s.time),
+            : BALANCE.mainStage(this.difficultyTime()),
           pool = catalog.filter(
             (c) => c.stage === stage && c.id !== 'Devimon' && c.id !== p.species,
           );
@@ -1447,7 +1447,7 @@
             type = boss
               ? pool[Math.floor(this.random() * pool.length)]
               : pool[((hash(0, stage, s.mapSeed) >>> 0) + cohort) % pool.length],
-            stats = BALANCE.main(s.time, stage, boss),
+            stats = BALANCE.main(this.difficultyTime(), stage, boss),
             elite = !boss && this.random() < stats.elite,
             hp = stats.hp * (elite ? 1.8 : 1);
           s.enemies.push({
@@ -1621,6 +1621,7 @@
         const s = this.s,
           p = s.player;
         this.events = [];
+        if (s.trial) return;
         this.separateEnemySpecies();
         this.syncEggPhase();
         if (this.s.egg === 'Punimon' && this._specialistCount !== p.weapons.length) {
@@ -1733,7 +1734,7 @@
             s.spawnClock <= 0 &&
             s.enemies.filter((e) => e.hp > 0).length < 210 + this.enemyCapBonus()
           ) {
-            const density = BALANCE.main(s.time, p.stage);
+            const density = BALANCE.main(this.difficultyTime(), p.stage);
             s.spawnClock = Math.max(
               0.18,
               density.interval * (0.8 + this.random() * 0.4) * (s.challenge ? 0.65 : 1),
@@ -1896,7 +1897,7 @@
               e.lastSkill = 'claw';
             }
             this.hitPlayer(
-              (e.contactDamage ?? BALANCE.main(s.time, e.stage, !!e.boss).contact) *
+              (e.contactDamage ?? BALANCE.main(this.difficultyTime(), e.stage, !!e.boss).contact) *
                 this.enemyStatusAttack(e),
             );
           }
@@ -1919,7 +1920,7 @@
               life: 3,
               speed: e.projectileSpeed || 10,
               damage:
-                (e.shotDamage ?? BALANCE.main(s.time, e.stage, !!e.boss).shot) *
+                (e.shotDamage ?? BALANCE.main(this.difficultyTime(), e.stage, !!e.boss).shot) *
                 this.enemyStatusAttack(e),
             });
           }

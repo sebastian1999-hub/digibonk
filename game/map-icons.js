@@ -40,8 +40,9 @@
     } else {
       for (const p of s.world.portals)
         list.push({ x: p.x, z: p.z, type: p.closed ? 'closed' : 'portal' });
+      if (s.world.devimonDefeated && !s.trial && s.time >= (s.nextTrialAt || 0)) list.push({ x: 0, z: 0, type: 'portal' });
       if (!s.world.devimonDefeated)
-        list.push({ x: 0, z: 0, type: 'boss', locked: !s.world.devimonSpawned });
+        list.push({ x: 0, z: 0, type: 'boss', locked: s.world.cleansed < s.world.target && !s.world.devimonSpawned });
     }
     list.push({
       x: s.player.x,
@@ -272,7 +273,7 @@
     const c = canvas.getContext('2d'),
       w = canvas.width,
       h = canvas.height,
-      margin = large ? 20 : 12,
+      margin = Math.min(w, h) * 0.1,
       scale = (Math.min(w, h) - margin * 2) / (world * 2),
       project = (x, z) => ({ x: w / 2 + ((x - z) * scale) / 2, y: h / 2 + ((x + z) * scale) / 2 });
     c.clearRect(0, 0, w, h);

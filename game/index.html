@@ -311,6 +311,13 @@
     </div>
     <button id="interact" hidden></button>
     <div id="challenge-label" hidden></div>
+    <dialog id="trial-room" aria-labelledby="trial-title">
+      <small id="trial-count"></small><h2 id="trial-title"></h2><p id="trial-description"></p>
+      <canvas id="trial-board" width="540" height="270" aria-label="Tablero de la prueba"></canvas>
+      <p id="trial-feedback" role="status"></p>
+      <div id="trial-directions" aria-label="Direcciones"></div>
+      <button id="trial-action"></button> <button id="trial-skip">Pasar esta prueba (0 puntos)</button>
+    </dialog>
     <div id="toast" role="status"></div>
     <section id="choice-overlay" class="overlay" hidden>
       <div class="choice-shell">
@@ -561,7 +568,8 @@
       </p>
       <p>
         El portal verde de entrada permite volver antes: el progreso se conserva. Al cerrar los seis
-        portales aparece <b>Devimon</b> en el centro del mapa principal. Derrotarlo da 5000 puntos,
+        portales se desbloquea el sello central. Entra en el círculo e interactúa para invocar a
+        <b>Devimon</b>. Derrotarlo da 5000 puntos,
         250 bits y experiencia. La partida continúa para hacer récord.
       </p>
       <p>

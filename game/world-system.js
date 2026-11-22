@@ -80,6 +80,12 @@
       p.moveMomentum ??= 0;
       p.stillTime ??= 0;
     };
+    proto.unlockDevimonSeal = function () {
+      const w = this.s.world;
+      if (w.cleansed >= w.target && w.phase === 'portals' && !w.devimonSpawned) {
+        w.phase = 'seal';
+      }
+    };
     proto.spawnDevimon = function () {
       const s = this.s,
         w = s.world,
@@ -103,7 +109,7 @@
         maxHp: hp,
         boss: true,
         finalBoss: true,
-        engaged: false,
+        engaged: w.phase === 'summoning',
         elite: false,
         hit: 0,
         speed: 4.5,
@@ -123,7 +129,8 @@
         life: 3,
         maxLife: 3,
       });
-      this.emit('devimon-awakened');
+      delete w.summonTime;
+      if (boss.engaged) this.emit('devimon-engaged');
       return true;
     };
     proto.defeatDevimon = function () {
@@ -404,7 +411,7 @@
             s.score += 100;
             this.effect('heal', z.anchor.x, z.anchor.z, { size: 5, life: 1.2, maxLife: 1.2 });
             this.emit('purified', { zone: z.name });
-            if (w.cleansed >= w.target) this.spawnDevimon();
+            this.unlockDevimonSeal();
           }
         }
       }
