@@ -175,7 +175,7 @@ test('learning fills separate same-family slots and a full build explicitly choo
   assert.deepEqual(copy.s.player.weapons, before);
   assert.ok(r.choose('replace-fireball'));
   assert.equal(r.s.player.weapons[0].id, 'fire-tower');
-  assert.equal(r.s.player.weapons[0].rank, 4);
+  assert.equal(r.s.player.weapons[0].rank, 1);
   assert.equal(r.s.player.weapons[2].id, 'heal');
 });
 

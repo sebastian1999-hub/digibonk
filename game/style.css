@@ -4060,3 +4060,40 @@ dialog,
 .patch-pending h3 {
   color: #ffdc90;
 }
+
+/* Align live counters with the five windows in the supplied HUD artwork. */
+#hud .run-stats {
+  left: 50%;
+  top: 70px;
+  transform: translateX(-50%);
+  width: min(480px, calc((100vw - 12px) / var(--ui-scale, 1)));
+  height: 77px;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: 7.8% 19.8% 2% 19.4% 2% 19.4% 2% 13% 1.6% 5.8%;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  background: url('assets/hud-run-stats.png') center 49% / 100% 146% no-repeat;
+  border: 0;
+  border-radius: 0;
+  backdrop-filter: none;
+  color: #effaff;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.run-stats > :nth-child(1) { grid-column: 2; }
+.run-stats > :nth-child(2) { grid-column: 4; }
+.run-stats > :nth-child(3) { grid-column: 6; }
+.run-stats > :nth-child(4) { grid-column: 8; }
+.run-stats > :nth-child(5) { grid-column: 10; }
+#hud .run-stats > * { min-width: 0; }
+#hud .run-stats small { color: #b9d8e9; font-size: clamp(8px, 2cqw, 10px); letter-spacing: 0; line-height: 1.1; }
+#hud .run-stats small .hud-icon { width: 1em; height: 1em; }
+#hud #run-wave { display: block; max-width: none; }
+#hud .run-stats strong, #hud #run-clock { display: block; font-size: clamp(12px, 3.7cqw, 18px); line-height: 1.1; }
+#hud #pause-run { width: 100%; height: 32px; border: 0; padding: 0; background: transparent; color: #ffce72; }
+#hud #pause-run:focus-visible { outline: 2px solid #ffce72; outline-offset: -2px; }
+@media (max-width: 1000px) {
+  #map-panel { top: 153px; }
+}

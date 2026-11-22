@@ -1,3 +1,9 @@
+## 1.39.1 · Música de la isla y panel de partida
+
+- Al sustituir una técnica, la nueva empieza en rango 1. La pantalla de selección muestra ese rango antes de confirmar.
+- Al volver a la isla tras cerrar el tercer portal suena Overworld 2. Después de derrotar a Devimon suena PostGame, también durante las pruebas.
+- El panel superior central estrena un marco de cinco ventanas para el tiempo y la oleada, los puntos, las bajas, los bits y la pausa.
+
 ## 1.39.0 · El sello de Devimon y el portal de pruebas
 
 - Al recoger un cofre, el aviso muestra el icono de la recompensa con el borde de su rareza.

@@ -12,10 +12,14 @@ export class Music {
     this.menuTrack.loop = true;
     this.menuTrack.volume = this.volume;
     this.menuTrack.preload = 'metadata';
-    this.mapTrack = new window.Audio('assets/music/main-map.mp3');
-    this.mapTrack.loop = true;
-    this.mapTrack.volume = this.volume;
-    this.mapTrack.preload = 'metadata';
+    this.mapTracks = Object.fromEntries(['main-map', 'overworld-2', 'postgame'].map((name) => {
+      const audio = new window.Audio('assets/music/' + name + '.mp3');
+      audio.loop = true;
+      audio.volume = this.volume;
+      audio.preload = 'metadata';
+      return [name, audio];
+    }));
+    this.mapTrack = this.mapTracks['main-map'];
     this.biomeTracks = Object.fromEntries(
       ['fire', 'flood', 'glitch', 'devimon'].map((id) => {
         const audio = new window.Audio(
@@ -65,7 +69,7 @@ export class Music {
     this.volume = value;
     if (this.track) this.track.volume = value;
     this.menuTrack.volume = value;
-    this.mapTrack.volume = value;
+    for (const audio of Object.values(this.mapTracks)) audio.volume = value;
     for (const audio of Object.values(this.biomeTracks)) audio.volume = value;
   }
   load(file) {
@@ -110,7 +114,16 @@ export class Music {
     o.start(at);
     o.stop(at + 0.15);
   }
-  tick(playing, menu = false, mainMap = false, biome = null) {
+  tick(playing, menu = false, mainMap = false, biome = null, world = null) {
+    if (mainMap) {
+      const name = world?.devimonDefeated ? 'postgame' : world?.cleansed >= 3 ? 'overworld-2' : 'main-map';
+      if (this.mapTrack !== this.mapTracks[name]) {
+        this.mapTrack.pause();
+        this.mapTrack = this.mapTracks[name];
+        this.wasMainMap = false;
+        this.mapBlocked = false;
+      }
+    }
     if (menu && !this.wasMenu) this.menuTrack.currentTime = 0;
     if (mainMap && !this.wasMainMap) this.mapTrack.currentTime = 0;
     this.wasMenu = menu;

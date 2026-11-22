@@ -735,6 +735,7 @@ test('full build chooses evolution technique after animation, can keep or replac
   assert.deepEqual(keep.s.player.weapons, original);
   assert.ok(restored.choose('replace-heal'));
   assert.equal(restored.s.player.weapons[2].id, technique);
+  assert.equal(restored.s.player.weapons[2].rank, 1);
   assert.equal(restored.s.player.weapons.length, 4);
   assert.deepEqual(restored.s.player.weapons[0], original[0]);
 });

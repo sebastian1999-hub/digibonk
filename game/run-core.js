@@ -639,6 +639,10 @@
           }
           this.s.techniqueRevision = 1;
         }
+        if (saved && this.s.choice?.kind === 'replace') {
+          const weapon = this.s.choice.cards.find((card) => card.type === 'weapon-replace')?.weapon;
+          if (weapon) this.s.choice.cards = this.weaponReplacement(weapon).cards;
+        }
         if (this.s.choice?.kind === 'shop' && !this.s.choice.roll) {
           const savedMarket =
             this.s.egg === 'Mokumon' &&
@@ -793,11 +797,7 @@
               replace: w.id,
               weapon: weapon,
               title: skills.skills[w.id].name + ' → ' + skills.skills[weapon].name,
-              text:
-                'Rango ' +
-                Math.min(9, w.rank + 1) +
-                '/9. ' +
-                describeTechnique(weapon, Math.min(9, w.rank + 1), p),
+              text: 'Rango 1/9. ' + describeTechnique(weapon, 1, p),
               rarity: 'SUSTITUIR TÉCNICA',
             })),
             {
@@ -892,7 +892,7 @@
               title: skill.name,
               text:
                 (p.weapons.length >= 4
-                  ? 'Sustituye una técnica de tu elección; conserva su rango y suma uno. '
+                  ? 'La nueva técnica empieza en rango 1. Elige cuál sustituir. '
                   : '') + describeTechnique(skill.id, 1, p),
               rarity: 'NUEVA TÉCNICA',
             });
@@ -1288,7 +1288,7 @@
           const w = p.weapons.find((w) => w.id === card.replace);
           if (!w || p.weapons.some((w) => w.id === card.weapon)) return false;
           w.id = card.weapon;
-          w.rank = Math.min(9, w.rank + 1);
+          w.rank = 1;
           w.clock = 0;
         } else if (card.type === 'weapon-decline') {
         } else if (card.type === 'weapon-rank') {

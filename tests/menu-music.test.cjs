@@ -95,6 +95,25 @@ test('each portal biome uses its own recording and restarts on entry', async () 
   for (const track of Object.values(m.biomeTracks)) assert.equal(track.paused, true);
 });
 
+test('the island theme changes after the third cleared portal and after Devimon', async () => {
+  const { Music } = await import(pathToFileURL(require.resolve('../game/music.js')).href);
+  const m = new Music();
+  const world = { cleansed: 2, devimonDefeated: false };
+  m.tick(true, false, true, null, world);
+  assert.equal(m.mapTrack.src, 'assets/music/main-map.mp3');
+  world.cleansed = 3;
+  m.tick(true, false, false, { kind: 'fire' }, world);
+  assert.ok(m.mapTrack.paused);
+  m.tick(true, false, true, null, world);
+  assert.equal(m.mapTrack.src, 'assets/music/overworld-2.mp3');
+  assert.equal(m.mapTrack.paused, false);
+  world.devimonDefeated = true;
+  m.tick(true, false, true, null, world);
+  assert.ok(m.mapTracks['overworld-2'].paused);
+  assert.equal(m.mapTrack.src, 'assets/music/postgame.mp3');
+  assert.equal(m.mapTrack.paused, false);
+});
+
 test('Devimon recording replaces biome music and restarts for each encounter', async () => {
   const { Music } = await import(pathToFileURL(require.resolve('../game/music.js')).href);
   const m = new Music();

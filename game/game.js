@@ -1710,6 +1710,7 @@ function loop(now) {
   const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
   last = now;
   if (active && run?.s.trial) {
+    music.tick(!document.hidden && !window.DigibonkDesktopHidden, false, true, null, run.s.world);
     keys.suspend();
     trials.frame(document.hidden || window.DigibonkDesktopHidden ? 0 : dt);
     requestAnimationFrame(loop);
@@ -1823,6 +1824,7 @@ function loop(now) {
       : active && !run?.s.done
         ? run?.s.realm
         : null,
+    run?.s.world,
   );
   if (!loading) renderer.render(active ? run : null, dt, { menu: !active });
   drawPortraits(now / 1000);
