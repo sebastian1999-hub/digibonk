@@ -1,4 +1,4 @@
-## Pendiente de publicación
+## 1.39.0 · El sello de Devimon y el portal de pruebas
 
 - Al recoger un cofre, el aviso muestra el icono de la recompensa con el borde de su rareza.
 - Cerrar los seis portales desbloquea el sello central. Actívalo para invocar a Devimon.

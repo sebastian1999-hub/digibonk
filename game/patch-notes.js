@@ -1,14 +1,19 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.38.4",
-  "pending": [
-    "Al recoger un cofre, el aviso muestra el icono de la recompensa con el borde de su rareza.",
-    "Cerrar los seis portales desbloquea el sello central. Actívalo para invocar a Devimon.",
-    "Tras derrotar a Devimon se abre el portal de pruebas. Cada visita propone dos de siete minijuegos y permite reducir hasta un 25 % la dificultad acumulada por encima de la base. El siguiente portal se abre diez minutos de juego después de entrar.",
-    "El minimapa y el mapa ampliado encajan en el marco sin dejar huecos.",
-    "La velocidad de ataque sigue aumentando el daño por segundo cuando los ataques alcanzan su intervalo mínimo. El excedente aumenta el daño de cada golpe, técnica ofensiva o disparo de recolector rojo. El menú Equipo muestra el DPS básico sin críticos."
-  ],
+  "currentVersion": "1.39.0",
+  "pending": [],
   "releases": [
+    {
+      "version": "1.39.0",
+      "title": "El sello de Devimon y el portal de pruebas",
+      "changes": [
+        "Al recoger un cofre, el aviso muestra el icono de la recompensa con el borde de su rareza.",
+        "Cerrar los seis portales desbloquea el sello central. Actívalo para invocar a Devimon.",
+        "Tras derrotar a Devimon se abre el portal de pruebas. Cada visita propone dos de siete minijuegos y permite reducir hasta un 25 % la dificultad acumulada por encima de la base. El siguiente portal se abre diez minutos de juego después de entrar.",
+        "El minimapa y el mapa ampliado encajan en el marco sin dejar huecos.",
+        "La velocidad de ataque sigue aumentando el daño por segundo cuando los ataques alcanzan su intervalo mínimo. El excedente aumenta el daño de cada golpe, técnica ofensiva o disparo de recolector rojo. El menú Equipo muestra el DPS básico sin críticos."
+      ]
+    },
     {
       "version": "1.38.4",
       "title": "Historial por versión",
