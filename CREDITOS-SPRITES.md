@@ -135,3 +135,13 @@ Las texturas de turbulencia, espuma, estelas y ondas de presión, los shaders y 
 ## Referencia de técnicas
 
 La ampliación de técnicas toma como referencia las familias y nombres de Digimon World: Next Order, consultados en https://nhoko.xxxxxxxx.jp/nx-od-skill.html y https://enjoi7.sakura.ne.jp/digimonworld-neo/waza_list.html el 3 de noviembre de 2026. Las reglas para el modo supervivencia y todos sus efectos visuales mediante geometría, partículas y materiales son implementaciones propias; no se han extraído animaciones de Next Order.
+
+## Renovación visual de las criaturas
+
+Los 228 Digimon usan ahora atlas de mayor resolución. La remasterización de las poses clásicas reconstruye las diagonales de los contornos y ajusta el sombreado. Dorumon, Omnimon y Beelzemon tienen cinco poses reilustradas por especie con ImageGen a partir de las referencias de World DS. Los retratos de Agumon y WarGreymon usan el mismo proceso de reilustración. Las atribuciones de las hojas de referencia figuran arriba.
+
+Los atlas empaquetan juntos los fotogramas idénticos. El catálogo conserva la posición original de cada pose dentro de su celda lógica y la duración de cada paso de animación.
+
+## Poses de combate de alta resolución
+
+Las doce formas que nacen de los huevos, varias de sus evoluciones y sus variantes suman 31 entradas con animaciones nuevas. Se han reilustrado 23 especies con ImageGen a partir de sus poses de combate y se han adaptado ocho variantes de color. Cada diseño tiene doce poses de referencia para reposo, desplazamiento, salto, ataque, impacto, expresiones y descanso. El juego conserva la duración de las acciones y sitúa los pies en el punto de contacto con el terreno.

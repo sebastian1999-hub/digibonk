@@ -197,7 +197,7 @@ body[data-screen='home'] #home:has(.digital-menu):has(#home-content:not([hidden]
 }
 .preview-species canvas {
   width: 100%;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 .incubator-title {
   position: absolute;
@@ -242,7 +242,7 @@ body[data-screen='home'] #home:has(.digital-menu):has(#home-content:not([hidden]
   width: 22%;
   height: 95%;
   object-fit: contain;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 .incubator-stage span {
   display: flex;
@@ -268,7 +268,7 @@ body[data-screen='home'] #home:has(.digital-menu):has(#home-content:not([hidden]
   width: 24%;
   height: 43%;
   object-fit: contain;
-  image-rendering: pixelated;
+  image-rendering: auto;
 }
 .digital-menu .incubator-arrow {
   position: absolute;

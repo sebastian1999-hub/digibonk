@@ -42,8 +42,8 @@ class Atlases {
       image.onload = () => {
         const texture = new THREE.Texture(image);
         texture.colorSpace = THREE.SRGBColorSpace;
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.NearestFilter;
+        texture.magFilter = egg ? THREE.NearestFilter : THREE.LinearFilter;
+        texture.minFilter = egg ? THREE.NearestFilter : THREE.LinearFilter;
         texture.generateMipmaps = false;
         texture.needsUpdate = true;
         entry.texture = texture;
@@ -103,8 +103,8 @@ class Atlases {
       u1: (frame.x + crop.x + crop.w) / iw,
       v0: 1 - (frame.y + crop.y + crop.h) / ih,
       v1: 1 - (frame.y + crop.y) / ih,
-      w: crop.w / frame.h,
-      h: crop.h / frame.h,
+      w: crop.w / entry.spec.height,
+      h: crop.h / entry.spec.height,
       referenceHeight: entry.spec.referenceHeight,
     };
   }
@@ -878,7 +878,7 @@ export class Renderer3D {
     if (unit) return unit;
     const group = new THREE.Group(),
       mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(1, 1),
+        new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0),
         new THREE.MeshBasicMaterial({
           transparent: true,
           alphaTest: 0.08,
@@ -902,7 +902,8 @@ export class Renderer3D {
     }
     unit.keep = true;
     unit.group.position.set(x, C.heightAt(x, z, this.seed), z);
-    unit.mesh.rotation.set(0, this.cameraYaw, 0);
+    if (options.egg) unit.mesh.rotation.set(0, this.cameraYaw, 0);
+    else unit.mesh.quaternion.copy(this.camera.quaternion);
     const frame = this.atlases.frame(name, action, time, !!options.egg);
     if (!frame) {
       unit.mesh.visible = false;
@@ -920,7 +921,7 @@ export class Renderer3D {
       w = frame.w * scale,
       h = frame.h * scale;
     unit.mesh.scale.set(w, h, 1);
-    unit.mesh.position.y = h / 2 + (options.jump || 0);
+    unit.mesh.position.y = options.jump || 0;
     const uv = unit.mesh.geometry.attributes.uv,
       u0 = left ? frame.u0 : frame.u1,
       u1 = left ? frame.u1 : frame.u0;

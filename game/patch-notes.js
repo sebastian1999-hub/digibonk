@@ -1,8 +1,18 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.41.0",
+  "currentVersion": "1.42.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.42.0",
+      "title": "Digimon más reconocibles en combate",
+      "changes": [
+        "Las doce criaturas que nacen de los huevos estrenan sprites de mayor detalle. La renovación alcanza a 31 formas, con 23 especies redibujadas y ocho variantes de color. Se distinguen mejor las caras, las garras y los cuernos al tamaño normal de partida.",
+        "Cada uno de esos diseños tiene doce poses para animar el movimiento, los ataques, los impactos y el descanso. Agumon, Gabumon y Patamon estrenan dibujos en combate, al igual que Greymon, Garurumon y Angemon.",
+        "Dorumon, Omnimon y Beelzemon también reciben nuevas ilustraciones de combate. Agumon y WarGreymon estrenan retratos en los menús.",
+        "Se han renovado los atlas de las 228 especies. En la isla, los sprites miran hacia la cámara y mantienen los pies en el terreno para que la perspectiva elevada conserve su silueta."
+      ]
+    },
     {
       "version": "1.41.0",
       "title": "Historial e informes de combate",

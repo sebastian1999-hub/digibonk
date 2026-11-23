@@ -56,10 +56,10 @@ window.DigiSprites = (() => {
         break;
       }
     }
-    const ratio = height / f.h,
-      w = f.w * ratio;
+    const ratio = height / spec.height;
+    const [left, top] = f.offset || [0, 0];
     ctx.save();
-    ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = true;
     ctx.translate(Math.round(x), Math.round(y + height * 0.48));
     /* Original sheets face left. Public API uses faceLeft to match world coordinates. */ ctx.scale(
       faceLeft ? 1 : -1,
@@ -71,10 +71,10 @@ window.DigiSprites = (() => {
       f.y,
       f.w,
       f.h,
-      Math.round(-w / 2),
-      -Math.round(height),
-      Math.round(w),
-      Math.round(height),
+      Math.round((left - spec.width / 2) * ratio),
+      Math.round(top * ratio - height),
+      Math.round(f.w * ratio),
+      Math.round(f.h * ratio),
     );
     ctx.restore();
     return true;
@@ -135,7 +135,7 @@ window.DigiSprites = (() => {
       w = crop.w * ratio,
       h = crop.h * ratio;
     ctx.save();
-    ctx.imageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = true;
     ctx.translate(Math.round(x), Math.round(y));
     ctx.scale(faceLeft ? 1 : -1, 1);
     ctx.drawImage(

@@ -47,9 +47,9 @@ const fx = new AttackVisuals({ scene, camera, visibility: { player: 1, enemy: 1 
 const spriteCanvas = document.createElement('canvas'),
   ctx = spriteCanvas.getContext('2d'),
   texture = new THREE.CanvasTexture(spriteCanvas);
-spriteCanvas.width = spriteCanvas.height = 64;
-texture.magFilter = THREE.NearestFilter;
-texture.minFilter = THREE.NearestFilter;
+spriteCanvas.width = spriteCanvas.height = 160;
+texture.magFilter = THREE.LinearFilter;
+texture.minFilter = THREE.LinearFilter;
 texture.colorSpace = THREE.SRGBColorSpace;
 const target = new THREE.Sprite(
   new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }),
@@ -269,9 +269,10 @@ function animate(now) {
       const frames = spec.actions.idle,
         f = frames[Math.floor(clock * 3) % frames.length],
         b = f.bounds || { x: 0, y: 0, w: f.w, h: f.h };
-      ctx.clearRect(0, 0, 64, 64);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(image, f.x + b.x, f.y + b.y, b.w, b.h, 0, 0, 64, 64);
+      const side = spriteCanvas.height, scale = side / Math.max(b.w, b.h);
+      const w = b.w * scale, h = b.h * scale;
+      ctx.clearRect(0, 0, side, side);
+      ctx.drawImage(image, f.x + b.x, f.y + b.y, b.w, b.h, (side - w) / 2, side - h, w, h);
       texture.needsUpdate = true;
     }
     fx.begin({ preserveTrails: true });
