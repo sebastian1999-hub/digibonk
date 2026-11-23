@@ -641,15 +641,6 @@
           }
           this.s.techniqueRevision = 1;
         }
-        const lastEvolution = this.s.history.at(-1);
-        const evolutionChoice = this.s.choice?.kind === 'replace' &&
-          this.s.choice.title?.startsWith('Nueva técnica de evolución: ');
-        if (lastEvolution?.to === this.s.player.species &&
-            (this.s.pendingEvolutionWeapon || evolutionChoice) &&
-            this.replaceEvolutionSignature(lastEvolution.from, lastEvolution.to)) {
-          delete this.s.pendingEvolutionWeapon;
-          if (evolutionChoice) this.s.choice = null;
-        }
         if (saved && this.s.choice?.kind === 'replace') {
           const weapon = this.s.choice.cards.find((card) => card.type === 'weapon-replace')?.weapon;
           if (weapon) this.s.choice.cards = this.weaponReplacement(weapon).cards;
@@ -795,24 +786,6 @@
           weakest.id = id;
           weakest.clock = 0;
         }
-      }
-      replaceEvolutionSignature(from, to) {
-        const previousId = signature(from).id;
-        const nextId = signature(to).id;
-        const p = this.s.player;
-        const previous = p.weapons.find((w) => w.id === previousId);
-        const next = p.weapons.find((w) => w.id === nextId);
-        if (previous && next && previous !== next) {
-          next.rank = Math.max(previous.rank, next.rank);
-          p.weapons = p.weapons.filter((w) => w !== previous);
-        } else if (previous && !next) {
-          previous.id = nextId;
-          previous.clock = 0;
-        }
-        if (previous && previousId !== nextId && this.s.techniqueEchoes) {
-          this.s.techniqueEchoes = this.s.techniqueEchoes.filter((echo) => echo.skillId !== previousId);
-        }
-        return Boolean(previous || next);
       }
       weaponReplacement(weapon) {
         const p = this.s.player;
@@ -1303,8 +1276,8 @@
           p.damage *= 1.12;
           p.shieldRatio += 0.05;
           p.speed = Math.max(p.speed, Math.min(15, p.speed + 0.2));
-          if (!this.replaceEvolutionSignature(from, p.species)) {
-            const id = signature(p.species).id;
+          const id = signature(p.species).id;
+          if (!p.weapons.some((w) => w.id === id)) {
             if (p.weapons.length < 4) p.weapons.push({ id, rank: 1, clock: 0 });
             else s.pendingEvolutionWeapon = id;
           }

@@ -719,38 +719,36 @@ test('portal chest odds mildly favor each higher rarity and stay normalized', ()
   assert.ok(Math.abs(boosted.reduce((n, o) => n + o.chance, 0) - 1) < 1e-9);
 });
 
-test('evolution replaces the previous signature in a full build and preserves other techniques', () => {
-  const evolution = { id: 'MetalGreymon', type: 'evolution', species: 'MetalGreymon' };
-  const from = C.signature('Greymon').id;
+test('evolution keeps both signatures when a slot is free or the new one is already equipped', () => {
+  const evolution = { id: 'Greymon', type: 'evolution', species: 'Greymon' };
+  const from = C.signature('Agumon').id;
   const to = C.signature(evolution.species).id;
   for (const alreadyEquipped of [false, true]) {
-    const r = fresh('Greymon', 2);
-    const other = { id: alreadyEquipped ? to : 'fireball', rank: 2, clock: 1 };
-    const support = [{ id: 'heal', rank: 1, clock: 1 }, { id: 'guard', rank: 1, clock: 1 }];
-    const original = [{ id: from, rank: 5, clock: 1 }, other, ...support];
+    const r = fresh('Agumon', 1);
+    const original = [
+      { id: from, rank: 5, clock: 1 },
+      { id: 'heat-breath', rank: 2, clock: 1 },
+      { id: 'heal', rank: 1, clock: 1 },
+    ];
+    if (alreadyEquipped) original.push({ id: to, rank: 3, clock: 1 });
     r.s.player.weapons = structuredClone(original);
     r.s.choice = { kind: 'evolution', cards: [evolution] };
     assert.ok(r.choose(evolution.id));
     const expected = alreadyEquipped
-      ? [{ ...other, rank: 5 }, ...support]
-      : [{ id: to, rank: 5, clock: 0 }, other, ...support];
+      ? original
+      : [...original, { id: to, rank: 1, clock: 0 }];
     assert.deepEqual(r.s.player.weapons, expected);
-    assert.equal(r.s.choice, null);
-
-    const legacy = r.snapshot();
-    legacy.player.weapons = original;
-    legacy.pendingEvolutionWeapon = to;
-    const restored = new C.Run(null, { saved: legacy });
+    const restored = new C.Run(null, { saved: r.snapshot() });
     assert.deepEqual(restored.s.player.weapons, expected);
     for (let i = 0; i < 55; i++) restored.update(0.05);
     assert.equal(restored.s.choice, null);
   }
 });
 
-test('full build without the previous signature can keep or replace a technique and survives reload', () => {
+test('a full build keeps the previous signature unless the player chooses to replace it', () => {
   const r = fresh('Agumon', 1);
   r.s.player.weapons = [
-    { id: 'bubble', rank: 3, clock: 1 },
+    { id: C.signature('Agumon').id, rank: 3, clock: 1 },
     { id: 'heat-breath', rank: 2, clock: 1 },
     { id: 'heal', rank: 1, clock: 1 },
     { id: 'guard', rank: 1, clock: 1 },

@@ -1,3 +1,7 @@
+## 1.43.1 · Conserva tus ataques al evolucionar
+
+- Al evolucionar conservas el ataque de la fase anterior y su rango. Si queda una ranura libre, aprendes el ataque de la nueva forma a rango 1. Con las cuatro ranuras ocupadas, puedes mantener tu equipo o elegir qué técnica reemplazar. Si ya tienes el nuevo ataque, ambos conservan su rango.
+
 ## 1.43.0 · Evoluciones renovadas de Rookie a Mega
 
 - Se han renovado los sprites de combate de 184 formas desde Rookie hasta Mega. Cada una tiene doce poses nuevas para el movimiento, los ataques, los impactos y el descanso. Renamon también estrena retrato en los menús.

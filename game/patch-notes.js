@@ -1,8 +1,15 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.43.0",
+  "currentVersion": "1.43.1",
   "pending": [],
   "releases": [
+    {
+      "version": "1.43.1",
+      "title": "Conserva tus ataques al evolucionar",
+      "changes": [
+        "Al evolucionar conservas el ataque de la fase anterior y su rango. Si queda una ranura libre, aprendes el ataque de la nueva forma a rango 1. Con las cuatro ranuras ocupadas, puedes mantener tu equipo o elegir qué técnica reemplazar. Si ya tienes el nuevo ataque, ambos conservan su rango."
+      ]
+    },
     {
       "version": "1.43.0",
       "title": "Evoluciones renovadas de Rookie a Mega",
