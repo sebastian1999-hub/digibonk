@@ -1,3 +1,9 @@
+## 1.43.0 · Evoluciones renovadas de Rookie a Mega
+
+- Se han renovado los sprites de combate de 184 formas desde Rookie hasta Mega. Cada una tiene doce poses nuevas para el movimiento, los ataques, los impactos y el descanso. Renamon también estrena retrato en los menús.
+- Al evolucionar, la técnica propia de la nueva forma sustituye a la anterior y hereda su rango. Si ya tienes la nueva técnica, conserva el rango más alto y libera la ranura de la anterior.
+- Si ya habías retirado la técnica de la forma anterior y tienes las cuatro ranuras ocupadas, puedes elegir qué técnica reemplazar.
+
 ## 1.42.0 · Digimon más reconocibles en combate
 
 - Las doce criaturas que nacen de los huevos estrenan sprites de mayor detalle. La renovación alcanza a 31 formas, con 23 especies redibujadas y ocho variantes de color. Se distinguen mejor las caras, las garras y los cuernos al tamaño normal de partida.

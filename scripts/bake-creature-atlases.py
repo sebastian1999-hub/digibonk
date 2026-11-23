@@ -59,10 +59,11 @@ def cel_sprite(tile, scale):
     return Image.fromarray(rgba)
 
 
-def pack(tiles):
+def pack(tiles, gutter=2):
     # A transparent gutter on all sides isolates bilinearly filtered poses.
     order = sorted(range(len(tiles)), key=lambda i: -tiles[i].height)
-    area = sum((t.width + 4) * (t.height + 4) for t in tiles)
+    padding = 2 * gutter
+    area = sum((t.width + padding) * (t.height + padding) for t in tiles)
     def layout(limit):
         rows = []
         coords = {}
@@ -70,17 +71,17 @@ def pack(tiles):
         for i in order:
             w, h = tiles[i].size
             for row in rows:
-                if row[0] + w + 4 <= limit:
+                if row[0] + w + padding <= limit:
                     break
             else:
                 row = [0, height]
                 rows.append(row)
-                height += h + 4
-            coords[i] = (row[0] + 2, row[1] + 2)
-            row[0] += w + 4
+                height += h + padding
+            coords[i] = (row[0] + gutter, row[1] + gutter)
+            row[0] += w + padding
             width = max(width, row[0])
         return width * height, (width, height), coords
-    widest = max(t.width + 4 for t in tiles)
+    widest = max(t.width + padding for t in tiles)
     candidates = (layout(max(widest, math.ceil(math.sqrt(area) * factor)))
                   for factor in (0.75, 0.875, 1, 1.125, 1.25, 1.5))
     _, size, coords = min(candidates, key=lambda result: result[0])
@@ -153,15 +154,16 @@ KEY_POSES = {
 }
 
 
-def bake_key_poses(spec, strip, dest):
+def bake_key_poses(spec, strip, dest, *, combat_stage=None):
     """Author in fixed-size cells, pack tight, retain the game's feet and clock."""
     with Image.open(strip) as img:
         master = img.convert('RGBA')
-    if master.width % 12:
-        raise ValueError(f'{strip}: expected twelve equal cells')
-    cell_width = master.width // 12
+    count = 12
+    if master.width % count:
+        raise ValueError(f'{strip}: expected {count} equal cells')
+    cell_width = master.width // count
     poses = []
-    for index in range(12):
+    for index in range(count):
         art = master.crop((index * cell_width, 0, (index + 1) * cell_width, master.height))
         bounds = art.getchannel('A').getbbox()
         if not bounds:
@@ -173,12 +175,23 @@ def bake_key_poses(spec, strip, dest):
     old_width = spec['width']
     idle_height = old_height * spec['referenceHeight']
     factor = max(1, round(112 / idle_height))
+    if combat_stage is not None:
+        target = {1: 120, 2: 140, 3: 156, 4: 176}[combat_stage]
+        # Wide wings and long tails may fill the source cell before its body
+        # reaches the target height. Keep all the available native detail.
+        factor = min(target, poses[0].height) / idle_height
     density = factor * idle_height / poses[0].height
     tiles, frames, baked = [], [], {}
     for action, sequence in spec['actions'].items():
         indices = KEY_POSES[action]
         for step, frame in enumerate(sequence):
             idx = indices[step % len(indices)]
+            # World DS has longer cast sequences, including a recovery beat.
+            if combat_stage is not None and action.startswith('attack') and len(sequence) > 2:
+                if step == len(sequence) - 1:
+                    idx = 0
+                elif step > 0:
+                    idx = indices[-1]
             breath = action == 'idle' and step % 2 == 1
             key = idx, breath
             if key not in baked:
@@ -188,9 +201,12 @@ def bake_key_poses(spec, strip, dest):
                 baked[key] = len(tiles)
                 tiles.append(art.resize(size, Image.Resampling.LANCZOS))
             frames.append((frame, baked[key]))
-    atlas, coords = pack(tiles)
+    atlas, coords = pack(tiles, gutter=8 if combat_stage is not None else 2)
     path = dest / spec['sheet']
     path.parent.mkdir(exist_ok=True, parents=True)
+    if combat_stage is not None:
+        atlas = atlas.quantize(colors=256, method=Image.Quantize.FASTOCTREE,
+                               dither=Image.Dither.NONE)
     atlas.save(path, compress_level=9)
     for frame, idx in frames:
         b = frame['bounds']
@@ -201,7 +217,11 @@ def bake_key_poses(spec, strip, dest):
         x, y = coords[idx]
         frame.update(x=x, y=y, w=w, h=h, bounds=dict(x=0, y=0, w=w, h=h),
                      offset=[round(center * factor - w / 2), round(foot * factor - h)])
-    spec.update(width=old_width * factor, height=old_height * factor)
+    spec.update(width=round(old_width * factor), height=round(old_height * factor))
+    if combat_stage is not None:
+        spec['referenceHeight'] = tiles[baked[(0, False)]].height / spec['height']
+        spec['uniquePoses'] = count
+        spec['mipmaps'] = True
 
 
 def main():
@@ -210,16 +230,23 @@ def main():
     parser.add_argument('dest', type=Path)
     parser.add_argument('--masters', type=Path)
     parser.add_argument('--key-poses', type=Path, help='Directory of twelve-pose creature strips')
+    parser.add_argument('--combat-poses', type=Path,
+                        help='Directory of detailed twelve-pose strips and a species-to-stage stages.json')
     args = parser.parse_args()
     if args.source.resolve() == args.dest.resolve():
         parser.error('Keep the source sheets in a separate directory.')
+    stages = (json.loads((args.combat_poses / 'stages.json').read_text(encoding='utf8'))
+              if args.combat_poses else {})
     for filename in ('sprites-data.js', 'portrait-data.js'):
         path = Path('assets') / filename
         binding, raw = (args.source / path).read_text(encoding='utf8').split('=', 1)
         specs = json.loads(raw.strip().removesuffix(';'))
-        for spec in specs.values():
+        for name, spec in specs.items():
             strip = args.key_poses / Path(spec['sheet']).name if args.key_poses else None
-            if strip and strip.is_file():
+            combat = args.combat_poses / Path(spec['sheet']).name if args.combat_poses else None
+            if combat and combat.is_file():
+                bake_key_poses(spec, combat, args.dest, combat_stage=stages[name])
+            elif strip and strip.is_file():
                 bake_key_poses(spec, strip, args.dest)
             else:
                 bake(spec, args.source, args.dest, args.masters)

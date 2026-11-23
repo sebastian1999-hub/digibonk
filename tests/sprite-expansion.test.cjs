@@ -71,6 +71,24 @@ test('every baked frame has nonempty bounds inside its atlas cell and every atla
       }
     }
 });
+test('mipmapped poses have transparent space reserved between their sampling regions', () => {
+  for (const [name, spec] of Object.entries(box.window.SPRITE_DATA)) {
+    if (!spec.mipmaps) continue;
+    const seen = new Map();
+    for (const frame of Object.values(spec.actions).flat()) {
+      seen.set([frame.x, frame.y, frame.w, frame.h].join(','), frame);
+    }
+    const poses = [...seen.values()];
+    for (const [i, a] of poses.entries()) {
+      for (const b of poses.slice(i + 1)) {
+        const separated =
+          a.x + a.w + 16 <= b.x || b.x + b.w + 16 <= a.x ||
+          a.y + a.h + 16 <= b.y || b.y + b.h + 16 <= a.y;
+        assert.ok(separated, name + ' has overlapping mipmap gutters');
+      }
+    }
+  }
+});
 test('detailed portraits preserve the original world atlases and techniques choose distinct available attack poses', () => {
   for (const name of ['Agumon', 'Renamon', 'WarGreymon']) {
     assert.notEqual(box.window.PORTRAIT_DATA[name].sheet, box.window.SPRITE_DATA[name].sheet);

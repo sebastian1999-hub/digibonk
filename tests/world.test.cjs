@@ -719,10 +719,38 @@ test('portal chest odds mildly favor each higher rarity and stay normalized', ()
   assert.ok(Math.abs(boosted.reduce((n, o) => n + o.chance, 0) - 1) < 1e-9);
 });
 
-test('full build chooses evolution technique after animation, can keep or replace and survives reload', () => {
+test('evolution replaces the previous signature in a full build and preserves other techniques', () => {
+  const evolution = { id: 'MetalGreymon', type: 'evolution', species: 'MetalGreymon' };
+  const from = C.signature('Greymon').id;
+  const to = C.signature(evolution.species).id;
+  for (const alreadyEquipped of [false, true]) {
+    const r = fresh('Greymon', 2);
+    const other = { id: alreadyEquipped ? to : 'fireball', rank: 2, clock: 1 };
+    const support = [{ id: 'heal', rank: 1, clock: 1 }, { id: 'guard', rank: 1, clock: 1 }];
+    const original = [{ id: from, rank: 5, clock: 1 }, other, ...support];
+    r.s.player.weapons = structuredClone(original);
+    r.s.choice = { kind: 'evolution', cards: [evolution] };
+    assert.ok(r.choose(evolution.id));
+    const expected = alreadyEquipped
+      ? [{ ...other, rank: 5 }, ...support]
+      : [{ id: to, rank: 5, clock: 0 }, other, ...support];
+    assert.deepEqual(r.s.player.weapons, expected);
+    assert.equal(r.s.choice, null);
+
+    const legacy = r.snapshot();
+    legacy.player.weapons = original;
+    legacy.pendingEvolutionWeapon = to;
+    const restored = new C.Run(null, { saved: legacy });
+    assert.deepEqual(restored.s.player.weapons, expected);
+    for (let i = 0; i < 55; i++) restored.update(0.05);
+    assert.equal(restored.s.choice, null);
+  }
+});
+
+test('full build without the previous signature can keep or replace a technique and survives reload', () => {
   const r = fresh('Agumon', 1);
   r.s.player.weapons = [
-    { id: 'fireball', rank: 3, clock: 1 },
+    { id: 'bubble', rank: 3, clock: 1 },
     { id: 'heat-breath', rank: 2, clock: 1 },
     { id: 'heal', rank: 1, clock: 1 },
     { id: 'guard', rank: 1, clock: 1 },

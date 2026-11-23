@@ -88,3 +88,37 @@ test('failed sprite loading rejects preparation without declaring the scene read
   assert.notEqual(r.assetsReady, true);
   assert.ok(!events.includes('draw'));
 });
+
+test('detailed atlas eviction respects visible creatures and allows an evicted texture back', () => {
+  const Atlases = vm.runInNewContext(
+    '(' + source.slice(source.indexOf('class Atlases'), source.indexOf('export class Renderer3D')).trim() + ')',
+    { document: { createElement: () => ({ getContext: () => ({}) }) } },
+  );
+  const cache = new Atlases();
+  cache.texelBudget = 200;
+  const disposed = [];
+  const entry = (name) => ({
+    image: { naturalWidth: 10, naturalHeight: 10 },
+    texture: { dispose() { disposed.push(name); } },
+  });
+  const a = entry('a'), b = entry('b'), c = entry('c');
+  assert.ok(cache.keepTexture(a, true));
+  assert.ok(cache.keepTexture(b, true));
+  assert.equal(cache.keepTexture(c, true), false);
+  cache.frameNumber++;
+  cache.keepTexture(a);
+  cache.keepTexture(c);
+  cache.trimTextures();
+  assert.deepEqual(disposed, ['b']);
+  assert.equal(b.texture.needsUpdate, true);
+  assert.equal(cache.residentTexels, 200);
+  cache.keepTexture(b);
+  cache.trimTextures();
+  assert.equal(cache.residentTexels, 300);
+  assert.deepEqual(disposed, ['b']);
+  cache.frameNumber++;
+  cache.keepTexture(b);
+  cache.trimTextures();
+  assert.ok(cache.resident.has(b));
+  assert.equal(cache.residentTexels, 200);
+});

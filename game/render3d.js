@@ -23,6 +23,11 @@ class Atlases {
   constructor() {
     this.entries = new Map();
     this.crops = new Map();
+    // 24M RGBA texels plus mip levels occupy about 128 MiB on the GPU.
+    this.texelBudget = 24 * 1024 * 1024;
+    this.resident = new Map();
+    this.residentTexels = 0;
+    this.frameNumber = 0;
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
   }
@@ -43,8 +48,10 @@ class Atlases {
         const texture = new THREE.Texture(image);
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.magFilter = egg ? THREE.NearestFilter : THREE.LinearFilter;
-        texture.minFilter = egg ? THREE.NearestFilter : THREE.LinearFilter;
-        texture.generateMipmaps = false;
+        texture.generateMipmaps = spec.mipmaps === true;
+        texture.minFilter = texture.generateMipmaps
+          ? THREE.LinearMipmapLinearFilter
+          : texture.magFilter;
         texture.needsUpdate = true;
         entry.texture = texture;
         resolve(entry);
@@ -53,9 +60,32 @@ class Atlases {
     image.src = spec.sheet;
     return entry;
   }
+  keepTexture(entry, warming = false) {
+    if (!this.resident.has(entry)) {
+      const texels = entry.image.naturalWidth * entry.image.naturalHeight;
+      if (warming && this.residentTexels + texels > this.texelBudget) return false;
+      this.residentTexels += texels;
+      entry.texels = texels;
+    }
+    this.resident.set(entry, this.frameNumber);
+    return true;
+  }
+  trimTextures() {
+    if (this.residentTexels <= this.texelBudget) return;
+    const inactive = [...this.resident].filter(([, last]) => last !== this.frameNumber);
+    inactive.sort((a, b) => a[1] - b[1]);
+    for (const [entry] of inactive) {
+      entry.texture.dispose();
+      entry.texture.needsUpdate = true;
+      this.resident.delete(entry);
+      this.residentTexels -= entry.texels;
+      if (this.residentTexels <= this.texelBudget) break;
+    }
+  }
   frame(name, action, time, egg = false) {
     const entry = this.entry(name, egg);
     if (!entry?.texture) return null;
+    if (entry.spec.mipmaps) this.keepTexture(entry);
     const frames = entry.spec.actions[action] || entry.spec.actions.idle;
     if (!frames?.length) return null;
     const duration = frames.reduce((n, f) => n + (f.duration || 0.12), 0);
@@ -594,9 +624,12 @@ export class Renderer3D {
               entry = this.atlases.entry(name, egg);
             await entry?.ready;
             if (entry?.texture) {
-              this.renderer.initTexture(entry.texture);
+              if (!entry.spec?.mipmaps || this.atlases.keepTexture(entry, true))
+                this.renderer.initTexture(entry.texture);
+              else await entry.image.decode();
               if (entry.spec?.actions)
                 for (const [action, frames] of Object.entries(entry.spec.actions)) {
+                  if (frames.every((f) => f.bounds)) continue;
                   let at = 0;
                   for (const f of frames) {
                     this.atlases.frame(name, action, at + 0.001, egg);
@@ -1004,6 +1037,7 @@ export class Renderer3D {
     };
   }
   render(run, dt, { menu = false, submit = true } = {}) {
+    this.atlases.frameNumber++;
     const s = run?.s,
       p = s?.player || { x: 0, z: 0, stage: -1, species: 'Botamon' },
       seed = s?.mapSeed ?? 83461;
@@ -1456,6 +1490,7 @@ export class Renderer3D {
       if (player) player.shadow.visible = true;
     }
     if (submit) this.renderer.render(this.scene, this.camera);
+    this.atlases.trimTextures();
   }
   pick(clientX, clientY) {
     const rect = this.canvas.getBoundingClientRect(),

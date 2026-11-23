@@ -145,3 +145,7 @@ Los atlas empaquetan juntos los fotogramas idénticos. El catálogo conserva la 
 ## Poses de combate de alta resolución
 
 Las doce formas que nacen de los huevos, varias de sus evoluciones y sus variantes suman 31 entradas con animaciones nuevas. Se han reilustrado 23 especies con ImageGen a partir de sus poses de combate y se han adaptado ocho variantes de color. Cada diseño tiene doce poses de referencia para reposo, desplazamiento, salto, ataque, impacto, expresiones y descanso. El juego conserva la duración de las acciones y sitúa los pies en el punto de contacto con el terreno.
+
+## Evoluciones de Rookie a Mega
+
+La segunda tanda incorpora arte de combate para 184 formas. Los dibujos generados con ImageGen toman como referencia la silueta, la paleta y las poses de los atlas atribuidos más arriba. Cada forma tiene doce poses ilustradas para las acciones del juego. Las imágenes se empaquetan con márgenes transparentes y niveles de detalle para la cámara del escenario. Renamon dispone además de un retrato independiente de siete poses basado en su hoja de World DS.
