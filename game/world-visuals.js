@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three.module.js';
+import { sealInlay } from './winter-scenery.js';
 
 const W = window.DigibonkWorld,
   C = window.DigibonkCore;
@@ -154,9 +155,11 @@ export class WorldVisuals {
       const data = o.userData.baseColors,
         matrix = new THREE.Matrix4(),
         point = new THREE.Vector3();
+      o.updateWorldMatrix(true, false);
       for (let i = 0; i < o.count; i++) {
         o.getMatrixAt(i, matrix);
         point.setFromMatrixPosition(matrix);
+        point.applyMatrix4(o.matrixWorld);
         const zone = sectors[W.sectorIndex(point.x, point.z)];
         color.setRGB(data[i * 3], data[i * 3 + 1], data[i * 3 + 2]);
         if (zone.kind)
@@ -417,8 +420,7 @@ export class WorldVisuals {
       phase = s.world.phase,
       radius = W.SEAL_RADIUS,
       sealColor = phase === 'endless' ? '#a6f1c3' : phase === 'portals' ? '#b9a1d0' : '#df97fc';
-    const seal = add(r.geo.ring, sealColor, 0, centerY + 0.14, 0, [radius, radius, radius], 0.6);
-    seal.rotation.x = -Math.PI / 2;
+    this.group.add(sealInlay(s.world.portals, radius, sealColor, (x, z) => C.heightAt(x, z, seed)));
     for (let i = 0; i < 8; i++) {
       const angle = (i * Math.PI) / 4,
         obelisk = add(
@@ -609,7 +611,7 @@ export class WorldVisuals {
       else this.clear();
     }
     if (!s) {
-      const normal = new THREE.Color('#aec8bd');
+      const normal = new THREE.Color('#bdd4e7');
       this.r.scene.fog.color.lerp(normal, 0.025);
       this.r.scene.background.lerp(normal, 0.025);
       return;
@@ -622,7 +624,7 @@ export class WorldVisuals {
             ? '#89beca'
             : current.kind === 'glitch'
               ? '#a99bbe'
-              : '#aec8bd',
+              : this.r.winter ? '#bdd4e7' : '#aec8bd',
       );
     this.r.scene.fog.color.lerp(fog, 0.025);
     this.r.scene.background.lerp(fog, 0.025);

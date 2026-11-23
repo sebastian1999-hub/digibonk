@@ -1,8 +1,22 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.39.1",
+  "currentVersion": "1.40.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.40.0",
+      "title": "Isla Nevada y balance de supervivencia",
+      "changes": [
+        "La isla estrena nieve, refugios con forma de Digihuevo, un nuevo puesto de Wizardmon, santuarios, lagos con témpanos y un sello de Devimon en relieve. La decoración está modelada en 3D.",
+        "Los cofres adoptan forma de regalo y tienen un icono nuevo en el mapa. El envoltorio verde distingue los que sueltan los enemigos.",
+        "Tras derrotar a Devimon, un multiplicador adicional duplica la vida de los enemigos cada 90 segundos y aumenta su daño. Los cofres de enemigos solo pueden aparecer una vez cada dos minutos.",
+        "Las tarjetas comunes de daño y velocidad de ataque aportan un 6 % y un 5 %. A partir de ×4, la velocidad de ataque efectiva aumenta más despacio.",
+        "Cada copia de un legendario de estadísticas aporta el 55 % del valor de la copia anterior. El nuevo cálculo también se aplica al continuar una partida guardada.",
+        "Disparan hasta tres recolectores rojos. Cada disparo inflige el 30 % de tu daño base, puede rebotar una vez y tiene un intervalo mínimo de medio segundo.",
+        "Los proyectiles dirigidos infligen un 60 % más de daño y tienen una bonificación adicional del 25 % contra élites, jefes y torres. Si su blanco cae antes del impacto, pueden buscar otro una vez.",
+        "Las técnicas de área ganan menos alcance a partir de ×1,75 de área. Las técnicas que golpean en área aprovechan hasta dos golpes extra de Disparo gemelo."
+      ]
+    },
     {
       "version": "1.39.1",
       "title": "Música de la isla y panel de partida",

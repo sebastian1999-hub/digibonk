@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   const names = {
-    chest: 'Cofre',
+    chest: 'Cofre navideño',
     shop: 'Tienda',
     fire: 'Descanso',
     shrine: 'Santuario',
@@ -74,18 +74,12 @@
       c.stroke();
     };
     if (type === 'chest') {
-      box(-10, -6, 20, 15);
-      line([
-        [-10, -1],
-        [10, -1],
-      ]);
-      box(-2, -3, 4, 6);
-      line([
-        [-7, -6],
-        [-7, -9],
-        [7, -9],
-        [7, -6],
-      ]);
+      c.fillStyle = '#ab3048';
+      box(-9, -3, 18, 13);
+      box(-10, -4, 20, 4);
+      line([[0, -4], [0, 10]]);
+      line([[0, -4], [-6, -6], [-6, -10], [-3, -10], [0, -4],
+        [3, -10], [6, -10], [6, -6], [0, -4]]);
     }
     if (type === 'shop') {
       c.beginPath();

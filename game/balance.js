@@ -1,6 +1,10 @@
 (function (root) {
   'use strict';
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  function endlessFactors(seconds) {
+    const hp = 2 ** clamp(seconds / 90, 0, 128);
+    return { hp, damage: hp ** 0.65 };
+  }
   function timeGrowth(time) {
     const m = clamp((time - 180) / 60, 0, 1440);
     const late = clamp((time - 900) / 120, 0, 32);
@@ -157,6 +161,7 @@
   }
   const api = {
     timeGrowth,
+    endlessFactors,
     timeFactors,
     deadline,
     factors,

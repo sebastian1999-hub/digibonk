@@ -113,7 +113,7 @@
         Math.hypot(x, z) < 15 ||
         pois.some((p) => Math.hypot(x - p.x, z - p.z) < 7)
       );
-      pois.push({ id: 'chest-' + i, type: 'chest', name: 'Cofre de datos', x, z, cost: 30 });
+      pois.push({ id: 'chest-' + i, type: 'chest', name: 'Cofre navideño', x, z, cost: 30 });
     }
     const obstacles = [],
       grid = new Map();
@@ -283,13 +283,13 @@
     );
   }
   const upgrades = [
-    { id: 'power', title: 'Instinto feroz', text: '+10 % de daño', stat: 'damage', factor: 1.1 },
+    { id: 'power', title: 'Instinto feroz', text: '+6 % de daño', stat: 'damage', factor: 1.06 },
     {
       id: 'haste',
       title: 'Ritmo de combate',
-      text: 'Ataques un 10 % más rápidos',
+      text: '+5 % de velocidad de ataque',
       stat: 'haste',
-      factor: 1.1,
+      factor: 1.05,
     },
     { id: 'speed', title: 'Paso ligero', text: '+8 % de velocidad', stat: 'speed', factor: 1.08 },
     {
@@ -344,7 +344,7 @@
     {
       id: 'projectile',
       title: 'Disparo gemelo',
-      text: '+1 golpe o proyectil en todas las técnicas ofensivas',
+      text: '+1 golpe o proyectil extra. Las técnicas en área admiten hasta 2 extras.',
       stat: 'projectileBonus',
       amount: 1,
       rare: true,
@@ -488,11 +488,11 @@
             meteor: 'Meteorito que explota en área.',
             rain: 'Lluvia de ataques en área.',
             chain: 'Ataque que salta entre enemigos.',
-            volley: 'Ráfaga de proyectiles a enemigos cercanos.',
+            volley: 'Ráfaga dirigida. Inflige daño extra a élites, jefes y torres.',
           }[skill.pattern] ||
           (skill.mode === 'melee'
             ? 'Golpe cuerpo a cuerpo a enemigos cercanos.'
-            : 'Disparo de proyectiles a enemigos cercanos.');
+            : 'Proyectil dirigido. Inflige daño extra a élites, jefes y torres.');
         return behavior;
       }
       return (
@@ -614,6 +614,7 @@
         this.map = mapFor(this.s.mapSeed);
         this.events = [];
         this.initializeWorld();
+        this.rebalanceSavedRelics();
         this.initializeEggPassive(!!saved);
         this.s.autoPlay = false;
         this.separateEnemySpecies();
@@ -1005,17 +1006,21 @@
       }
       attackHaste() {
         const p = this.s.player;
-        return (
+        const haste =
           p.haste *
           (p.hasteLeft > 0 ? 1.2 : 1) *
-          (p.relicHasteLeft > 0 ? 1 + this.relicRank('dash-drive') * 0.1 : 1)
-        );
+          (p.relicHasteLeft > 0 ? 1 + this.relicRank('dash-drive') * 0.1 : 1);
+        return haste <= 4 ? haste : 4 + 4 * (1 - 4 / haste);
       }
       attackCadence(baseInterval, minimumInterval, haste = this.attackHaste()) {
         const requested = baseInterval / haste;
         const interval = Math.max(minimumInterval, requested);
-        // Once attacks cannot fire faster, preserve their theoretical damage per second.
+        // Convert effective haste above the cooldown floor into damage.
         return { interval, damageScale: interval / requested };
+      }
+      techniqueArea() {
+        const area = this.s.player.area;
+        return area <= 1.75 ? area : 1.75 + 1.5 * (1 - 1.75 / area);
       }
       updateCollectors(dt) {
         const s = this.s,
@@ -1034,7 +1039,7 @@
         for (const [i, orb] of s.collectors.entries()) {
           orb.evolved = i < evolved;
           orb.fireClock = orb.fireClock > 0 ? orb.fireClock - dt : 0;
-          if (orb.evolved && p.collectorMode === 'attack') {
+          if (orb.evolved && i < 3 && p.collectorMode === 'attack') {
             orb.target = null;
             orb.returning = false;
             const angle = s.time * 2.5 + (i * Math.PI * 2) / Math.max(1, count);
@@ -1046,29 +1051,26 @@
             orb.z += ((tz - orb.z) / (d || 1)) * step;
             if (orb.fireClock <= 0) {
               const enemy = s.enemies
-                .filter((e) => e.hp > 0 && !e.shielded && distance(e, orb) < 16 * p.area)
+                .filter((e) => e.hp > 0 && !e.shielded && distance(e, orb) < 16 * this.techniqueArea())
                 .sort((a, b) => distance(a, orb) - distance(b, orb))[0];
               if (enemy) {
-                const cadence = this.attackCadence(1.5, 0.2);
-                for (let n = 0; n < Math.min(180, 1 + (p.projectileBonus || 0)); n++) {
-                  s.shots.push({
-                    id: s.nextId++,
-                    x: orb.x,
-                    z: orb.z,
-                    ox: orb.x,
-                    oz: orb.z,
-                    target: enemy.id,
-                    speed: 24,
-                    damage: p.damage * 0.45 * cadence.damageScale,
-                    area: 0.65 * p.area,
-                    visualScale: p.area,
-                    life: 2.8,
-                    skillId: 'air-shot',
-                    color: '#ff5868',
-                    bouncesLeft: p.ricochets || 0,
-                  });
-                }
-                orb.fireClock += cadence.interval;
+                s.shots.push({
+                  id: s.nextId++,
+                  x: orb.x,
+                  z: orb.z,
+                  ox: orb.x,
+                  oz: orb.z,
+                  target: enemy.id,
+                  speed: 24,
+                  damage: p.damage * 0.3,
+                  area: 0,
+                  visualScale: this.techniqueArea(),
+                  life: 2.8,
+                  skillId: 'air-shot',
+                  color: '#ff5868',
+                  bouncesLeft: Math.min(1, p.ricochets || 0),
+                });
+                orb.fireClock += 1.5 / Math.min(3, this.attackHaste());
                 if (s.shots.length > 180) s.shots.splice(0, s.shots.length - 180);
               }
             }
@@ -1479,12 +1481,18 @@
       }
       chestDropChance(enemy) {
         if (enemy.tower || enemy.structure) return 0;
+        if (this.enemyChestCooldown() > 0) return 0;
         if (enemy.boss && !enemy.finalBoss) return 1;
         return (
           0.001 +
           this.relicRank('treasure-radar') * 0.0005 +
           this.relicRank('loot-antenna') * 0.00025
         );
+      }
+      enemyChestCooldown() {
+        return this.s.world.devimonDefeated
+          ? Math.max(0, (this.s.nextEnemyChestAt || 0) - this.s.time)
+          : 0;
       }
       dropEnemyChest(enemy) {
         const chance = this.chestDropChance(enemy);
@@ -1499,6 +1507,7 @@
         };
         this.placeSafely(chest);
         this.s.droppedChests.push(chest);
+        if (this.s.world.devimonDefeated) this.s.nextEnemyChestAt = this.s.time + 120;
         return true;
       }
       toggleAutoPlay() {
@@ -1750,6 +1759,7 @@
         const alive = s.enemies.filter((e) => e.hp > 0),
           nearest = this.combatTargets(alive)[0];
         const effectiveHaste = this.attackHaste(),
+          effectiveArea = this.techniqueArea(),
           damageMultiplier = p.damage * (p.rallyLeft > 0 ? 1.25 : 1);
         if (nearest && distance(nearest, p) < 2.7 && p.basicClock <= 0) {
           const cadence = this.attackCadence(0.5, 0.05, effectiveHaste);
@@ -1780,7 +1790,7 @@
           }
           if (
             !nearest ||
-            distance(nearest, p) > (skill.range / 22) * p.area * this.styleRangeMultiplier()
+            distance(nearest, p) > (skill.range / 22) * effectiveArea * this.styleRangeMultiplier()
           )
             continue;
           const cadence = this.attackCadence(
@@ -1794,12 +1804,13 @@
           p.lastDZ = nearest.z - p.z;
           p.lastSkill = skill.id;
           if (skill.stage >= 1) this.effect('cast', p.x, p.z, { skillId: skill.id });
-          const damage =
-              damageMultiplier * skill.power * (1 + (w.rank - 1) * 0.15) * cadence.damageScale,
-            area = (skill.stage >= 2 ? 1.7 : 0) * p.area * (1 + w.rank * 0.06);
-          this.castTechnique(skill, w.rank, nearest, damage, area);
+          const damage = damageMultiplier * skill.power * (1 + (w.rank - 1) * 0.15) * cadence.damageScale;
+          this.castTechnique(skill, w.rank, nearest, damage);
+          const directed = skill.pattern === 'volley' || (!skill.pattern && skill.mode !== 'melee');
           const count =
-            (skill.pattern === 'volley' ? 3 : 1) + p.projectileBonus + Math.floor(w.rank / 4);
+            (skill.pattern === 'volley' ? 3 : 1) +
+            (directed ? p.projectileBonus : Math.min(2, p.projectileBonus)) +
+            Math.floor(w.rank / 4);
           if (count > 1) {
             s.techniqueEchoes ??= [];
             for (let i = 1; i < count && s.techniqueEchoes.length < 128; i++)
@@ -1807,7 +1818,6 @@
                 skillId: skill.id,
                 rank: w.rank,
                 damage,
-                area,
                 target: nearest.id,
                 left: i * 0.12,
                 scene: s.realm?.portalId ?? 'main',
@@ -1820,7 +1830,16 @@
           shot.prevX = shot.x;
           shot.prevZ = shot.z;
           shot.life -= dt;
-          const target = s.enemies.find((e) => e.id === shot.target && e.hp > 0);
+          let target = s.enemies.find((e) => e.id === shot.target && e.hp > 0);
+          if (!target && shot.directed && !shot.retargeted && shot.life > 0) {
+            target = s.enemies
+              .filter((e) => e.hp > 0 && !e.shielded && !shot.hitTargets?.includes(e.id) && distance(e, shot) < 9)
+              .sort((a, b) => distance(a, shot) - distance(b, shot))[0];
+            if (target) {
+              shot.target = target.id;
+              shot.retargeted = true;
+            }
+          }
           if (!target) {
             shot.life = 0;
             continue;
@@ -1828,7 +1847,8 @@
           const d = distance(shot, target);
           if (d < shot.speed * dt + 0.5 * (shot.visualScale || 1)) {
             shot.life = 0;
-            this.hurt(target, shot.damage, shot.skillId);
+            const priority = target.elite || target.boss || target.tower;
+            this.hurt(target, shot.damage * (shot.directed && priority ? 1.25 : 1), shot.skillId);
             if (shot.area > 0)
               for (const e of s.enemies)
                 if (e !== target && e.hp > 0 && distance(e, target) < shot.area)

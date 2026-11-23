@@ -74,7 +74,18 @@ test('area increases projectile visuals, melee size and area spell reach', () =>
         fx = r.s.fx.find((x) => x.skillId === id && ['burst', 'slash'].includes(x.kind));
       result.push(shot?.visualScale || fx?.visualScale);
     }
-    assert.deepEqual(result, [1, 2], id);
+    assert.deepEqual(result, [1, 1.9375], id);
+  }
+});
+
+test('projectile builds continue gaining echoes after area attacks reach their extra hit cap', () => {
+  for (const [id, expected] of [['fire-tower', 2], ['wind-cutter', 10]]) {
+    const r = fresh(), p = r.s.player;
+    p.projectileBonus = 8;
+    p.weapons = [{ id, rank: 1, clock: 0 }];
+    r.s.enemies = [enemy(99, p.x + 2, p.z)];
+    r.update(0.01);
+    assert.equal(r.s.techniqueEchoes.length, expected);
   }
 });
 

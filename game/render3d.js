@@ -3,6 +3,7 @@ import { evolutionHeight } from './evolution-scale.js';
 import { drawEnemyStatuses } from './status-visuals.js';
 import { AttackVisuals } from './attack-visuals.js';
 import { WorldVisuals } from './world-visuals.js';
+import { addWinterProps, winterPond } from './winter-scenery.js';
 import { animateDataTravel } from './data-travel.js';
 import * as THREE from './vendor/three.module.js';
 const C = window.DigibonkCore;
@@ -125,8 +126,8 @@ export class Renderer3D {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.04;
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color('#aec8bd');
-    this.scene.fog = new THREE.FogExp2('#aec8bd', 0.0085);
+    this.scene.background = new THREE.Color('#bdd4e7');
+    this.scene.fog = new THREE.FogExp2('#bdd4e7', 0.0085);
     this.camera = new THREE.PerspectiveCamera(47, 1, 0.1, 650);
     this.cameraYaw = 0.68;
     this.targetYaw = 0.68;
@@ -152,7 +153,8 @@ export class Renderer3D {
       opacity: 0.65,
       toneMapped: false,
     });
-    this.scene.add(new THREE.HemisphereLight(0xe6f2d7, 0x526d61, 2.3));
+    this.skyLight = new THREE.HemisphereLight(0xe6f2d7, 0x526d61, 2.3);
+    this.scene.add(this.skyLight);
     const sun = new THREE.DirectionalLight(0xffe4b1, 3.1);
     sun.position.set(-100, 260, 140);
     sun.castShadow = true;
@@ -163,7 +165,7 @@ export class Renderer3D {
     sun.shadow.camera.far = 800;
     sun.shadow.bias = -0.0008;
     sun.shadow.normalBias = 0.06;
-    this.scene.add(sun);
+    this.scene.add(sun, sun.target);
     this.sun = sun;
     this.world = new THREE.Group();
     this.scene.add(this.world);
@@ -172,6 +174,7 @@ export class Renderer3D {
     this.resize();
     new ResizeObserver(() => this.resize()).observe(canvas);
     this.worldEffects = new WorldVisuals(this);
+    this.sceneryFocus = new THREE.Vector3();
     this.attackEffects = new AttackVisuals(this);
     document.body.dataset.renderer = 'webgl2';
   }
@@ -213,16 +216,30 @@ export class Renderer3D {
     this.world.add(m);
     return m;
   }
-  build(seed) {
-    for (const step of this.buildSteps(seed)) {
+  build(seed, winter) {
+    for (const step of this.buildSteps(seed, winter)) {
     }
   }
-  *buildSteps(seed) {
-    if (this.seed === seed) return;
+  *buildSteps(seed, winter) {
+    if (this.seed === seed && this.winter === winter) return;
+    this.winter = winter;
+    this.scene.fog.density = winter ? 0.0058 : 0.0085;
+    this.skyLight.color.setHex(winter ? 0xe3eeff : 0xe6f2d7);
+    this.skyLight.groundColor.setHex(winter ? 0x777e9f : 0x526d61);
+    this.skyLight.intensity = winter ? 1.68 : 2.3;
+    const shadowCamera = this.sun.shadow.camera;
+    shadowCamera.left = shadowCamera.bottom = winter ? -55 : -300;
+    shadowCamera.right = shadowCamera.top = -shadowCamera.left;
+    shadowCamera.updateProjectionMatrix();
+    if (!winter) {
+      this.sun.target.position.set(0, 0, 0);
+      this.sun.position.set(-100, 260, 140);
+    }
     this.map = C.mapFor(seed);
     const materials = new Set(),
       geometries = new Set();
     this.world.traverse((o) => {
+      if (o.isInstancedMesh) o.dispose();
       if (o.isMesh) {
         if (o.geometry && !Object.values(this.geo).includes(o.geometry)) geometries.add(o.geometry);
         if (o.material) materials.add(o.material);
@@ -239,15 +256,19 @@ export class Renderer3D {
     const vertices = terrain.attributes.position,
       colors = [],
       terrainColor = new THREE.Color(),
-      terrainCool = new THREE.Color('#438c88'),
-      terrainGold = new THREE.Color('#b3a66b'),
-      trailColor = new THREE.Color('#b9ad83');
+      terrainCool = new THREE.Color(winter ? '#9dbfda' : '#438c88'),
+      terrainGold = new THREE.Color(winter ? '#e0d5df' : '#b3a66b'),
+      trailColor = new THREE.Color(winter ? '#839bad' : '#b9ad83');
     for (let i = 0; i < vertices.count; i++) {
       const x = vertices.getX(i),
         z = vertices.getZ(i),
         h = C.heightAt(x, z, seed);
       vertices.setY(i, h);
-      const color = terrainColor.set('#649456'),
+      if (winter) {
+        const uv = terrain.attributes.uv;
+        uv.setXY(i, uv.getX(i) + 0.008 * Math.sin(z / 29), uv.getY(i) + 0.009 * Math.sin(x / 34));
+      }
+      const color = terrainColor.set(winter ? '#deebfa' : '#649456'),
         cool = terrainCool,
         gold = terrainGold;
       color.lerp(cool, Math.max(0, Math.min(1, (x - 12) / 85)));
@@ -296,6 +317,12 @@ export class Renderer3D {
     ocean.castShadow = false;
     this.water = [];
     for (const pond of C.ponds) {
+      if (winter) {
+        const water = winterPond(pond, seed);
+        this.world.add(water);
+        this.water.push(water);
+        continue;
+      }
       const water = this.mesh(
         new THREE.CircleGeometry(pond.r, 48),
         this.material('#399fac', { transparent: true, opacity: 0.88 }),
@@ -392,55 +419,75 @@ export class Renderer3D {
       mesh.receiveShadow = true;
       this.world.add(mesh);
     };
-    instance(trunks, trunkGeo, '#817458', (d, o) => {
-      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 1.4 * o.size, o.z);
-      d.scale.set(o.size, o.size, o.size);
-    });
-    const pines = crowns.filter((o, i) => i % 3 !== 0);
-    const leafy = crowns.filter((o, i) => i % 3 === 0);
-    instance(pines, crownGeo, '#567f65', (d, o) => {
-      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 3.3 * o.size, o.z);
-      d.scale.set(o.size, o.size, o.size);
-    });
-    instance(pines, crownGeo, '#74976e', (d, o) => {
-      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 4.5 * o.size, o.z);
-      d.scale.set(o.size * 0.76, o.size * 0.85, o.size * 0.76);
-    });
-    const leafGeo = new THREE.IcosahedronGeometry(1, 1);
-    instance(leafy, leafGeo, '#568b72', (d, o) => {
-      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 3.1 * o.size, o.z);
-      d.scale.set(o.size * 1.65, o.size * 1.65, o.size * 1.5);
-    });
-    instance(leafy, leafGeo, '#92b477', (d, o) => {
-      d.position.set(o.x - o.size * 0.25, C.heightAt(o.x, o.z, seed) + 4.1 * o.size, o.z);
-      d.scale.set(o.size * 1.25, o.size * 1.15, o.size * 1.2);
-    });
-    instance(rocks, rockGeo, '#a1af9e', (d, o, i) => {
-      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + o.size * 0.6, o.z);
-      d.rotation.set(0.2, i, 0.1);
-      d.scale.set(o.size * 1.4, o.size, o.size);
-    });
-    instance(rocks, rockGeo, '#839b68', (d, o, i) => {
-      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + o.size * 1.35, o.z);
-      d.rotation.y = i;
-      d.scale.set(o.size * 0.9, o.size * 0.16, o.size * 0.65);
-    });
-    instance(crystals, crystalGeo, '#8fc8ca', (d, o) => {
-      d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 1.2 * o.size, o.z);
-      d.scale.set(o.size, o.size, o.size);
-    });
-    for (const side of [-1, 1]) {
-      instance(crystals, crystalGeo, side < 0 ? '#66bfc4' : '#b6e5d5', (d, o) => {
-        d.position.set(
-          o.x + side * o.size * 0.65,
-          C.heightAt(o.x, o.z, seed) + 0.55 * o.size,
-          o.z + 0.3 * o.size,
-        );
-        d.rotation.z = -side * 0.35;
-        d.scale.setScalar(o.size * 0.48);
+    if (winter) {
+      const batches = { pine: [], festive: [], tree: [], crystal: [], phone: [], rock: [] };
+      for (const [i, o] of crowns.entries()) {
+        const kind = i % 3 === 0 ? 'tree' : i % 4 === 0 ? 'festive' : 'pine';
+        batches[kind].push({ x: o.x, z: o.z, y: C.heightAt(o.x, o.z, seed), size: (kind === 'tree' ? 5.8 : 6.5) * o.size, angle: i * 2.4 });
+      }
+      for (const o of crystals) {
+        batches.crystal.push({ x: o.x, z: o.z, y: C.heightAt(o.x, o.z, seed), size: 3.9 * o.size, angle: o.id * 1.7 });
+      }
+      for (const o of rocks) {
+        batches.rock.push({ x: o.x, z: o.z, y: C.heightAt(o.x, o.z, seed), size: 3.4 * o.size, angle: o.id * 1.7 });
+      }
+      // Telephone boxes stand in the shallows, outside the walkable shoreline.
+      for (const [i, pond] of C.ponds.entries()) {
+        if (i % 2 === 0) batches.phone.push({ x: pond.x, z: pond.z - pond.r * 0.7, y: 0.04, size: 5.6 });
+      }
+      for (const [kind, props] of Object.entries(batches)) {
+        addWinterProps(this.world, kind, props, this.sceneryFocus);
+      }
+    } else {
+      instance(trunks, trunkGeo, '#817458', (d, o) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 1.4 * o.size, o.z);
+        d.scale.set(o.size, o.size, o.size);
       });
+      const pines = crowns.filter((o, i) => i % 3 !== 0);
+      const leafy = crowns.filter((o, i) => i % 3 === 0);
+      instance(pines, crownGeo, '#567f65', (d, o) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 3.3 * o.size, o.z);
+        d.scale.set(o.size, o.size, o.size);
+      });
+      instance(pines, crownGeo, '#74976e', (d, o) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 4.5 * o.size, o.z);
+        d.scale.set(o.size * 0.76, o.size * 0.85, o.size * 0.76);
+      });
+      const leafGeo = new THREE.IcosahedronGeometry(1, 1);
+      instance(leafy, leafGeo, '#568b72', (d, o) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 3.1 * o.size, o.z);
+        d.scale.set(o.size * 1.65, o.size * 1.65, o.size * 1.5);
+      });
+      instance(leafy, leafGeo, '#92b477', (d, o) => {
+        d.position.set(o.x - o.size * 0.25, C.heightAt(o.x, o.z, seed) + 4.1 * o.size, o.z);
+        d.scale.set(o.size * 1.25, o.size * 1.15, o.size * 1.2);
+      });
+      instance(rocks, rockGeo, '#a1af9e', (d, o, i) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + o.size * 0.6, o.z);
+        d.rotation.set(0.2, i, 0.1);
+        d.scale.set(o.size * 1.4, o.size, o.size);
+      });
+      instance(rocks, rockGeo, '#839b68', (d, o, i) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + o.size * 1.35, o.z);
+        d.rotation.y = i;
+        d.scale.set(o.size * 0.9, o.size * 0.16, o.size * 0.65);
+      });
+      instance(crystals, crystalGeo, '#8fc8ca', (d, o) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 1.2 * o.size, o.z);
+        d.scale.set(o.size, o.size, o.size);
+      });
+      for (const side of [-1, 1]) {
+        instance(crystals, crystalGeo, side < 0 ? '#66bfc4' : '#b6e5d5', (d, o) => {
+          d.position.set(
+            o.x + side * o.size * 0.65,
+            C.heightAt(o.x, o.z, seed) + 0.55 * o.size,
+            o.z + 0.3 * o.size,
+          );
+          d.rotation.z = -side * 0.35;
+          d.scale.setScalar(o.size * 0.48);
+        });
+      }
     }
-
     yield 0.52;
     this.poiMeshes = new Map();
     for (const poi of this.map.pois) {
@@ -473,7 +520,18 @@ export class Renderer3D {
         [2.6, 2.6, 2.6],
       );
       ring.rotation.x = -Math.PI / 2;
-      if (poi.type === 'fire') {
+      if (winter) {
+        const prop = (kind, x, z, size) => {
+          const y = C.heightAt(poi.x + x, poi.z + z, seed) - h;
+          addWinterProps(group, kind, [{ x, y, z, size }], this.sceneryFocus);
+        };
+        if (poi.type === 'fire') {
+          this.festiveCamp(group);
+          prop('fire', 0, 0, 2.7);
+          prop('nursery', -2.4, -5.1, 7.9);
+        } else if (poi.type === 'altar') prop('shrine', 0, -1.2, 6.9);
+        else prop('shop', 0, -1.3, 6.7);
+      } else if (poi.type === 'fire') {
         for (let i = 0; i < 7; i++) {
           const a = (i * Math.PI * 2) / 7;
           add(rockGeo, '#a5ac94', Math.cos(a) * 1.2, 0.28, Math.sin(a) * 1.2, [0.45, 0.35, 0.4]);
@@ -512,7 +570,7 @@ export class Renderer3D {
   }
   async prepare(run, progress = () => {}) {
     const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
-    for (const value of this.buildSteps(run?.s.mapSeed ?? 83461)) {
+    for (const value of this.buildSteps(run?.s.mapSeed ?? 83461, !run?.s.realm)) {
       progress(value, 'Preparando escenario');
       await frame();
     }
@@ -589,25 +647,74 @@ export class Renderer3D {
     }
   }
   groundTexture() {
-    if (this.grassTexture) return this.grassTexture;
+    const cache = this.winter ? 'snowTexture' : 'grassTexture';
+    if (this[cache]) return this[cache];
     const c = document.createElement('canvas');
     c.width = c.height = 128;
     const ctx = c.getContext('2d');
-    ctx.fillStyle = '#e1dfbf';
+    ctx.fillStyle = this.winter ? '#f4f6fb' : '#e1dfbf';
     ctx.fillRect(0, 0, 128, 128);
     for (let i = 0; i < 1500; i++) {
       const x = C.hash(i, 1, 43) % 128,
         y = C.hash(i, 2, 43) % 128;
-      ctx.fillStyle = i % 3 ? '#cbcba344' : '#f8f3d34a';
-      ctx.fillRect(x, y, 1, 2 + (i % 3));
+      ctx.fillStyle = this.winter ? (i % 3 ? '#93aac52c' : '#ffffffaa') : (i % 3 ? '#cbcba344' : '#f8f3d34a');
+      ctx.fillRect(x, y, 1, this.winter ? 1 : 2 + (i % 3));
     }
     const t = new THREE.CanvasTexture(c);
     t.colorSpace = THREE.SRGBColorSpace;
     t.wrapS = t.wrapT = THREE.RepeatWrapping;
     t.repeat.set(32, 32);
     t.anisotropy = 4;
-    this.grassTexture = t;
+    this[cache] = t;
     return t;
+  }
+  festiveCamp(group) {
+    const peg = new THREE.Object3D();
+    const posts = new THREE.InstancedMesh(this.geo.cube, this.material('#744351'), 2);
+    const garland = new THREE.InstancedMesh(this.geo.sphere, this.material('#22594d'), 17);
+    const bulbs = new THREE.InstancedMesh(this.geo.sphere, new THREE.MeshBasicMaterial(), 9);
+    bulbs.userData.environment = true;
+    const colors = ['#ffc34c', '#ef4560', '#57d8cc'];
+    for (let i = 0; i < 2; i++) {
+      peg.position.set(i ? 3.1 : -3.1, 1.95, -1.65);
+      peg.scale.set(0.22, 3.9, 0.22);
+      peg.updateMatrix();
+      posts.setMatrixAt(i, peg.matrix);
+    }
+    for (let i = 0; i < garland.count; i++) {
+      const t = i / (garland.count - 1);
+      peg.position.set((t - 0.5) * 6.2, 3.9 - Math.sin(t * Math.PI) * 0.85, -1.65);
+      peg.scale.set(0.34, 0.19, 0.22);
+      peg.updateMatrix();
+      garland.setMatrixAt(i, peg.matrix);
+      if (i % 2 === 0) {
+        peg.position.y -= 0.35;
+        peg.scale.set(0.18, 0.27, 0.18);
+        peg.updateMatrix();
+        bulbs.setMatrixAt(i / 2, peg.matrix);
+        bulbs.setColorAt(i / 2, new THREE.Color(colors[(i / 2) % colors.length]));
+      }
+    }
+    group.add(posts, garland, bulbs);
+
+    // A brass star hangs over the nursery entrance.
+    const star = new THREE.Shape();
+    for (let i = 0; i < 10; i++) {
+      const angle = Math.PI / 2 + i * Math.PI / 5;
+      const radius = i % 2 ? 0.32 : 0.72;
+      const x = Math.cos(angle) * radius, y = Math.sin(angle) * radius;
+      if (i === 0) star.moveTo(x, y);
+      else star.lineTo(x, y);
+    }
+    star.closePath();
+    const topper = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(star, { depth: 0.14, bevelEnabled: false }),
+      new THREE.MeshBasicMaterial({ color: '#ffca51', toneMapped: false }),
+    );
+    topper.position.set(0, 2.51, -1.65);
+    topper.scale.setScalar(0.68);
+    topper.rotation.set(-0.28, 0.68, 0);
+    group.add(topper);
   }
   decorate(seed, instance) {
     const stone = this.material('#8c9b83'),
@@ -655,6 +762,7 @@ export class Renderer3D {
         if (i % 3 === 0)
           for (let j = 0; j < 3; j++) reeds.push({ x: x + j * 0.18, z: z + j * 0.12 });
       }
+      if (this.winter) continue;
       for (let i = 0; i < 3; i++) {
         const ring = this.mesh(
           new THREE.RingGeometry(pond.r * (0.43 + i * 0.19), pond.r * (0.43 + i * 0.19) + 0.06, 64),
@@ -667,7 +775,7 @@ export class Renderer3D {
         ring.castShadow = false;
       }
     }
-    instance(shore, new THREE.DodecahedronGeometry(1), '#b3b49a', (d, o) => {
+    instance(shore, new THREE.DodecahedronGeometry(1), this.winter ? '#aec2dc' : '#b3b49a', (d, o) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.12, o.z);
       d.scale.set(o.size * 1.4, o.size * 0.65, o.size);
     });
@@ -681,7 +789,7 @@ export class Renderer3D {
         z = (C.hash(i, 16, seed) % ((C.WORLD * 2 - 12) * 100)) / 100 - C.WORLD + 6;
       if (C.walkable(x, z, seed, 0.15)) patches.push({ x, z });
     }
-    instance(patches, new THREE.ConeGeometry(0.2, 0.6, 3), '#89a763', (d, o, i) => {
+    instance(patches, new THREE.ConeGeometry(0.2, 0.6, 3), this.winter ? '#94b4ba' : '#89a763', (d, o, i) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.15, o.z);
       d.rotation.y = i;
       d.scale.set(1, 0.6 + (i % 3) * 0.3, 1);
@@ -695,7 +803,7 @@ export class Renderer3D {
       instance(
         blooms.filter((o, i) => i % 3 === color),
         new THREE.IcosahedronGeometry(0.22, 0),
-        ['#f0b5cf', '#aededd', '#e6d695'][color],
+        (this.winter ? ['#af4051', '#c7dfeb', '#89aca5'] : ['#f0b5cf', '#aededd', '#e6d695'])[color],
         (d, o, i) => {
           d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.32, o.z);
           d.scale.set(1.3, 0.55, 1.3);
@@ -705,6 +813,27 @@ export class Renderer3D {
     }
     // Low, engraved data stones: decorative silhouettes stay below the combat plane.
     const chips = patches.filter((o, i) => i % 90 === 0);
+    if (this.winter) {
+      // Short runs of buried hexagonal paving trace the two existing footpaths.
+      const paving = [];
+      for (let axis = 0; axis < 2; axis++) {
+        for (let k = -C.WORLD + 8; k < C.WORLD - 8; k += 2.2) {
+          if (Math.sin(k * 0.25 + axis * 2) < -0.18) continue;
+          for (let row = 0; row < 2; row++) {
+            const t = k + row * 1.06;
+            const x = axis ? t : Math.sin(t * 0.035) * 13 + row * 1.4;
+            const z = axis ? Math.sin(t * 0.028) * 17 + row * 1.4 : t;
+            if (Math.hypot(x, z) < 11 || !C.walkable(x, z, seed, 0.3)) continue;
+            paving.push({ x, z });
+          }
+        }
+      }
+      instance(paving, new THREE.CylinderGeometry(1, 1.05, 0.13, 6), '#91a4b2', (d, o, i) => {
+        d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.035, o.z);
+        d.rotation.set(0.04 * Math.sin(i), 0.18, 0.035 * Math.cos(i));
+        d.scale.setScalar(0.85 + (i % 4) * 0.055);
+      });
+    }
     instance(chips, this.geo.cube, '#657c80', (d, o, i) => {
       d.position.set(o.x, C.heightAt(o.x, o.z, seed) + 0.12, o.z);
       d.rotation.y = i * 1.7;
@@ -725,7 +854,7 @@ export class Renderer3D {
         depthWrite: false,
         toneMapped: false,
       }),
-      40,
+      this.winter ? 100 : 40,
     );
     this.ambientMotes.frustumCulled = false;
     this.world.add(this.ambientMotes);
@@ -878,7 +1007,7 @@ export class Renderer3D {
       p = s?.player || { x: 0, z: 0, stage: -1, species: 'Botamon' },
       seed = s?.mapSeed ?? 83461;
     const switched = this.seed !== seed;
-    this.build(seed);
+    this.build(seed, !s?.realm);
     if (switched) this.follow.set(p.x, C.heightAt(p.x, p.z, seed) + 1, p.z);
     const time = s?.time || performance.now() / 1000;
     this.cameraYaw += (this.targetYaw - this.cameraYaw) * Math.min(1, dt * 7);
@@ -892,15 +1021,25 @@ export class Renderer3D {
       this.follow.z + Math.cos(yaw) * dist,
     );
     this.camera.lookAt(this.follow.x, this.follow.y + 0.3, this.follow.z);
+    if (this.winter) {
+      this.camera.updateMatrixWorld();
+      this.sceneryFocus.set(p.x, goal.y + 0.3, p.z).applyMatrix4(this.camera.matrixWorldInverse);
+      const lx = Math.round(this.follow.x), lz = Math.round(this.follow.z);
+      this.sun.target.position.set(lx, 0, lz);
+      this.sun.position.set(lx - 42, 68, lz + 33);
+    }
     this.pointLight.position.set(p.x, goal.y + 3, p.z);
     if (this.ambientMotes) {
       const visualTime = performance.now() / 1000;
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < this.ambientMotes.count; i++) {
         const x = p.x + Math.sin(i * 71.3) * 31 + Math.sin(visualTime * 0.12 + i) * 2;
         const z = p.z + Math.cos(i * 43.7) * 31;
+        const altitude = this.winter
+          ? 10 - ((i * 1.73 + visualTime * (0.85 + (i % 4) * 0.15)) % 10)
+          : 0.6 + ((i * 0.73 + visualTime * 0.2) % 4);
         this.moteDummy.position.set(
           x,
-          C.heightAt(x, z, seed) + 0.6 + ((i * 0.73 + visualTime * 0.2) % 4),
+          C.heightAt(x, z, seed) + altitude,
           z,
         );
         this.moteDummy.rotation.set(0, visualTime * 0.3 + i, Math.PI / 4);
@@ -909,7 +1048,7 @@ export class Renderer3D {
         this.ambientMotes.setMatrixAt(i, this.moteDummy.matrix);
       }
       this.ambientMotes.instanceMatrix.needsUpdate = true;
-      this.ambientMotes.material.color.set(s?.realm ? '#c8a3ee' : '#b4f7e6');
+      this.ambientMotes.material.color.set(this.winter ? '#ffffff' : '#c8a3ee');
     }
     for (const unit of this.units.values()) unit.keep = false;
     for (const v of this.visuals.values()) v.keep = false;

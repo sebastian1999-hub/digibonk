@@ -20,6 +20,36 @@ function fresh() {
 function reveal(r) {
   return r.revealChest(r.s.choice.roll.id + ':' + r.s.choice.roll.revision);
 }
+test('enemy chest drops share a persistent cooldown after Devimon', () => {
+  const r = fresh();
+  r.s.choice = null;
+  r.defeatDevimon();
+  const invader = { x: 1, z: 1, boss: true };
+  assert.equal(r.dropEnemyChest(invader), true);
+  assert.equal(r.chestDropChance(invader), 0);
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  copy.s.time += 119;
+  assert.equal(copy.dropEnemyChest(invader), false);
+  copy.s.time++;
+  assert.equal(copy.dropEnemyChest(invader), true);
+});
+test('legendary stat copies diminish and existing saves are adjusted exactly once', () => {
+  const r = fresh(), initial = r.s.player.damage;
+  let total = 0;
+  for (const bonus of [0.35, 0.1925, 0.105875]) {
+    const card = r.chestPool().find((c) => c.item === 'omega-reactor');
+    r.s.choice = { kind: 'chest', cards: [card] };
+    assert.equal(r.choose(card.id), true);
+    total += bonus;
+    assert.ok(Math.abs(r.s.player.damage / initial - (1 + total)) < 1e-9);
+  }
+  const saved = r.snapshot();
+  delete saved.statRelicRevision;
+  saved.player.damage = initial * 2.05;
+  const copy = new C.Run(null, { saved });
+  assert.ok(Math.abs(copy.s.player.damage - r.s.player.damage) < 1e-9);
+  assert.equal(new C.Run(null, { saved: copy.snapshot() }).s.player.damage, copy.s.player.damage);
+});
 test('instant chest keeps the saved prize and grants it once; precision wheel still needs stopping', () => {
   const r = fresh();
   const prize = structuredClone(r.s.choice.cards[0]);

@@ -24,6 +24,22 @@ function tick(r, seconds) {
   r.s.time += seconds;
   r.updateWorld(seconds, {});
 }
+test('post-Devimon pressure uses real survival time, including after loading', () => {
+  const r = fresh();
+  r.s.time = 1200;
+  r.s.world.cleansed = r.s.world.target;
+  r.defeatDevimon();
+  r.s.time += 180;
+  r.s.trialTimeDiscount = 180;
+  r.spawn();
+  const e = r.s.enemies[0], base = B.main(1200, e.stage, e.boss);
+  assert.ok(Math.abs(e.maxHp / (base.hp * (e.elite ? 1.8 : 1)) - 4) < 1e-8);
+  assert.ok(e.contactDamage > base.contact * 2);
+  e.hp = e.maxHp * 0.5;
+  const copy = new C.Run(null, { saved: r.snapshot() });
+  copy.syncMainPressure();
+  assert.ok(Math.abs(copy.s.enemies[0].hp / e.hp - 1) < 1e-8);
+});
 test('trial visits pause island time, resume a saved pair and discount only earned growth', () => {
   const r = fresh();
   Object.assign(r.s.player, { x: 1, z: 0 });

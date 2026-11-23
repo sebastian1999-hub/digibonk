@@ -19,9 +19,21 @@
         : 0;
       if (s.portalCycle.overdue > 0) s.portalCycle.remaining = 0;
       s.pressureRefresh ??= 1;
+      if (s.world.devimonDefeated) s.world.completedAt ??= s.time;
     };
     p.difficultyTime = function () {
       return Math.max(0, this.s.time - (this.s.trialTimeDiscount || 0));
+    };
+    p.endlessPressure = function () {
+      const s = this.s;
+      return B.endlessFactors(s.world.devimonDefeated ? s.time - (s.world.completedAt ?? s.time) : 0);
+    };
+    p.mainPressureFactors = function (enemy, time = this.difficultyTime()) {
+      const target = B.factors(time, this.s.portalCycle.overdue, !!enemy.finalBoss);
+      const endless = this.endlessPressure();
+      target.hp *= endless.hp;
+      target.damage *= endless.damage;
+      return target;
     };
     p.startTrials = function () {
       const s = this.s;
@@ -79,24 +91,23 @@
                 : 'overdue',
         remaining: c.remaining,
         overdue: c.overdue,
-        growth: B.timeGrowth(this.difficultyTime()),
+        growth: B.timeGrowth(this.difficultyTime()) * this.endlessPressure().hp,
       };
     };
     p.scaleEnemyDifficulty = function (e) {
       if (e.hp <= 0 || e.tower || e.realmMob) return;
-      const s = this.s,
-        t = B.timeFactors(this.difficultyTime()),
-        target = B.factors(this.difficultyTime(), s.portalCycle.overdue, !!e.finalBoss);
+      const time = this.difficultyTime(),
+        t = B.timeFactors(time),
+        target = this.mainPressureFactors(e, time);
       if (e.basic === false && !e.finalBoss) {
-        const stats = B.main(this.difficultyTime(), e.stage, !!e.boss),
-          late = B.deadline(s.portalCycle.overdue),
+        const stats = B.main(time, e.stage, !!e.boss),
           health = e.hp / e.maxHp;
-        e.maxHp = stats.hp * (e.elite ? 1.8 : 1) * late.hp;
+        e.maxHp = stats.hp * (e.elite ? 1.8 : 1) * (target.hp / t.hp);
         e.hp = e.maxHp * health;
-        e.contactDamage = stats.contact * late.damage;
-        e.shotDamage = stats.shot * late.damage;
-        e.speed = Math.min(24, stats.speed * late.speed);
-        e.projectileSpeed = Math.min(36, stats.projectileSpeed * late.projectile);
+        e.contactDamage = stats.contact * (target.damage / t.damage);
+        e.shotDamage = stats.shot * (target.damage / t.damage);
+        e.speed = Math.min(24, stats.speed * (target.speed / t.speed));
+        e.projectileSpeed = Math.min(36, stats.projectileSpeed * (target.projectile / t.projectile));
         e.shotInterval = Math.max(0.45, (e.boss ? 1.8 : 4) / target.cadence);
         e.pressureFactors = target;
         return;
@@ -128,13 +139,13 @@
     p.difficultyAttackFactor = function (e) {
       return (
         e.pressureFactors?.damage ??
-        B.factors(this.difficultyTime(), this.s.portalCycle.overdue, !!e.finalBoss).damage
+        this.mainPressureFactors(e).damage
       );
     };
     p.difficultyCadenceFactor = function (e) {
       return (
         e.pressureFactors?.cadence ??
-        B.factors(this.difficultyTime(), this.s.portalCycle.overdue, !!e.finalBoss).cadence
+        this.mainPressureFactors(e).cadence
       );
     };
     p.spawn = function (boss = false) {

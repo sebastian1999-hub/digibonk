@@ -1,9 +1,27 @@
 (function (root) {
   'use strict';
+  function applyStatRelic(player, def, previous, next) {
+    const delta = def.value * (next - previous);
+    if (['shieldRatio', 'regen', 'maxHp', 'crit'].includes(def.stat)) {
+      player[def.stat] += delta;
+      if (def.stat === 'maxHp') player.hp = Math.min(player.maxHp, player.hp + delta);
+      if (def.stat === 'shieldRatio') player.shield = Math.min(player.shield, player.maxHp * player.shieldRatio);
+    } else player[def.stat] *= (1 + def.value * next) / (1 + def.value * previous);
+  }
   function install(C, L) {
     const p = C.Run.prototype,
       choose = p.choose,
       dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+    p.rebalanceSavedRelics = function () {
+      const s = this.s;
+      if (s.statRelicRevision === 1) return;
+      for (const relic of s.relics) {
+        const def = L.relics.find((item) => item.id === relic.id);
+        if (def?.legendary && def.stat)
+          applyStatRelic(s.player, def, relic.rank, L.statRelicRanks(def, relic.rank));
+      }
+      s.statRelicRevision = 1;
+    };
     p.choose = function (id) {
       const before = Object.fromEntries(this.s.relics.map((r) => [r.id, r.rank])),
         ok = choose.call(this, id);
@@ -29,13 +47,8 @@
             'xp-chip': ['xpMult', 0.08],
           };
         const def = L.relics.find((d) => d.id === item.id);
-        if (def?.stat) {
-          if (['shieldRatio', 'regen', 'maxHp', 'crit'].includes(def.stat)) {
-            player[def.stat] += def.value * delta;
-            if (def.stat === 'maxHp')
-              player.hp = Math.min(player.maxHp, player.hp + def.value * delta);
-          } else player[def.stat] *= (1 + def.value * r) / (1 + def.value * old);
-        }
+        if (def?.stat)
+          applyStatRelic(player, def, L.statRelicRanks(def, old), L.statRelicRanks(def, r));
         if (stats[item.id]) {
           const [stat, n] = stats[item.id];
           player[stat] += n * delta;

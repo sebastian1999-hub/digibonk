@@ -375,7 +375,7 @@ function openMap() {
   renderer.minimap($('#world-map'), run, { large: true });
   $('#map-dialog-title').textContent = run.s.realm
     ? 'Mapa del portal · ' + run.s.realm.name
-    : 'Mapa principal';
+    : 'Isla nevada';
   $('#map-dialog').showModal();
 }
 $('#map-toggle').onclick = openMap;
@@ -490,7 +490,12 @@ function openGear() {
     ['Proyectiles extra', String(p.projectileBonus)],
     ['Rebotes de proyectil', String(p.ricochets)],
     ['Recolectores', Math.floor(p.orbits / 3) + ' evolucionados · ' + (p.orbits % 3) + ' básicos'],
-    ['Cofre de enemigo normal', numberStat(run.chestDropChance({}) * 100) + ' %'],
+    [
+      'Cofre de enemigo normal',
+      run.enemyChestCooldown() > 0
+        ? 'Disponible en ' + clock(Math.ceil(run.enemyChestCooldown()))
+        : numberStat(run.chestDropChance({}) * 100) + ' %',
+    ],
     ['Precio del próximo cofre', numberStat(run.chestPrice()) + ' bits'],
   ];
   const attributes = $('#gear-stats');
@@ -1006,7 +1011,7 @@ function refreshWorldHud() {
   $('#collector-mode').textContent =
     keys.label('collectors') +
     ' · RECOLECTORES: ' +
-    (p.collectorMode === 'attack' ? 'ATAQUE' : 'RECOGIDA');
+    (p.collectorMode === 'attack' ? Math.min(3, Math.floor(p.orbits / 3)) + ' EN ATAQUE' : 'RECOGIDA');
   $('#style-name').textContent = style
     ? 'ESTILO · ' + style.name.toUpperCase()
     : 'ESTILO AÚN LATENTE';
@@ -1143,7 +1148,7 @@ function showChoice() {
   if (run.s.choice.roll) {
     const choice = run.s.choice;
     $('#choice-kicker').textContent =
-      choice.roll.source === 'shop' ? 'MEJORA COMPRADA' : 'COFRE DE DATOS';
+      choice.roll.source === 'shop' ? 'MEJORA COMPRADA' : 'COFRE NAVIDEÑO';
     $('#choice-title').textContent =
       choice.roll.source === 'shop' ? 'La calidad de tu mejora' : 'Tu próxima recompensa';
     $('#choice-subtitle').textContent =

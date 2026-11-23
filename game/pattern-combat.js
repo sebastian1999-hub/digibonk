@@ -3,17 +3,18 @@
   function install(C, S) {
     const p = C.Run.prototype,
       dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-    p.castTechnique = function (skill, rank, nearest, damage, area) {
+    p.castTechnique = function (skill, rank, nearest, damage) {
       const s = this.s,
-        player = s.player;
+        player = s.player,
+        radiusScale = this.techniqueArea();
       if (skill.pattern) return this.castPattern(skill, rank, nearest, damage);
       if (skill.mode === 'melee') {
         for (const e of this.combatTargets(s.enemies))
-          if (dist(e, player) < 4 * player.area) this.hurt(e, damage, skill.id);
+          if (dist(e, player) < 4 * radiusScale) this.hurt(e, damage, skill.id);
         this.effect('slash', player.x, player.z, {
           skillId: skill.id,
-          visualScale: player.area,
-          radius: 4 * player.area,
+          visualScale: radiusScale,
+          radius: 4 * radiusScale,
         });
         return;
       }
@@ -34,23 +35,25 @@
               : skill.visual.includes('beam') || skill.visual === 'laser'
                 ? 40
                 : 24,
-        damage,
-        area,
+        damage: damage * 1.6,
+        area: 0,
+        directed: true,
         life: 2.8,
         skillId: skill.id,
         color: skill.color,
-        visualScale: player.area,
+        visualScale: radiusScale,
       });
     };
     p.castPattern = function (skill, rank, nearest, damage) {
       const s = this.s,
         p = s.player,
+        radiusScale = this.techniqueArea(),
         apply = (e) => {
           this.hurt(e, damage, skill.id);
         },
         radius =
           (skill.pattern === 'ring' ? 5 : skill.pattern === 'cone' ? 7 : 3.5) *
-          p.area *
+          radiusScale *
           (1 + (rank - 1) * 0.035),
         targets = this.combatTargets(s.enemies);
       if (skill.pattern === 'volley') {
@@ -65,9 +68,10 @@
             height: 1.2,
             bornAt: s.time,
             speed: 26,
-            damage,
+            damage: damage * 1.6,
             area: 0,
-            visualScale: p.area,
+            directed: true,
+            visualScale: radiusScale,
             life: 2.8,
             skillId: skill.id,
             color: skill.color,
@@ -85,7 +89,7 @@
         }
         this.effect('burst', p.x, p.z, {
           skillId: skill.id,
-          visualScale: p.area,
+          visualScale: radiusScale,
           size: radius / 3,
           radius,
           dx: dx / n,
@@ -99,7 +103,7 @@
         for (const e of targets) if (dist(e, p) < radius) apply(e);
         this.effect('burst', p.x, p.z, {
           skillId: skill.id,
-          visualScale: p.area,
+          visualScale: radiusScale,
           radius,
           size: radius / 3,
           life: 1,
@@ -113,11 +117,11 @@
         for (let i = 0; i < 3; i++) {
           available.sort((a, b) => dist(a, origin) - dist(b, origin));
           const e = available.shift();
-          if (!e || dist(e, origin) > 15 * p.area) break;
+          if (!e || dist(e, origin) > 15 * radiusScale) break;
           apply(e);
           this.effect('burst', e.x, e.z, {
             skillId: skill.id,
-            visualScale: p.area,
+            visualScale: radiusScale,
             fromX: origin.x,
             fromZ: origin.z,
             life: 0.65,
@@ -134,13 +138,13 @@
         radius,
         damage,
         skillId: skill.id,
-        visualScale: p.area,
+        visualScale: radiusScale,
         left: 0.4,
       });
       if (s.attackFields.length > 48) s.attackFields.shift();
       this.effect('burst', nearest.x, nearest.z, {
         skillId: skill.id,
-        visualScale: p.area,
+        visualScale: radiusScale,
         radius,
         size: radius / 3,
         life: 0.9,
@@ -163,7 +167,7 @@
             s.enemies.find((e) => e.id === echo.target && e.hp > 0) ||
             this.combatTargets(s.enemies)[0];
         if (skill && target && !s.done)
-          this.castTechnique(skill, echo.rank, target, echo.damage, echo.area);
+          this.castTechnique(skill, echo.rank, target, echo.damage);
       }
       if (s.done) return;
       s.attackFields ??= [];

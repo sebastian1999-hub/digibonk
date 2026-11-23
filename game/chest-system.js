@@ -21,7 +21,7 @@
           xpMult: 'experiencia recogida',
           area: 'área de las técnicas',
           shieldRatio: 'vida máxima como escudo',
-          projectileBonus: 'golpes o proyectiles extra en todas las técnicas ofensivas',
+          projectileBonus: 'golpes o proyectiles extra',
           ricochets: 'rebotes de proyectil (80 % de daño por rebote)',
           orbits: 'recolectores de experiencia (cada 3 se fusionan)',
         },
@@ -122,7 +122,7 @@
       card.type = 'stat';
       card.rare = card.quality >= 3;
       if (base.stat === 'projectileBonus')
-        card.text = '+1 golpe o proyectil en todas las técnicas ofensivas.';
+        card.text = '+1 golpe o proyectil extra. Las técnicas en área admiten hasta 2 extras.';
       return card;
     };
     p.shopRoll = function (base) {
@@ -174,7 +174,9 @@
               rank +
               ' → ' +
               (rank + (item.legendary ? 1 : q)) +
-              '. Sin límite de copias.',
+              (item.legendary && item.stat
+                ? '. Cada copia aporta el 55 % de la anterior.'
+                : '. Sin límite de copias.'),
           });
       }
       if (s.buddies.length < 3)
@@ -252,7 +254,7 @@
       const winner = this.rollChestCard(pool);
       return {
         kind: 'chest',
-        title: 'Cofre de datos',
+        title: 'Cofre navideño',
         cards: [winner],
         roll: {
           id: 'roll-' + this.s.nextId++,

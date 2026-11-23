@@ -259,6 +259,8 @@
       (1 + r * 0.5) +
       ' %. No afecta a técnicas ni a los objetos de cofres.',
   });
+  const statRelicRanks = (item, rank) =>
+    item.legendary ? (1 - 0.55 ** rank) / (1 - 0.55) : rank;
   const extra = [
     ['training-band', 'Banda de entrenamiento', 'damage', 0.04, 'daño', 'power-chip'],
     ['combat-gloves', 'Guantes de combate', 'damage', 0.06, 'daño', 'power-chip'],
@@ -289,7 +291,7 @@
       theme: legendary ? 'gold' : 'mint',
       description: (r) =>
         '+' +
-        Number((value * r * (['armor', 'regen', 'maxHp'].includes(stat) ? 1 : 100)).toFixed(2)) +
+        Number((value * statRelicRanks({ legendary }, r) * (['regen', 'maxHp'].includes(stat) ? 1 : 100)).toFixed(2)) +
         (['armor', 'regen', 'maxHp'].includes(stat) ? '' : ' %') +
         ' de ' +
         label +
@@ -346,7 +348,7 @@
     },
   ];
   const icon = (id) => 'assets/loot/' + (relics.find((r) => r.id === id)?.art || id) + '.png';
-  const api = { relics, companions, icon, maxRelics: Infinity, maxRank: Infinity };
+  const api = { relics, companions, icon, statRelicRanks, maxRelics: Infinity, maxRank: Infinity };
   if (typeof module !== 'undefined') module.exports = api;
   else root.DigibonkLoot = api;
 })(typeof window !== 'undefined' ? window : globalThis);

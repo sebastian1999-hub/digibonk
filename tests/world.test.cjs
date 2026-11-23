@@ -20,8 +20,22 @@ function fresh(name = 'Agumon', stage = 1) {
 function mob(x = 2, z = 0) {
   return { id: 90, x, z, hp: 200, maxHp: 200, hit: 0, speed: 0, shotClock: 100, stage: 1 };
 }
+test('directed volleys retarget once and hit elites harder without splash', () => {
+  const r = fresh(), p = r.s.player;
+  const original = { ...mob(p.x + 3, p.z), id: 91 };
+  const elite = { ...mob(p.x + 0.6, p.z), elite: true, id: 92 };
+  const bystander = { ...mob(p.x + 1.2, p.z), id: 93 };
+  r.s.enemies = [original, elite, bystander];
+  r.s.player.basicClock = 10;
+  r.castPattern({ pattern: 'volley', id: 'wind-cutter' }, 1, original, 10);
+  original.hp = 0;
+  const hits = [];
+  r.hurt = (enemy, damage) => hits.push([enemy.id, damage]);
+  r.update(0.05);
+  assert.deepEqual(hits, [[elite.id, 20]]);
+});
 
-test('attack speed above the cooldown floor still increases sustained offensive damage', () => {
+test('extreme attack speed still increases offensive damage with diminishing returns', () => {
   function simulate(haste, dt) {
     const r = fresh();
     const p = r.s.player;
@@ -44,9 +58,9 @@ test('attack speed above the cooldown floor still increases sustained offensive 
     const normal = simulate(36, dt),
       faster = simulate(72, dt);
     assert.ok(normal.basic > 0 && normal.technique > 0);
-    assert.equal(faster.casts, normal.casts);
-    assert.equal(faster.technique, normal.technique * 2);
-    assert.equal(faster.basic, normal.basic * 2);
+    assert.ok(faster.casts >= normal.casts && faster.casts < normal.casts * 1.1);
+    assert.ok(faster.technique > normal.technique && faster.technique < normal.technique * 1.15);
+    assert.ok(faster.basic > normal.basic && faster.basic < normal.basic * 1.15);
   }
 });
 test('automatic chest mode requires the egg level cap and opens only affordable nearby chests once', () => {
@@ -126,10 +140,10 @@ test('red collectors switch roles, scale shots and preserve mode and cooldown on
   r.updateCollectors(0);
   assert.equal(r.toggleCollectors(), true);
   r.updateCollectors(0.1);
-  assert.equal(r.s.shots.length, 3);
-  assert.equal(r.s.shots[0].damage, 45);
-  assert.equal(r.s.shots[0].area, 1.3);
-  assert.equal(r.s.shots[0].bouncesLeft, 3);
+  assert.equal(r.s.shots.length, 1);
+  assert.equal(r.s.shots[0].damage, 30);
+  assert.equal(r.s.shots[0].area, 0);
+  assert.equal(r.s.shots[0].bouncesLeft, 1);
   assert.equal(r.s.collectors[0].fireClock, 0.75);
   assert.equal(r.s.collectors[0].target, null);
   assert.equal(r.s.collectors[1].target, 700);
@@ -139,7 +153,7 @@ test('red collectors switch roles, scale shots and preserve mode and cooldown on
   assert.equal(r.toggleCollectors(), true);
   assert.equal(r.toggleCollectors(), true);
   r.updateCollectors(0.1);
-  assert.equal(r.s.shots.length, 3, 'switching does not reset the firing cooldown');
+  assert.equal(r.s.shots.length, 1, 'switching does not reset the firing cooldown');
   r.s.choice = r.choices();
   assert.equal(r.toggleCollectors(), false);
 });
