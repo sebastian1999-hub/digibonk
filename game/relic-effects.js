@@ -64,11 +64,11 @@
       }
       return true;
     };
-    p.relicBurst = function (center, radius, mult, skill) {
+    p.relicBurst = function (center, radius, mult, skill, relic) {
       const s = this.s;
       for (const e of [...s.enemies])
         if (e.hp > 0 && !e.shielded && dist(e, center) < radius)
-          this.hurt(e, s.player.damage * mult, skill);
+          this.hurt(e, s.player.damage * mult, skill, false, 'relic:' + relic);
       this.effect('burst', center.x, center.z, {
         skillId: skill,
         size: radius / 2,
@@ -95,7 +95,7 @@
           for (const e of s.enemies
             .filter((e) => e !== enemy && e.hp > 0 && !e.shielded && dist(e, enemy) < 7)
             .slice(0, 3)) {
-            this.hurt(e, p.damage * 0.9 * rank('storm-core'), 'energy-bolt');
+            this.hurt(e, p.damage * 0.9 * rank('storm-core'), 'energy-bolt', false, 'relic:storm-core');
             this.effect('burst', e.x, e.z, {
               skillId: 'energy-bolt',
               size: 1,
@@ -107,12 +107,12 @@
         if (enemy.hp <= 0 && !enemy.tower) {
           if (rank('kill-burst') && s.kills % 8 === 0 && !(c.blast > 0)) {
             c.blast = 2;
-            this.relicBurst(enemy, 3.5, 0.7 * rank('kill-burst'), 'inferno');
+            this.relicBurst(enemy, 3.5, 0.7 * rank('kill-burst'), 'inferno', 'kill-burst');
           }
           if (rank('void-core') && s.kills % 12 === 0 && !(c.void > 0)) {
             c.void = 8;
             for (const g of s.gems) g.attracted = true;
-            this.relicBurst(p, 6, 2 * rank('void-core'), 'nightmare');
+            this.relicBurst(p, 6, 2 * rank('void-core'), 'nightmare', 'void-core');
           }
         }
       } finally {
@@ -156,6 +156,7 @@
             radius: 5,
             damage: p.damage * 2.5 * this.relicRank('meteor-core'),
             skillId: 'magma-bomb',
+            reportSource: 'relic:meteor-core',
             left: 0.4,
           });
           if (s.attackFields.length > 48) s.attackFields.shift();

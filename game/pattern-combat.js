@@ -176,7 +176,7 @@
         if (field.left <= 0) {
           for (const e of [...s.enemies])
             if (e.hp > 0 && !e.shielded && dist(e, field) < field.radius) {
-              this.hurt(e, field.damage, field.skillId);
+              this.hurt(e, field.damage, field.skillId, false, field.reportSource);
             }
         }
       }

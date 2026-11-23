@@ -47,7 +47,7 @@
       for (const id of ['freeze', 'shock', 'root', 'chill']) delete states[id];
       this.effect('hit', enemy.x, enemy.z, { text: 'INCONTROLABLE', life: 1, maxLife: 1 });
     };
-    p.addEnemyStatus = function (enemy, id, damage = 0) {
+    p.addEnemyStatus = function (enemy, id, damage = 0, source = 'status:' + id) {
       const def = R.effects[id];
       if (!def || enemy.hp <= 0 || enemy.tower || enemy.shielded) return false;
       if (enemy.uncontrollable && (def.control || id === 'chill')) return false;
@@ -64,6 +64,7 @@
         max: def.duration,
         clock: old?.clock ?? 0.5,
         power: Math.max(old?.power || 0, power),
+        reportSource: old?.power > power ? old.reportSource : source,
       };
       if (id === 'chill') this.slowEnemy(enemy, def.duration);
       if (id === 'poison') {
@@ -73,11 +74,11 @@
       }
       return true;
     };
-    p.applyTechniqueStatus = function (enemy, id, damage) {
+    p.applyTechniqueStatus = function (enemy, id, damage, source) {
       if (this.s.done || enemy.hp <= 0 || enemy.tower || enemy.shielded) return;
       for (const spec of R.forSkill(S.skills[id]))
         if (spec.chance === 1 || this.random() < spec.chance)
-          this.addEnemyStatus(enemy, spec.id, damage);
+          this.addEnemyStatus(enemy, spec.id, damage, source);
     };
     p.enemyStatusBlocked = function (enemy) {
       if (enemy.uncontrollable) return false;
@@ -136,6 +137,7 @@
                 status.power,
                 id === 'poison' ? 'poison-powder' : id === 'burn' ? 'fireball' : 'claw',
                 true,
+                status.reportSource || 'status:' + id,
               );
             }
           }

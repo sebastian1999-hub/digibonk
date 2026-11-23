@@ -304,6 +304,7 @@
             area: 0,
             life: 2.8,
             skillId: 'air-shot',
+            reportSource: 'evolution:hunter',
             color: '#a8eced',
           });
         this.effect('slash', p.x, p.z, { skillId: 'fang-rush', size: 2 });
@@ -327,7 +328,7 @@
       if (style.id === 'tide') {
         for (const enemy of enemies)
           if (dist(enemy, p) < 7 * p.area) {
-            this.hurt(enemy, this.styleDamage() * 3, 'tidal-wave');
+            this.hurt(enemy, this.styleDamage() * 3, 'tidal-wave', false, 'evolution:tide');
             this.slowEnemy(enemy, 2.5);
             this.move(enemy, enemy.x - p.x, enemy.z - p.z, 10, 0.12, 0.55);
           }
@@ -425,7 +426,7 @@
         for (const enemy of s.enemies)
           if (enemy.hp > 0 && enemy.chargeId !== p.chargeId && dist(enemy, p) < 2.8 * p.area) {
             enemy.chargeId = p.chargeId;
-            this.hurt(enemy, this.styleDamage() * 3, 'mega-flame');
+            this.hurt(enemy, this.styleDamage() * 3, 'mega-flame', false, 'evolution:vanguard');
             this.move(enemy, enemy.x - p.x, enemy.z - p.z, 9, 0.12, 0.55);
             this.effect('burst', enemy.x, enemy.z, { skillId: 'mega-flame', size: 1.5 });
           }
@@ -436,12 +437,12 @@
           f.tick = 1;
           for (const e of s.enemies)
             if (e.hp > 0 && dist(e, f) < f.radius)
-              this.hurt(e, this.styleDamage() * 0.6, 'spore-burst');
+              this.hurt(e, this.styleDamage() * 0.6, 'spore-burst', false, 'evolution:controller');
         }
         if (f.kind === 'bomb' && f.life <= 0) {
           for (const e of s.enemies)
             if (e.hp > 0 && dist(e, f) < f.radius)
-              this.hurt(e, this.styleDamage() * 4, 'mega-laser');
+              this.hurt(e, this.styleDamage() * 4, 'mega-laser', false, 'evolution:artillery');
           this.effect('burst', f.x, f.z, { skillId: 'mega-laser', color: '#ffd291', size: 2 });
         }
       }
@@ -474,6 +475,7 @@
           area: 0,
           life: 2.8,
           skillId: 'holy-ray',
+          reportSource: 'evolution:guardian',
           color: '#ffe6a0',
         });
       return true;

@@ -70,6 +70,7 @@
         <nav id="main-menu" aria-label="Menú principal">
           <button id="tab-play" class="primary">Jugar</button>
           <button id="menu-information">Información</button>
+          <button id="menu-history">Historial</button>
           <button id="menu-patch-notes">Info parche</button>
           <button id="menu-settings">Ajustes</button>
         </nav>
@@ -362,6 +363,7 @@
         <div id="result-objective"></div>
         <button id="new-run" class="primary">Elegir otro huevo</button
         ><button id="result-records">Ver récords</button>
+        <button id="result-run-history">Historial</button>
       </div>
     </section>
     <dialog id="map-dialog" aria-labelledby="map-dialog-title">
@@ -645,6 +647,12 @@
           <dl id="gear-stats"></dl>
         </section>
       </div>
+    </dialog>
+    <dialog id="history-dialog" aria-labelledby="history-title">
+      <form method="dialog"><button class="close" aria-label="Cerrar historial">×</button></form>
+      <h2 id="history-title">Historial</h2>
+      <nav id="history-list" aria-label="Últimas tres partidas terminadas"></nav>
+      <section id="history-detail" aria-label="Informe de la partida"></section>
     </dialog>
     <dialog id="records-dialog">
       <form method="dialog"><button class="close" aria-label="Cerrar récords">×</button></form>

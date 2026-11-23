@@ -12,13 +12,15 @@ import { Cloud } from './cloud.js';
 import { Music } from './music.js';
 
 import { Renderer3D } from './render3d.js';
+import { openRunHistory, recordRun } from './run-history.js';
 
 const $ = (s) => document.querySelector(s),
   C = window.DigibonkCore,
   SETTINGS_KEY = 'digibonk.settings.v1';
 
 let RUN_KEY = 'digibonk.run.v1',
-  RECORDS_KEY = 'digibonk.records.v1';
+  RECORDS_KEY = 'digibonk.records.v1',
+  HISTORY_KEY = 'digibonk.history.v1';
 
 const stageNames = {
   [-2]: 'HUEVO',
@@ -606,6 +608,14 @@ function openRecords() {
 
 $('#records-toggle').onclick = openRecords;
 $('#result-records').onclick = openRecords;
+function showRunHistory() {
+  openRunHistory($('#history-dialog'), read(HISTORY_KEY, []), {
+    clock, number, stages: stageNames, skills: SkillSystem.skills,
+    relics: DigibonkLoot.relics, statuses: DigibonkStatusRules.effects,
+  });
+}
+$('#menu-history').onclick = showRunHistory;
+$('#result-run-history').onclick = showRunHistory;
 
 function showHome() {
   document.body.dataset.screen = 'home';
@@ -859,6 +869,7 @@ cloud.onChange = (uid) => {
   progression = read(META_KEY, null) || DigibonkProgression.fresh();
   RUN_KEY = uid ? 'digibonk.run.v1:' + uid : 'digibonk.run.v1';
   RECORDS_KEY = uid ? 'digibonk.records.v1:' + uid : 'digibonk.records.v1';
+  HISTORY_KEY = uid ? 'digibonk.history.v1:' + uid : 'digibonk.history.v1';
   records = read(RECORDS_KEY, []);
   run = null;
   showHome();
@@ -1310,6 +1321,7 @@ function end() {
   const s = run.s;
   $('#style-panel').hidden = true;
   $('#equipment-strip').hidden = true;
+  store(HISTORY_KEY, recordRun(read(HISTORY_KEY, []), s, DigibonkProgression.reward(s)));
   cloud.finish(s);
   if (!records.some((r) => r.id === s.id)) {
     records.push({

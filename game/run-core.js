@@ -588,6 +588,7 @@
         defender.shield ??= defender.maxHp * defender.shieldRatio;
         defender.shieldDelay ??= 0;
         this.s.relics ??= [];
+        this.s.combatReport ??= { since: this.s.time, damage: {}, loot: {}, chestDrops: 0, chestsOpened: 0, lifeLost: 0, shieldLost: 0 };
         this.s.droppedChests ??= [];
         this.s.chestsOpened ??= [
           this.s,
@@ -1067,6 +1068,7 @@
                   visualScale: this.techniqueArea(),
                   life: 2.8,
                   skillId: 'air-shot',
+                  reportSource: 'collectors',
                   color: '#ff5868',
                   bouncesLeft: Math.min(1, p.ricochets || 0),
                 });
@@ -1147,6 +1149,7 @@
             area: 0,
             life: 2.8,
             skillId: 'air-shot',
+            reportSource: 'companion:' + b.species,
             color: '#e3e8b2',
           });
           if (s.shots.length > 180) s.shots.shift();
@@ -1244,6 +1247,7 @@
               rank: Math.min(LOOT.maxRank, Math.max(1, card.rank || 1)),
             });
           else return false;
+          this.s.combatReport.loot[def.id] = (this.s.combatReport.loot[def.id] || 0) + 1;
         } else if (card.type === 'companion') {
           if (
             !LOOT.companions.some((b) => b.id === card.buddy) ||
@@ -1310,7 +1314,7 @@
         this.emit('pick');
         return true;
       }
-      hurt(enemy, amount, skillId = null, periodic = false) {
+      hurt(enemy, amount, skillId = null, periodic = false, source = skillId ? 'technique:' + skillId : 'other') {
         if (this.s.done || enemy.hp <= 0 || enemy.shielded) return;
         const s = this.s,
           p = s.player,
@@ -1327,7 +1331,13 @@
                     (enemy.boss || enemy.elite ? 1 + this.relicRank('boss-hunter') * 0.12 : 1),
             ),
           );
+        const removed = Math.min(enemy.hp, damage);
+        const phase = (s.combatReport.damage[p.stage] ??= {});
+        const entry = (phase[source] ??= { damage: 0, hits: 0, kills: 0 });
+        entry.damage += removed;
+        entry.hits++;
         enemy.hp = Math.max(0, enemy.hp - damage);
+        if (enemy.hp <= 0) entry.kills++;
         enemy.hit = 0.16;
         if (crit && this.relicRank('frost'))
           this.slowEnemy(enemy, 1 + this.relicRank('frost') * 0.5);
@@ -1337,7 +1347,7 @@
           skillId,
           dot: periodic,
         });
-        if (!periodic) this.applyTechniqueStatus(enemy, skillId, damage);
+        if (!periodic) this.applyTechniqueStatus(enemy, skillId, damage, source);
         if (enemy.hp <= 0) {
           if (enemy.tower) {
             this.onTowerDestroyed(enemy);
@@ -1389,6 +1399,8 @@
         p.shield -= absorbed;
         p.shieldDelay = 4;
         const lifeDamage = value - absorbed;
+        s.combatReport.lifeLost += Math.min(p.hp, lifeDamage);
+        s.combatReport.shieldLost += absorbed;
         p.hp = Math.max(0, p.hp - lifeDamage);
         p.invulnerable = 0.48;
         this.effect('damage', p.x, p.z, {
@@ -1404,7 +1416,7 @@
         if (p.hp > 0 && this.relicRank('thorns')) {
           for (const enemy of s.enemies)
             if (enemy.hp > 0 && distance(enemy, p) < 3)
-              this.hurt(enemy, p.damage * 0.4 * this.relicRank('thorns'), 'leaf-blade');
+              this.hurt(enemy, p.damage * 0.4 * this.relicRank('thorns'), 'leaf-blade', false, 'relic:thorns');
           this.effect('burst', p.x, p.z, { skillId: 'leaf-blade', size: 1.5 });
         }
         if (p.hp <= 0) {
@@ -1507,6 +1519,7 @@
         };
         this.placeSafely(chest);
         this.s.droppedChests.push(chest);
+        this.s.combatReport.chestDrops++;
         if (this.s.world.devimonDefeated) this.s.nextEnemyChestAt = this.s.time + 120;
         return true;
       }
@@ -1568,6 +1581,7 @@
         if (s.coins < cost) return false;
         s.coins -= cost;
         if (!poi.id.startsWith('drop-chest-')) s.chestsOpened++;
+        s.combatReport.chestsOpened++;
         s.usedPois.push(poi.id);
         p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.05 * this.relicRank('rations'));
         s.choice = this.chestChoices();
@@ -1717,7 +1731,7 @@
           if (burst) {
             for (const enemy of s.enemies)
               if (enemy.hp > 0 && distance(enemy, p) < 3)
-                this.hurt(enemy, p.damage * 0.4 * burst, 'energy-bolt');
+                this.hurt(enemy, p.damage * 0.4 * burst, 'energy-bolt', false, 'relic:dash-burst');
             this.effect('burst', p.x, p.z, { skillId: 'energy-bolt', size: 1.5 });
           }
         }
@@ -1768,7 +1782,7 @@
           p.lastDX = nearest.x - p.x;
           p.lastDZ = nearest.z - p.z;
           p.lastSkill = 'claw';
-          this.hurt(nearest, damageMultiplier * 0.75 * cadence.damageScale, 'claw');
+          this.hurt(nearest, damageMultiplier * 0.75 * cadence.damageScale, 'claw', false, 'basic');
           this.effect('slash', p.x, p.z, { skillId: 'claw' });
         }
         for (const w of p.weapons) {
@@ -1848,11 +1862,11 @@
           if (d < shot.speed * dt + 0.5 * (shot.visualScale || 1)) {
             shot.life = 0;
             const priority = target.elite || target.boss || target.tower;
-            this.hurt(target, shot.damage * (shot.directed && priority ? 1.25 : 1), shot.skillId);
+            this.hurt(target, shot.damage * (shot.directed && priority ? 1.25 : 1), shot.skillId, false, shot.reportSource);
             if (shot.area > 0)
               for (const e of s.enemies)
                 if (e !== target && e.hp > 0 && distance(e, target) < shot.area)
-                  this.hurt(e, shot.damage * 0.55, shot.skillId);
+                  this.hurt(e, shot.damage * 0.55, shot.skillId, false, shot.reportSource);
             this.effect('burst', target.x, target.z, {
               skillId: shot.skillId,
               color: shot.color,

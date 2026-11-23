@@ -1,8 +1,17 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.40.0",
+  "currentVersion": "1.41.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.41.0",
+      "title": "Historial e informes de combate",
+      "changes": [
+        "Abre Historial desde el menú principal o la pantalla de resultados. Se guardan las tres últimas partidas terminadas de cada perfil en este PC.",
+        "Cada informe ordena las técnicas por daño efectivo y desglosa el daño, los impactos y los remates por fase evolutiva. También muestra por separado los recolectores rojos, los compañeros, las reliquias y las habilidades evolutivas.",
+        "El informe incluye objetos recogidos, equipo final, cofres, bits, experiencia y progreso de portales. Si continúas una partida anterior a esta versión, el registro de combate y botín empieza al cargarla."
+      ]
+    },
     {
       "version": "1.40.0",
       "title": "Isla Nevada y balance de supervivencia",

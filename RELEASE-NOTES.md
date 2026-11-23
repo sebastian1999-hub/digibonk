@@ -1,3 +1,9 @@
+## 1.41.0 · Historial e informes de combate
+
+- Abre Historial desde el menú principal o la pantalla de resultados. Se guardan las tres últimas partidas terminadas de cada perfil en este PC.
+- Cada informe ordena las técnicas por daño efectivo y desglosa el daño, los impactos y los remates por fase evolutiva. También muestra por separado los recolectores rojos, los compañeros, las reliquias y las habilidades evolutivas.
+- El informe incluye objetos recogidos, equipo final, cofres, bits, experiencia y progreso de portales. Si continúas una partida anterior a esta versión, el registro de combate y botín empieza al cargarla.
+
 ## 1.40.0 · Isla Nevada y balance de supervivencia
 
 - La isla estrena nieve, refugios con forma de Digihuevo, un nuevo puesto de Wizardmon, santuarios, lagos con témpanos y un sello de Devimon en relieve. La decoración está modelada en 3D.
