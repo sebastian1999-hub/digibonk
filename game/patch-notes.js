@@ -1,8 +1,16 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.44.0",
+  "currentVersion": "1.45.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.45.0",
+      "title": "Animaciones Ultimate",
+      "changes": [
+        "17 Digimon de etapa Ultimate estrenan animaciones de ataque, salto y desplazamiento. Cyberdramon recibe una revisión de sus tres animaciones.",
+        "MachGaogamon y Piximon vuelan. Megadramon, Phantomon y Whamon flotan también en reposo. Los retratos muestran los mismos diseños que aparecen en combate."
+      ]
+    },
     {
       "version": "1.44.0",
       "title": "Nuevas animaciones para 41 Digimon",

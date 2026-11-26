@@ -17,6 +17,7 @@ ALIASES = {
     'grankugawamon': 'GranKuwagamon',
     'gryphomon': 'Gryphonmon',
     'imperialdramon': 'Imperialdramon (Fighter Mode)',
+    'machgaomon': 'MachGaogamon',
     'miragegaomon': 'MirageGaogamon',
     'valkyridramon': 'Valkyrimon',
 }
@@ -29,11 +30,14 @@ RIGHT_FACING = {
     'Crescemon': {'atacar'},
     'Cyberdramon': {'atacar'},
     'Dianamon': {'atacar'},
+    'Etemon': {'atacar'},
     'HerculesKabuterimon': {'atacar'},
+    'LadyDevimon': {'atacar'},
     'MetalEtemon': {'caminar', 'atacar', 'saltar'},
     'MetalGarurumon': {'caminar', 'atacar'},
     'MetalGarurumon (Black)': {'caminar', 'atacar'},
     'Pharaohmon': {'atacar'},
+    'Phantomon': {'atacar'},
 }
 
 
@@ -53,12 +57,17 @@ def read_clip(path, mirror):
     return frames
 
 
-def build_species(name, folder, previous, output):
-    clips = {p.stem.casefold(): read_clip(p, p.stem.casefold() in RIGHT_FACING.get(name, ()))
-             for p in sorted(folder.glob('*.gif'))}
-    move = 'volar' if 'volar' in clips else 'caminar'
-    if clips.keys() != {move, 'atacar', 'saltar'}:
+def build_species(name, folder, previous, output, pack_name):
+    clips = {}
+    for path in sorted(folder.glob('*.gif')):
+        action = path.stem.casefold().removesuffix(' - copia')
+        if action in clips:
+            raise ValueError(f'{folder}: duplicate {action} animation')
+        clips[action] = read_clip(path, action in RIGHT_FACING.get(name, ()))
+    movement = clips.keys() & {'caminar', 'volar', 'flotar'}
+    if len(movement) != 1 or clips.keys() != movement | {'atacar', 'saltar'}:
         raise ValueError(f'{folder}: expected movement, attack and jump')
+    move = movement.pop()
 
     # Preserve motion inside the GIF canvas. One walk cycle in the pack
     # has a smaller canvas, so align its first footfall with the others.
@@ -110,7 +119,7 @@ def build_species(name, folder, previous, output):
     path.parent.mkdir(parents=True, exist_ok=True)
     atlas.save(path, compress_level=9)
     walk, jump, attack = animations[move], animations['saltar'], animations['atacar']
-    rest = walk if move == 'volar' else walk[:1]
+    rest = walk[:1] if move == 'caminar' else walk
     actions = dict(idle=rest, blink=rest, walk=walk, run=walk, flee=walk, jump=jump,
                    attack=attack, attack2=attack, attack3=attack, attack4=attack,
                    guard=attack[:1], shout=attack, angry=attack, train=jump, happy=jump,
@@ -121,7 +130,7 @@ def build_species(name, folder, previous, output):
     idle_box = sequences[move][0][0].getbbox()
     return dict(sheet=previous['sheet'], width=width, height=height, actions=actions,
                 referenceHeight=(idle_box[3] - idle_box[1]) / height, mipmaps=True,
-                sourcePack='REWORK GIFS 1', dashClipDuration=sum(f['duration'] for f in jump))
+                sourcePack=pack_name, dashClipDuration=sum(f['duration'] for f in jump))
 
 
 def read_catalog(path):
@@ -133,6 +142,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('folder', type=Path)
     parser.add_argument('game', type=Path)
+    parser.add_argument('--pack-name', default='REWORK GIFS 1', help='Name credited to new or revised artwork')
     args = parser.parse_args()
     assets = Path('assets')
     world = assets / 'sprites-data.js'
@@ -151,7 +161,15 @@ def main():
             name = ALIASES.get(key, names.get(key))
             if name not in specs or name in imported:
                 raise ValueError(f'Unknown or duplicated species folder: {folder}')
-            specs[name] = build_species(name, folder, specs[name], stage)
+            previous = specs[name]
+            spec = build_species(name, folder, previous, stage, args.pack_name)
+            # Keep the original credit when two packs supply the same animation.
+            sheet = Path(spec['sheet'])
+            if (previous.get('sourcePack') and dict(previous, sourcePack=args.pack_name) == spec
+                    and (stage / sheet).read_bytes() == (args.game / sheet).read_bytes()):
+                (stage / sheet).unlink()
+            else:
+                specs[name] = spec
             overrides.pop(name, None)  # The menu uses the new world sprite.
             imported.add(name)
         for path, binding, data in ((world, world_binding, specs), (portraits, portrait_binding, overrides)):

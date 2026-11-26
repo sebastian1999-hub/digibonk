@@ -59,7 +59,7 @@ window.DigiSprites = (() => {
     const ratio = height / spec.height;
     const [left, top] = f.offset || [0, 0];
     ctx.save();
-    ctx.imageSmoothingEnabled = spec.sourcePack !== 'REWORK GIFS 1';
+    ctx.imageSmoothingEnabled = !spec.sourcePack;
     ctx.translate(Math.round(x), Math.round(y + height * 0.48));
     /* Original sheets face left. Public API uses faceLeft to match world coordinates. */ ctx.scale(
       faceLeft ? 1 : -1,
@@ -135,7 +135,7 @@ window.DigiSprites = (() => {
       w = crop.w * ratio,
       h = crop.h * ratio;
     ctx.save();
-    ctx.imageSmoothingEnabled = spec.sourcePack !== 'REWORK GIFS 1';
+    ctx.imageSmoothingEnabled = !spec.sourcePack;
     ctx.translate(Math.round(x), Math.round(y));
     ctx.scale(faceLeft ? 1 : -1, 1);
     ctx.drawImage(

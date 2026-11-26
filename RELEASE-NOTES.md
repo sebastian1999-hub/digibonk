@@ -1,3 +1,8 @@
+## 1.45.0 · Animaciones Ultimate
+
+- 17 Digimon de etapa Ultimate estrenan animaciones de ataque, salto y desplazamiento. Cyberdramon recibe una revisión de sus tres animaciones.
+- MachGaogamon y Piximon vuelan. Megadramon, Phantomon y Whamon flotan también en reposo. Los retratos muestran los mismos diseños que aparecen en combate.
+
 ## 1.44.0 · Nuevas animaciones para 41 Digimon
 
 - 41 Digimon estrenan animaciones de ataque, salto y desplazamiento en combate. Dorugamon y Phoenixmon se desplazan volando y GigaSeadramon conserva su marcha de cuatro fotogramas.

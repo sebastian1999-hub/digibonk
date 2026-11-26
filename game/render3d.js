@@ -47,7 +47,7 @@ class Atlases {
       image.onload = () => {
         const texture = new THREE.Texture(image);
         texture.colorSpace = THREE.SRGBColorSpace;
-        const gifSprite = spec.sourcePack === 'REWORK GIFS 1';
+        const gifSprite = Boolean(spec.sourcePack);
         texture.magFilter = egg || gifSprite ? THREE.NearestFilter : THREE.LinearFilter;
         texture.generateMipmaps = spec.mipmaps === true;
         texture.minFilter = texture.generateMipmaps
@@ -1200,7 +1200,7 @@ export class Renderer3D {
         buddy.x,
         buddy.z,
         evolutionHeight(C.species.get(buddy.species)?.stage),
-        cast && !s.done && window.SPRITE_DATA[buddy.species]?.sourcePack === 'REWORK GIFS 1'
+        cast && !s.done && window.SPRITE_DATA[buddy.species]?.sourcePack
           ? s.time - buddy.attackAt : time,
         buddy.face,
       );

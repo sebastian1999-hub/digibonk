@@ -54,7 +54,7 @@ test('every baked frame has nonempty bounds inside its atlas cell and every atla
     for (const [name, spec] of Object.entries(data)) {
       const bytes = fs.readFileSync(path.join(__dirname, '../game', spec.sheet));
       assert.equal(bytes.toString('hex', 0, 8), '89504e470d0a1a0a', name);
-      if (spec.sourcePack === 'REWORK GIFS 1')
+      if (spec.sourcePack)
         assert.equal(bytes[25], name === 'VictoryGreymon' ? 6 : 3, name + ' GIF palette');
       const width = bytes.readUInt32BE(16),
         height = bytes.readUInt32BE(20);
@@ -106,8 +106,8 @@ test('detailed portraits use their own sheets and techniques choose available at
 });
 
 test('the imported GIFs supply movement, jumps and all four attack slots to the world and menus', () => {
-  const imported = Object.entries(box.window.SPRITE_DATA).filter(([, s]) => s.sourcePack === 'REWORK GIFS 1');
-  assert.equal(imported.length, 41);
+  const imported = Object.entries(box.window.SPRITE_DATA).filter(([, s]) => s.sourcePack);
+  assert.equal(imported.length, 58);
   for (const [name, s] of imported) {
     assert.equal(box.window.PORTRAIT_DATA[name], undefined, name + ' has a stale menu override');
     assert.equal(s.actions.walk.length, name === 'GigaSeadramon' ? 4 : 3);
@@ -118,4 +118,15 @@ test('the imported GIFs supply movement, jumps and all four attack slots to the 
     assert.equal(s.actions.attack.length, 3);
     for (const action of ['attack2', 'attack3', 'attack4']) assert.deepEqual(s.actions[action], s.actions.attack);
   }
+});
+
+test('Ultimate flight and hover cycles animate at rest and SkullGreymon uses its walking stance', () => {
+  const data = box.window.SPRITE_DATA;
+  for (const name of ['MachGaogamon', 'Piximon', 'Megadramon', 'Phantomon', 'Whamon']) {
+    assert.equal(data[name].sourcePack, 'GIFs Ultimate');
+    assert.deepEqual(data[name].actions.idle, data[name].actions.walk);
+  }
+  assert.equal(data.Cyberdramon.sourcePack, 'GIFs Ultimate');
+  assert.equal(data.SkullGreymon.sourcePack, 'GIFs Ultimate');
+  assert.deepEqual(data.SkullGreymon.actions.idle, data.SkullGreymon.actions.walk.slice(0, 1));
 });
