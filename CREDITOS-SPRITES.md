@@ -157,3 +157,11 @@ El paquete aportado al proyecto contiene 123 GIF de 41 Digimon. Cada carpeta ide
 ## GIFs Ultimate
 
 Este segundo lote aporta 66 GIF de 22 especies. Añade animaciones para 17 Digimon y revisa las de Cyberdramon. Andromon, Angewomon, BigMamemon y Crescemon comparten los dibujos del lote anterior. Para reproducir la integración, importa primero REWORK GIFS 1 y después ejecuta `python scripts/import-rework-gifs.py "ruta/GIFs Ultimate" game --pack-name "GIFs Ultimate"`.
+
+## Recuperación de los sprites de la versión 1.39.0
+
+79 especies usan los PNG y las secuencias de animación de la etiqueta `v1.39.0`. Los retratos independientes de Agumon y Renamon también proceden de esa versión. Estas entradas llevan la opción `pixelArt` para conservar los bordes de los píxeles al ampliarlos.
+
+## Rework GIFs 3
+
+El lote contiene 51 GIF para 17 especies. Dorugamon repite los dibujos del primer lote. Devidramon, Devimon, DoruGreymon, MegaKabuterimon, Monochromon, Okuwamon y Parrotmon usan los GIF de este lote en lugar de los sprites clásicos. Para reproducir la importación ejecuta `python scripts/import-rework-gifs.py "ruta/Rework GIFs 3" game --pack-name "Rework GIFs 3"`.

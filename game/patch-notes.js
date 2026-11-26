@@ -1,8 +1,16 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.45.0",
+  "currentVersion": "1.46.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.46.0",
+      "title": "Sprites clásicos y nuevas animaciones",
+      "changes": [
+        "79 Digimon recuperan sus sprites y animaciones de la versión 1.39.0. Agumon y Renamon también recuperan sus retratos originales.",
+        "16 Digimon estrenan animaciones de movimiento, ataque y salto del tercer lote de GIF. Entre ellos están Devimon, DoruGreymon y las dos variantes de MetalGreymon."
+      ]
+    },
     {
       "version": "1.45.0",
       "title": "Animaciones Ultimate",

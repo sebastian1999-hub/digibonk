@@ -47,11 +47,11 @@ class Atlases {
       image.onload = () => {
         const texture = new THREE.Texture(image);
         texture.colorSpace = THREE.SRGBColorSpace;
-        const gifSprite = Boolean(spec.sourcePack);
-        texture.magFilter = egg || gifSprite ? THREE.NearestFilter : THREE.LinearFilter;
+        const pixelArt = spec.pixelArt || Boolean(spec.sourcePack);
+        texture.magFilter = egg || pixelArt ? THREE.NearestFilter : THREE.LinearFilter;
         texture.generateMipmaps = spec.mipmaps === true;
         texture.minFilter = texture.generateMipmaps
-          ? (gifSprite ? THREE.NearestMipmapNearestFilter : THREE.LinearMipmapLinearFilter)
+          ? (pixelArt ? THREE.NearestMipmapNearestFilter : THREE.LinearMipmapLinearFilter)
           : texture.magFilter;
         texture.needsUpdate = true;
         entry.texture = texture;

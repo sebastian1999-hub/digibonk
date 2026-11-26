@@ -44,12 +44,15 @@ grid.material.opacity = 0.18;
 scene.add(grid);
 const fx = new AttackVisuals({ scene, camera, visibility: { player: 1, enemy: 1 } }),
   state = { mapSeed: 1, sceneSerial: 1 };
-const spriteCanvas = document.createElement('canvas'),
+const spec = window.SPRITE_DATA.Agumon,
+  pixelArt = spec.pixelArt || Boolean(spec.sourcePack),
+  spriteCanvas = document.createElement('canvas'),
   ctx = spriteCanvas.getContext('2d'),
   texture = new THREE.CanvasTexture(spriteCanvas);
 spriteCanvas.width = spriteCanvas.height = 160;
-texture.magFilter = THREE.LinearFilter;
-texture.minFilter = THREE.LinearFilter;
+ctx.imageSmoothingEnabled = !pixelArt;
+texture.magFilter = pixelArt ? THREE.NearestFilter : THREE.LinearFilter;
+texture.minFilter = texture.magFilter;
 texture.colorSpace = THREE.SRGBColorSpace;
 const target = new THREE.Sprite(
   new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }),
@@ -57,8 +60,7 @@ const target = new THREE.Sprite(
 target.position.set(1.8, 0.9, 0);
 target.scale.set(1.8, 1.8, 1);
 scene.add(target);
-const spec = window.SPRITE_DATA.Agumon,
-  image = new Image();
+const image = new Image();
 image.src = spec.sheet;
 let spriteReady = false;
 image.onload = () => {
