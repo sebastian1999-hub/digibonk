@@ -47,10 +47,11 @@ class Atlases {
       image.onload = () => {
         const texture = new THREE.Texture(image);
         texture.colorSpace = THREE.SRGBColorSpace;
-        texture.magFilter = egg ? THREE.NearestFilter : THREE.LinearFilter;
+        const gifSprite = spec.sourcePack === 'REWORK GIFS 1';
+        texture.magFilter = egg || gifSprite ? THREE.NearestFilter : THREE.LinearFilter;
         texture.generateMipmaps = spec.mipmaps === true;
         texture.minFilter = texture.generateMipmaps
-          ? THREE.LinearMipmapLinearFilter
+          ? (gifSprite ? THREE.NearestMipmapNearestFilter : THREE.LinearMipmapLinearFilter)
           : texture.magFilter;
         texture.needsUpdate = true;
         entry.texture = texture;
@@ -1156,6 +1157,9 @@ export class Renderer3D {
       fromPhase = fx && fx.left > fx.duration * 0.48,
       playerName = s?.hatch > 0 ? s.skin : fromPhase ? fx.from : p.species,
       playerEgg = s?.hatch > 0,
+      dashClip = p.dashLeft > 0 && !playerEgg && !fx && !s?.done
+        ? window.SPRITE_DATA[playerName]?.dashClipDuration
+        : 0,
       action = s?.done
         ? 'ko'
         : p.celebrateLeft > 0 && p.action !== 'run'
@@ -1178,13 +1182,14 @@ export class Renderer3D {
     this.unit(
       'player',
       playerName || 'Botamon',
-      action,
+      dashClip ? 'jump' : action,
       p.x,
       p.z,
       playerEgg ? 1.6 : evolutionHeight(p.stage),
-      fx ? (fx.duration - fx.left) * 2 : s?.time - p.attackAt < 0.55 ? s.time - p.attackAt : time,
+      dashClip ? (1 - p.dashLeft / 0.32) * dashClip :
+        fx ? (fx.duration - fx.left) * 2 : s?.time - p.attackAt < 0.55 ? s.time - p.attackAt : time,
       left,
-      { egg: playerEgg, jump, opacity: p.invulnerable > 0 && Math.floor(time * 18) % 2 ? 0.55 : 1 },
+      { egg: playerEgg, jump: dashClip ? 0 : jump, opacity: p.invulnerable > 0 && Math.floor(time * 18) % 2 ? 0.55 : 1 },
     );
     for (const buddy of s?.buddies || []) {
       const cast = s.time - buddy.attackAt < 0.4;
@@ -1195,7 +1200,8 @@ export class Renderer3D {
         buddy.x,
         buddy.z,
         evolutionHeight(C.species.get(buddy.species)?.stage),
-        time,
+        cast && !s.done && window.SPRITE_DATA[buddy.species]?.sourcePack === 'REWORK GIFS 1'
+          ? s.time - buddy.attackAt : time,
         buddy.face,
       );
       const ring = this.pooled('companion-marker-' + buddy.species, 'ring', 0x92e6d6).mesh;

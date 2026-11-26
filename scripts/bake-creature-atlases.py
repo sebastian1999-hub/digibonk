@@ -7,11 +7,12 @@ Requires Pillow and NumPy.
 
 import argparse
 import json
-import math
 from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageFilter, ImageOps
+
+from sprite_atlas import pack
 
 
 def round_corners(tile):
@@ -57,38 +58,6 @@ def cel_sprite(tile, scale):
     rgba[:, :, :3] = (np.clip(rgb, 0, 1) * 255).round().astype(np.uint8)
     rgba[rgba[:, :, 3] == 0] = 0
     return Image.fromarray(rgba)
-
-
-def pack(tiles, gutter=2):
-    # A transparent gutter on all sides isolates bilinearly filtered poses.
-    order = sorted(range(len(tiles)), key=lambda i: -tiles[i].height)
-    padding = 2 * gutter
-    area = sum((t.width + padding) * (t.height + padding) for t in tiles)
-    def layout(limit):
-        rows = []
-        coords = {}
-        height = width = 0
-        for i in order:
-            w, h = tiles[i].size
-            for row in rows:
-                if row[0] + w + padding <= limit:
-                    break
-            else:
-                row = [0, height]
-                rows.append(row)
-                height += h + padding
-            coords[i] = (row[0] + gutter, row[1] + gutter)
-            row[0] += w + padding
-            width = max(width, row[0])
-        return width * height, (width, height), coords
-    widest = max(t.width + padding for t in tiles)
-    candidates = (layout(max(widest, math.ceil(math.sqrt(area) * factor)))
-                  for factor in (0.75, 0.875, 1, 1.125, 1.25, 1.5))
-    _, size, coords = min(candidates, key=lambda result: result[0])
-    atlas = Image.new('RGBA', size)
-    for i, tile in enumerate(tiles):
-        atlas.paste(tile, coords[i])
-    return atlas, coords
 
 
 def bake(spec, source, dest, masters):

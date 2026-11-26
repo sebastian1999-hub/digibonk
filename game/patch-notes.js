@@ -1,8 +1,16 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.43.1",
+  "currentVersion": "1.44.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.44.0",
+      "title": "Nuevas animaciones para 41 Digimon",
+      "changes": [
+        "41 Digimon estrenan animaciones de ataque, salto y desplazamiento en combate. Dorugamon y Phoenixmon se desplazan volando y GigaSeadramon conserva su marcha de cuatro fotogramas.",
+        "Los retratos de estas especies muestran los mismos diseños que aparecen en partida."
+      ]
+    },
     {
       "version": "1.43.1",
       "title": "Conserva tus ataques al evolucionar",

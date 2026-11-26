@@ -149,3 +149,7 @@ Las doce formas que nacen de los huevos, varias de sus evoluciones y sus variant
 ## Evoluciones de Rookie a Mega
 
 La segunda tanda incorpora arte de combate para 184 formas. Los dibujos generados con ImageGen toman como referencia la silueta, la paleta y las poses de los atlas atribuidos más arriba. Cada forma tiene doce poses ilustradas para las acciones del juego. Las imágenes se empaquetan con márgenes transparentes y niveles de detalle para la cámara del escenario. Renamon dispone además de un retrato independiente de siete poses basado en su hoja de World DS.
+
+## REWORK GIFS 1
+
+El paquete aportado al proyecto contiene 123 GIF de 41 Digimon. Cada carpeta identifica la especie y cada GIF aporta una animación de ataque, salto o desplazamiento. Los retratos de estas especies usan los dibujos del lote. Para importar las animaciones ejecuta `python scripts/import-rework-gifs.py "ruta/REWORK GIFS 1" game`.

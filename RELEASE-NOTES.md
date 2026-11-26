@@ -1,3 +1,8 @@
+## 1.44.0 · Nuevas animaciones para 41 Digimon
+
+- 41 Digimon estrenan animaciones de ataque, salto y desplazamiento en combate. Dorugamon y Phoenixmon se desplazan volando y GigaSeadramon conserva su marcha de cuatro fotogramas.
+- Los retratos de estas especies muestran los mismos diseños que aparecen en partida.
+
 ## 1.43.1 · Conserva tus ataques al evolucionar
 
 - Al evolucionar conservas el ataque de la fase anterior y su rango. Si queda una ranura libre, aprendes el ataque de la nueva forma a rango 1. Con las cuatro ranuras ocupadas, puedes mantener tu equipo o elegir qué técnica reemplazar. Si ya tienes el nuevo ataque, ambos conservan su rango.

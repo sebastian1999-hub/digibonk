@@ -54,6 +54,8 @@ test('every baked frame has nonempty bounds inside its atlas cell and every atla
     for (const [name, spec] of Object.entries(data)) {
       const bytes = fs.readFileSync(path.join(__dirname, '../game', spec.sheet));
       assert.equal(bytes.toString('hex', 0, 8), '89504e470d0a1a0a', name);
+      if (spec.sourcePack === 'REWORK GIFS 1')
+        assert.equal(bytes[25], name === 'VictoryGreymon' ? 6 : 3, name + ' GIF palette');
       const width = bytes.readUInt32BE(16),
         height = bytes.readUInt32BE(20);
       assert.ok(spec.referenceHeight > 0 && spec.referenceHeight <= 1, name);
@@ -89,8 +91,8 @@ test('mipmapped poses have transparent space reserved between their sampling reg
     }
   }
 });
-test('detailed portraits preserve the original world atlases and techniques choose distinct available attack poses', () => {
-  for (const name of ['Agumon', 'Renamon', 'WarGreymon']) {
+test('detailed portraits use their own sheets and techniques choose available attack poses', () => {
+  for (const name of ['Agumon', 'Renamon']) {
     assert.notEqual(box.window.PORTRAIT_DATA[name].sheet, box.window.SPRITE_DATA[name].sheet);
     assert.equal(box.window.PORTRAIT_DATA[name].sourceGame, 'Digimon World DS');
   }
@@ -101,4 +103,19 @@ test('detailed portraits preserve the original world atlases and techniques choo
   for (const spec of Object.values(box.window.SPRITE_DATA))
     for (const id of Object.keys(S.skills)) assert.ok(spec.actions[S.pose(id)]?.length);
   assert.equal(S.signature({ species: 'Seraphimon', stage: 4 }).id, 'seven-heavens');
+});
+
+test('the imported GIFs supply movement, jumps and all four attack slots to the world and menus', () => {
+  const imported = Object.entries(box.window.SPRITE_DATA).filter(([, s]) => s.sourcePack === 'REWORK GIFS 1');
+  assert.equal(imported.length, 41);
+  for (const [name, s] of imported) {
+    assert.equal(box.window.PORTRAIT_DATA[name], undefined, name + ' has a stale menu override');
+    assert.equal(s.actions.walk.length, name === 'GigaSeadramon' ? 4 : 3);
+    assert.deepEqual(s.actions.run, s.actions.walk);
+    assert.equal(s.actions.jump.length, 3);
+    const centiseconds = s.actions.jump.reduce((time, f) => time + Math.round(100 * f.duration), 0);
+    assert.equal(Math.round(100 * s.dashClipDuration), centiseconds);
+    assert.equal(s.actions.attack.length, 3);
+    for (const action of ['attack2', 'attack3', 'attack4']) assert.deepEqual(s.actions[action], s.actions.attack);
+  }
 });
