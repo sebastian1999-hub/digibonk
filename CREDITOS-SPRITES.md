@@ -160,8 +160,12 @@ Este segundo lote aporta 66 GIF de 22 especies. Añade animaciones para 17 Digim
 
 ## Recuperación de los sprites de la versión 1.39.0
 
-79 especies usan los PNG y las secuencias de animación de la etiqueta `v1.39.0`. Los retratos independientes de Agumon y Renamon también proceden de esa versión. Estas entradas llevan la opción `pixelArt` para conservar los bordes de los píxeles al ampliarlos.
+En la versión 1.46.0, 79 especies usaban los PNG y las secuencias de animación de la etiqueta `v1.39.0`. Los retratos independientes de Agumon y Renamon también proceden de esa versión. Estas entradas llevan la opción `pixelArt` para conservar los bordes de los píxeles al ampliarlos.
 
 ## Rework GIFs 3
 
 El lote contiene 51 GIF para 17 especies. Dorugamon repite los dibujos del primer lote. Devidramon, Devimon, DoruGreymon, MegaKabuterimon, Monochromon, Okuwamon y Parrotmon usan los GIF de este lote en lugar de los sprites clásicos. Para reproducir la importación ejecuta `python scripts/import-rework-gifs.py "ruta/Rework GIFs 3" game --pack-name "Rework GIFs 3"`.
+
+## Rework GIFs FINAL
+
+El lote final contiene 93 GIF para 31 especies. Actualiza 14 diseños y repite los de 17 especies ya publicadas. La carpeta Demimon corresponde a DemiDevimon y Goblimon corresponde a Goburimon. Importa este lote después de los anteriores con `python scripts/import-rework-gifs.py "ruta/Rework GIFs FINAL" game --pack-name "Rework GIFs FINAL"`.

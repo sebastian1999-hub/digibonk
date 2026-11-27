@@ -1,3 +1,8 @@
+## 1.47.0 · Nuevas animaciones para 14 Digimon
+
+- Airdramon y DemiDevimon vuelan, y Guardromon flota tanto al desplazarse como en reposo. Los tres estrenan también animaciones de ataque y salto.
+- Coronamon, Firamon, Guilmon, Growlmon, Greymon, GeoGreymon, Goburimon, Kyubimon, Leomon, Lynxmon y Ogremon reciben nuevos sprites de combate y retratos a juego.
+
 ## 1.46.0 · Sprites clásicos y nuevas animaciones
 
 - 79 Digimon recuperan sus sprites y animaciones de la versión 1.39.0. Agumon y Renamon también recuperan sus retratos originales.

@@ -12,6 +12,8 @@ from sprite_atlas import indexed_atlas, pack
 
 
 ALIASES = {
+    'demimon': 'DemiDevimon',
+    'goblimon': 'Goburimon',
     'bigmamenon': 'BigMamemon',
     'blackmetalgarurumon': 'MetalGarurumon (Black)',
     'grankugawamon': 'GranKuwagamon',
@@ -28,6 +30,9 @@ ALIASES = {
 # The engine mirrors a left-facing atlas. Normalise the source poses that
 # face right before packing; forward-facing poses use the supplied drawing.
 RIGHT_FACING = {
+    'Coronamon': {'atacar'},
+    'Greymon': {'atacar', 'caminar'},
+    'Guilmon': {'atacar'},
     'Andromon': {'atacar'},
     'BanchoLeomon': {'atacar'},
     'Crescemon': {'atacar'},

@@ -1,8 +1,16 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.46.0",
+  "currentVersion": "1.47.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.47.0",
+      "title": "Nuevas animaciones para 14 Digimon",
+      "changes": [
+        "Airdramon y DemiDevimon vuelan, y Guardromon flota tanto al desplazarse como en reposo. Los tres estrenan también animaciones de ataque y salto.",
+        "Coronamon, Firamon, Guilmon, Growlmon, Greymon, GeoGreymon, Goburimon, Kyubimon, Leomon, Lynxmon y Ogremon reciben nuevos sprites de combate y retratos a juego."
+      ]
+    },
     {
       "version": "1.46.0",
       "title": "Sprites clásicos y nuevas animaciones",
