@@ -142,12 +142,19 @@
       return { id, name, x, z, anchor, kind: null, clearedUntil: 0, revision: 0 };
     });
   }
+  const FINAL_BOSS_NAME = 'Rey del Albornoz';
+  function enemyName(enemy) {
+    const championInvader = enemy.boss && enemy.stage >= 2 && !enemy.tower && !enemy.structure && !enemy.realmMob;
+    return enemy.finalBoss || championInvader ? FINAL_BOSS_NAME : enemy.species;
+  }
   const api = {
     WORLD,
     SECTOR_SIZE,
     MAP_VERSION,
     OBJECTIVE_ZONES,
     trialOpen: (s) => !!s.world.devimonDefeated && !s.realm && !s.trial && s.time >= (s.nextTrialAt || 0),
+    FINAL_BOSS_NAME,
+    enemyName,
     SUMMON_DURATION: 3,
     SEAL_RADIUS: 10,
     styles,

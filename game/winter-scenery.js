@@ -565,22 +565,17 @@ export function sealInlay(portals, radius, sealColor, heightAt) {
       [-Math.PI / 2, 0, 0],
     );
   }
-  const bat = new THREE.Shape();
-  bat.moveTo(0, -1.35);
-  bat.quadraticCurveTo(0.78, -0.17, 1.24, -0.7);
-  bat.quadraticCurveTo(1.4, 0.15, 1.97, -0.12);
-  bat.quadraticCurveTo(1.91, 0.55, 2.67, 1.12);
-  bat.quadraticCurveTo(1.46, 1.2, 0.53, 0.4);
-  bat.lineTo(0.64, 1.06);
-  bat.lineTo(0, 0.47);
-  bat.lineTo(-0.64, 1.06);
-  bat.lineTo(-0.53, 0.4);
-  bat.quadraticCurveTo(-1.46, 1.2, -2.67, 1.12);
-  bat.quadraticCurveTo(-1.91, 0.55, -1.97, -0.12);
-  bat.quadraticCurveTo(-1.4, 0.15, -1.24, -0.7);
-  bat.quadraticCurveTo(-0.78, -0.17, 0, -1.35);
+  const crown = new THREE.Shape();
+  crown.moveTo(-1.7, -1.05);
+  crown.lineTo(-2.15, 1.05);
+  crown.lineTo(-0.92, 0.3);
+  crown.lineTo(0, 1.55);
+  crown.lineTo(0.92, 0.3);
+  crown.lineTo(2.15, 1.05);
+  crown.lineTo(1.7, -1.05);
+  crown.closePath();
   m.add(
-    new THREE.ExtrudeGeometry(bat, {
+    new THREE.ExtrudeGeometry(crown, {
       depth: 0.09,
       bevelEnabled: true,
       bevelThickness: 0.04,
@@ -588,7 +583,7 @@ export function sealInlay(portals, radius, sealColor, heightAt) {
       bevelSegments: 1,
       curveSegments: 5,
     }),
-    '#c3a8df',
+    brass,
     [0, 0.27, 0],
     [1, 1, 1],
     [-Math.PI / 2, 0, -0.64],

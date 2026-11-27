@@ -943,7 +943,7 @@ function refreshHud() {
     s.enemies.find((e) => e.boss && e.hp > 0);
   $('#boss-bar').hidden = !boss;
   if (boss) {
-    $('#boss-name').textContent = boss.species;
+    $('#boss-name').textContent = DigibonkWorld.enemyName(boss);
     $('#boss-type').textContent = boss.tower
       ? boss.shielded
         ? 'VINCULADA A LAS OLEADAS'
@@ -996,7 +996,7 @@ function refreshPortalTimer() {
     run.s.world.devimonDefeated
       ? run.s.time >= (run.s.nextTrialAt || 0) ? 'Portal de pruebas abierto en el círculo central.' : 'Próximo portal de pruebas en ' + clock(Math.ceil(run.s.nextTrialAt - run.s.time))
       : run.s.world.phase === 'seal'
-      ? 'Ve al círculo central para invocar a Devimon.'
+      ? 'Ve al círculo central para invocar al Rey del Albornoz.'
       : info.phase === 'inside'
         ? 'Derrota las tres oleadas para destruir la torre.'
         : info.phase === 'complete'
@@ -1343,9 +1343,9 @@ function end() {
     localStorage.removeItem(RUN_KEY);
   } catch {}
   $('#result-objective').textContent = s.world.devimonDefeated
-    ? 'Devimon derrotado · Objetivo completado'
+    ? 'Rey del Albornoz derrotado · Objetivo completado'
     : s.world.phase === 'devimon'
-      ? 'Seis portales cerrados · Devimon sigue en pie'
+      ? 'Seis portales cerrados · El Rey del Albornoz sigue en pie'
       : 'Objetivo: ' + s.world.cleansed + ' / ' + s.world.target + ' portales cerrados';
   $('#result-species').textContent = s.player.species + ' · ' + stageNames[s.player.stage];
   $('#result-stats').replaceChildren();
@@ -1796,9 +1796,9 @@ function loop(now) {
             ' zonas · +20 bits · +20 EXP',
         );
       if (event.type === 'devimon-engaged')
-        toast('JEFE FINAL · Devimon · Evita sus orbes y los círculos oscuros');
+        toast('JEFE FINAL · Rey del Albornoz · Evita sus orbes y los círculos oscuros');
       if (event.type === 'devimon-defeated') {
-        toast('DEVIMON DERROTADO · +5000 puntos · +250 bits · Sigue jugando para hacer récord');
+        toast('REY DEL ALBORNOZ DERROTADO · +5000 puntos · +250 bits · Sigue jugando para hacer récord');
         audio.play('evolution');
       }
       if (event.type === 'purify-cancel') toast('Purificación interrumpida: vuelve junto al nodo.');

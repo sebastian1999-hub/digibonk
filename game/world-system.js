@@ -103,7 +103,7 @@
         id: s.nextId++,
         x: 0,
         z: 0,
-        species: this.distinctEnemySpecies('Devimon', 2),
+        species: W.FINAL_BOSS_NAME,
         stage: 2,
         hp,
         maxHp: hp,

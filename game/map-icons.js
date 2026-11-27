@@ -9,7 +9,7 @@
     closed: 'Portal cerrado',
     exit: 'Regreso',
     tower: 'Torre Negra',
-    boss: 'Devimon',
+    boss: 'Rey del Albornoz',
     player: 'Tú',
   };
   const colors = {

@@ -1257,17 +1257,18 @@ export class Renderer3D {
     }
     for (const e of s?.enemies || []) {
       if (e.tower) continue;
+      const name = window.DigibonkWorld.enemyName(e);
       const left =
         (p.x - e.x) * Math.cos(this.cameraYaw) - (p.z - e.z) * Math.sin(this.cameraYaw) < 0;
       this.unit(
         'enemy-' + e.id,
-        e.species,
+        name,
         e.hit > 0
           ? 'hit'
           : run.enemyStatusBlocked(e)
             ? 'idle'
             : s.time - (e.attackAt ?? -100) < 0.55
-              ? window.SkillSystem.pose(e.lastSkill)
+              ? (name === window.DigibonkWorld.FINAL_BOSS_NAME ? 'attack' : window.SkillSystem.pose(e.lastSkill))
               : e.finalBoss && !e.engaged
                 ? 'idle'
                 : 'run',
@@ -1280,9 +1281,9 @@ export class Renderer3D {
       );
       if (e.finalBoss) {
         const aura = this.pooled(
-          'devimon-aura',
+          'final-boss-aura',
           'ring',
-          e.hp < e.maxHp * 0.5 ? 0xef8ecb : 0xbd8de0,
+          e.hp < e.maxHp * 0.5 ? 0xffb958 : 0x72e0de,
         ).mesh;
         aura.position.set(e.x, C.heightAt(e.x, e.z, seed) + 0.14, e.z);
         aura.rotation.x = -Math.PI / 2;

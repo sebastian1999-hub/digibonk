@@ -1,8 +1,16 @@
 // Generated from RELEASE-NOTES.md by scripts/sync-patch-notes.cjs.
 window.DigibonkPatchNotes = {
-  "currentVersion": "1.47.0",
+  "currentVersion": "1.48.0",
   "pending": [],
   "releases": [
+    {
+      "version": "1.48.0",
+      "title": "El Rey del Albornoz",
+      "changes": [
+        "Tras cerrar los seis portales, activa el sello de la corona para invocar al Rey del Albornoz como jefe final. Su trono flota y sus gafas brillan al atacar.",
+        "Los invasores Champion, Ultimate y Mega también aparecen como el Rey en su trono. Cada invasor conserva los ataques y las recompensas de su encuentro."
+      ]
+    },
     {
       "version": "1.47.0",
       "title": "Nuevas animaciones para 14 Digimon",

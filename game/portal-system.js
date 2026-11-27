@@ -85,6 +85,11 @@
           this.placeSafely(buddy);
         }
       }
+      // A legacy save can have the active boss on the island while the player is inside a portal.
+      for (const scene of [s, s.mainScene]) {
+        const boss = scene?.enemies?.find((enemy) => enemy.finalBoss);
+        if (boss) boss.species = W.FINAL_BOSS_NAME;
+      }
       s.portalRuns ??= {};
       s.realm ??= null;
       s.mainScene ??= null;
@@ -587,7 +592,7 @@
         if (W.trialOpen(s) && Math.hypot(p.x, p.z) < 5)
           return { id: 'skill-trial', type: 'trial', name: 'Entrar al portal de pruebas', x: 0, z: 0, cost: 0 };
         if (s.world.phase === 'seal' && Math.hypot(p.x, p.z) <= W.SEAL_RADIUS)
-          return { id: 'devimon-seal', type: 'seal', name: 'Invocar a Devimon', x: 0, z: 0, cost: 0 };
+          return { id: 'devimon-seal', type: 'seal', name: 'Invocar al Rey del Albornoz', x: 0, z: 0, cost: 0 };
         const portal = s.world.portals
           .filter((p) => !p.closed && dist(p, s.player) < 4.2)
           .sort((a, b) => dist(a, s.player) - dist(b, s.player))[0];

@@ -1940,7 +1940,7 @@
           if (e.ranged !== false && e.stage >= 1 && e.shotClock <= 0 && distance(e, p) < 20) {
             e.shotClock = e.shotInterval || (e.boss ? 1.8 : 4);
             e.attackAt = s.time;
-            e.lastSkill = species.has(e.species) ? signature(e.species).id : 'energy-bolt';
+            e.lastSkill = e.finalBoss ? 'death-claw' : species.has(e.species) ? signature(e.species).id : 'energy-bolt';
             const d = distance(e, p) || 1;
             s.hostile.push({
               id: s.nextId++,
@@ -1949,7 +1949,7 @@
               ox: e.x,
               oz: e.z,
               bornAt: s.time,
-              skillId: species.has(e.species) ? signature(e.species).id : 'energy-bolt',
+              skillId: e.lastSkill,
               dx: (p.x - e.x) / d,
               dz: (p.z - e.z) / d,
               life: 3,

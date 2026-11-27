@@ -1,3 +1,8 @@
+## 1.48.0 · El Rey del Albornoz
+
+- Tras cerrar los seis portales, activa el sello de la corona para invocar al Rey del Albornoz como jefe final. Su trono flota y sus gafas brillan al atacar.
+- Los invasores Champion, Ultimate y Mega también aparecen como el Rey en su trono. Cada invasor conserva los ataques y las recompensas de su encuentro.
+
 ## 1.47.0 · Nuevas animaciones para 14 Digimon
 
 - Airdramon y DemiDevimon vuelan, y Guardromon flota tanto al desplazarse como en reposo. Los tres estrenan también animaciones de ataque y salto.

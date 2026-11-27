@@ -110,7 +110,7 @@ export function openRunHistory(dialog, history, { clock, number, stages, skills,
     addStats([
       ['Tiempo', clock(entry.time)], ['Puntos', number(entry.score)], ['Bajas', number(entry.kills)],
       ['Nivel', number(entry.level)], ['Portales', entry.portals + ' / ' + entry.portalTarget],
-      ['Devimon', entry.devimon ? 'Derrotado' : 'Pendiente'],
+      ['Jefe final', entry.devimon ? 'Derrotado' : 'Pendiente'],
       ['Bits para la cuenta', number(entry.bits)], ['Bits al terminar', number(entry.coins)],
       ['Experiencia', number(entry.experience || 0)], ['Daño total', number(totals.reduce((n, row) => n + row.damage, 0))],
       ['Daño de recolectores', number(collectors?.damage || 0)],

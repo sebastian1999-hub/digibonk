@@ -444,10 +444,10 @@ export class WorldVisuals {
     if (W.trialOpen(s)) return;
     this.label(
       phase === 'devimon'
-        ? 'DEVIMON · JEFE FINAL'
+        ? W.FINAL_BOSS_NAME.toUpperCase()
         : phase === 'endless'
-          ? 'DEVIMON DERROTADO'
-          : 'SELLO DE DEVIMON',
+          ? 'REY DERROTADO'
+          : 'SELLO DEL REY',
       ({
         seal: 'ACTIVA EL CÍRCULO',
         summoning: 'INVOCACIÓN EN CURSO',

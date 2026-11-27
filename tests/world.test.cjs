@@ -243,11 +243,12 @@ test('flood and glitch have explicit effects, all forms obey flood, old saves mi
   assert.equal(loaded.s.world.portals.length, 6);
 });
 
-test('Devimon waits at the center, has a second-phase attack and victory continues the run', () => {
+test('the Rey del Albornoz waits at the center, has a second-phase attack and victory continues the run', () => {
   const r = fresh('Angemon', 2);
   r.s.world.cleansed = 6;
   r.spawnDevimon();
   const boss = r.s.enemies.find((e) => e.finalBoss);
+  assert.equal(boss.species, 'Rey del Albornoz');
   r.s.player.x = 80;
   r.update(0.05);
   assert.equal(boss.engaged, false);
@@ -277,6 +278,22 @@ test('Devimon waits at the center, has a second-phase attack and victory continu
   const after = new C.Run(null, { saved: r.snapshot() });
   assert.equal(after.s.world.phase, 'endless');
   assert.equal(after.spawnDevimon(), false);
+});
+test('Champion and higher invaders use the throne and retain their own combat species after loading', () => {
+  for (const stage of [1, 2, 3, 4]) {
+    const r = fresh();
+    r.s.time = (stage - 1) * 150;
+    r.spawn(true);
+    const invader = r.s.enemies.find((e) => e.boss);
+    assert.equal(invader.stage, stage);
+    assert.ok(C.species.has(invader.species));
+    const display = stage === 1 ? invader.species : W.FINAL_BOSS_NAME;
+    assert.equal(W.enemyName(invader), display);
+    const restored = new C.Run(null, { saved: r.snapshot() });
+    assert.equal(W.enemyName(restored.s.enemies.find((e) => e.id === invader.id)), display);
+    assert.equal(W.enemyName({ ...invader, boss: false, elite: true }), invader.species);
+    assert.equal(W.enemyName({ ...invader, tower: true }), invader.species);
+  }
 });
 test('expanded map keeps landmarks and all required nodes reachable without hidden path corridors', () => {
   assert.equal(base.WORLD, 220);
@@ -310,8 +327,14 @@ test('the final boss retains its slot and quest state even when the enemy budget
   r.s.enemies = Array.from({ length: 220 }, (_, i) => ({ ...mob(), id: 100 + i }));
   r.spawnDevimon();
   assert.equal(r.s.enemies.length, 220);
-  const saved = new C.Run(null, { saved: r.snapshot() });
-  assert.ok(saved.s.enemies.some((e) => e.id === saved.s.world.devimonId && e.finalBoss));
+  const snapshot = r.snapshot();
+  const oldBoss = snapshot.enemies.find((e) => e.finalBoss);
+  oldBoss.species = 'Devimon';
+  oldBoss.hp = 117;
+  const saved = new C.Run(null, { saved: snapshot });
+  const restored = saved.s.enemies.find((e) => e.id === saved.s.world.devimonId && e.finalBoss);
+  assert.equal(restored.species, 'Rey del Albornoz');
+  assert.equal(restored.hp, 117);
   assert.equal(saved.spawnDevimon(), false);
 });
 function finishWaves(r) {
